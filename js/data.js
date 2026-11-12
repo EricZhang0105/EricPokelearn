@@ -136,26 +136,52 @@ const MATH = [
     }},
 
   { id:'m-word', level:3, title:'Math Word Problems', emoji:'📖',
-    desc:'Read a story and write the number sentence (MOE K1/K2)',
+    desc:'Read a story and work out the answer (MOE K1/K2)',
     make(){
-      const tpl=[
-        {e:'🍎',subj:'Sam',v:'apples',a:ri(2,6),b:ri(2,6),op:'+'},
-        {e:'🍪',subj:'Lily',v:'cookies',a:ri(3,8),b:ri(1,4),op:'+'},
-        {e:'🚗',subj:'Tom',v:'cars',a:ri(5,10),b:ri(1,4),op:'-'},
-        {e:'🐟',subj:'May',v:'fish',a:ri(6,12),b:ri(1,5),op:'-'},
-        {e:'⚽',subj:'Ben',v:'balls',a:ri(4,9),b:ri(2,5),op:'+'},
+      /* 一套题 = 8 个故事。为避免「同一套题里出现重复题目」：
+         1) 8 个角色/物品互不相同（shuffle 后取 8 个）
+         2) 加、减各 4 个句式，句式也互不相同
+         3) 角色 × 句式 一一配对 → 8 道题的题干必然两两不同 */
+      const CAST=[
+        {n:'Sam', e:'🍎', v:'apples'},   {n:'Lily',e:'🍪', v:'cookies'},
+        {n:'Tom', e:'🚗', v:'cars'},     {n:'May', e:'🐟', v:'fish'},
+        {n:'Ben', e:'⚽', v:'balls'},    {n:'Ann', e:'🌸', v:'flowers'},
+        {n:'Ken', e:'📚', v:'books'},    {n:'Zoe', e:'🐰', v:'rabbits'},
+        {n:'Mia', e:'🍌', v:'bananas'},  {n:'Tim', e:'🎈', v:'balloons'},
+        {n:'Ella',e:'🐤', v:'chicks'},   {n:'Leo', e:'🚌', v:'toy buses'},
       ];
-      const out=[];
-      for(let i=0;i<8;i++){
-        const t=pick(tpl); let ans,q;
-        if(t.op==='+'){ ans=t.a+t.b; q=`${t.subj} has ${t.a} ${t.e}. ${t.subj} gets ${t.b} more. How many ${t.v} now?`; }
-        else { ans=t.a-t.b; q=`${t.subj} has ${t.a} ${t.e}. ${t.subj} gives ${t.b} away. How many ${t.v} left?`; }
-        out.push({type:'choice', prompt:`Read the story`, sub:q,
+      const ADD=[
+        t=>`${t.n} has ${t.a} ${t.e}. ${t.n} gets ${t.b} more. How many ${t.v} now?`,
+        t=>`${t.n} has ${t.a} ${t.e}. Grandma gives ${t.b} more. How many ${t.v} does ${t.n} have?`,
+        t=>`${t.n} finds ${t.b} ${t.e}. ${t.n} already has ${t.a} ${t.e}. How many ${t.v} in all?`,
+        t=>`${t.n} has ${t.a} ${t.e}. ${t.n} buys ${t.b} more. How many ${t.v} in all?`,
+        t=>`There are ${t.a} ${t.e} on the table. Mom puts ${t.b} more there. How many ${t.v} on the table?`,
+        t=>`${t.n} has ${t.a} ${t.e} in a box. ${t.n} puts ${t.b} more in. How many ${t.v} in the box?`,
+      ];
+      const SUB=[
+        t=>`${t.n} has ${t.a} ${t.e}. ${t.n} gives ${t.b} away. How many ${t.v} left?`,
+        t=>`${t.n} has ${t.a} ${t.e}. ${t.n} takes ${t.b} out. How many ${t.v} left?`,
+        t=>`${t.n} has ${t.a} ${t.e} on the table. ${t.b} of them fall down. How many ${t.v} are still on the table?`,
+        t=>`${t.n} has ${t.a} ${t.e}. ${t.n} gives ${t.b} to a friend. How many ${t.v} left?`,
+        t=>`${t.n} has ${t.a} ${t.e} in a bag. ${t.b} of them are lost. How many ${t.v} are in the bag?`,
+        t=>`${t.n} has ${t.a} ${t.e}. Mom takes ${t.b} away. How many ${t.v} left?`,
+      ];
+      const people = shuffle(CAST).slice(0,8);
+      const kinds  = shuffle([
+        ...shuffle(ADD).slice(0,4).map(f=>({op:'+',f})),
+        ...shuffle(SUB).slice(0,4).map(f=>({op:'-',f}))
+      ]);
+      return kinds.map((k,i)=>{
+        const p=people[i]; let a,b;
+        if(k.op==='+'){ a=ri(2,9); b=ri(1,Math.min(8,18-a)); }
+        else          { a=ri(5,18); b=ri(1,Math.min(5,a-2)); }
+        const ans = k.op==='+' ? a+b : a-b;
+        const q   = k.f({n:p.n,e:p.e,v:p.v,a,b});
+        return {type:'choice', prompt:`Read the story`, sub:q,
           speak:{text:q,lang:'en-US'},
           options:numOptions(ans,Math.max(0,ans-3),ans+3), answer:String(ans),
-          explain:`${t.op==='+'?t.a+' + '+t.b:t.a+' − '+t.b} = ${ans}.`});
-      }
-      return out;
+          explain:`${a} ${k.op} ${b} = ${ans}.`};
+      });
     }},
 
   { id:'m-mixed', level:3, title:'Mixed Practice', emoji:'🎯',
@@ -468,16 +494,21 @@ const CHINESE=[
     }},
 
   { id:'c-blend', title:'Blending 拼读练习', emoji:'🧩',
-    desc:'声母+韵母，带语音播报：听 → 跟读 → 选音节',
+    desc:'声母+韵母（带声调），带语音播报：听 → 跟读 → 选音节',
     make(){
-      return shuffle(ZH_BLENDS).slice(0,8).map(it=>({
-        type:'choice', prompt:`拼一拼：${it.ini} + ${it.fin} = ?`,
-        sub:`🔊 仔细听：声母 → 韵母 → 合起来怎么读`,
-        speak:{ text:`${it.ini}-${it.fin}-${it.syl}`, lang:'zh-CN',
-                clip:zhClip('blend',it.syl), autoplay:true },
-        options:shuffle([it.syl,...zhBlendDecoys(it)]), answer:it.syl,
-        explain:`${it.ini} + ${it.fin} = ${it.syl}。例如「${it.word}」的「${it.hz}」。`
-      }));
+      return shuffle(ZH_BLENDS).slice(0,8).map(it=>{
+        const finT = zhToneMark(it.fin, it.tone);   // 韵母带调号，拼读时看得清是第几声
+        const sylT = zhToneMark(it.syl, it.tone);   // 拼出来的音节同样带调号
+        const tName = zhToneName(it.tone);
+        return {
+          type:'choice', prompt:`拼一拼：${it.ini} + ${finT} = ?`,
+          sub:`🔊 仔细听：声母 → 韵母（${tName}）→ 合起来怎么读`,
+          speak:{ text:`${it.ini}，${finT}，${sylT}`, lang:'zh-CN',
+                  clip:zhClip('blend',it.syl), autoplay:true },
+          options:shuffle([sylT,...zhBlendDecoysToned(it)]), answer:sylT,
+          explain:`${it.ini} + ${finT} = ${sylT}（${tName}）。例如「${it.word}」的「${it.hz}」。`
+        };
+      });
     }},
 
   { id:'c-char', title:'Characters 汉字拼音配对', emoji:'🇨🇳',

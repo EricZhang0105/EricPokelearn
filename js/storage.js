@@ -1,14 +1,15 @@
 /* =========================================================
-   存档层 v3：所有进度存于 localStorage
+   存档层 v4：所有进度存于 localStorage
    save = {
-     schema: 3,
+     schema: 4,
      pokemon: { id: {energy, stage, branch} },  // stage 显式记录，一课最多升一阶
      lessonDone, mistakes, attempts, settings, lastSession, currentSession
    }
-   旧存档（只有 energy）会在 load() 时自动迁移，学习统计/错题保留，
-   进化进度从第一阶重新累计（修掉旧版一次性跳到最终形态的问题）。
+   每套题 10 点能量，每阶 100 点（10 套题进化一次）。
+   旧存档（schema 3，60 点/阶）会在 load() 时自动按比例折算能量，学习统计/错题保留。
    ========================================================= */
 const SAVE_KEY = 'pokeLearnSave_v1';   // 保持原 key，做原地迁移，不丢历史数据
+const OLD_ENERGY_PER_STAGE = 60;       // v3 存档的每阶能量，用于折算到 v4（100 点/阶）
 
 function testStorage(){
   try{
@@ -29,6 +30,7 @@ const Store = {
     this.available = testStorage();
     try{ this.data = JSON.parse(localStorage.getItem(SAVE_KEY)) || null; }catch(e){ this.data=null; }
     if(!this.data) this.data = this.fresh();
+    const prevSchema = Number(this.data.schema)||0;
     this.data.lessonDone = this.data.lessonDone || {};
     this.data.mistakes   = this.data.mistakes   || [];
     this.data.attempts   = this.data.attempts   || [];
@@ -53,7 +55,17 @@ const Store = {
       }
     });
     this.data.pokemon = p;
-    this.data.schema = 3;
+    // ---- schema 4：每阶 60 → 100 点，按比例折算已攒能量，进度不倒退 ----
+    if(prevSchema < 4){
+      Object.keys(p).forEach(id=>{
+        const m=p[id];
+        if(m && m.stage < this.maxStage(id)){
+          m.energy = Math.min(ENERGY_PER_STAGE-1,
+            Math.round((Number(m.energy)||0) * ENERGY_PER_STAGE / OLD_ENERGY_PER_STAGE));
+        }
+      });
+    }
+    this.data.schema = 4;
     return this.data;
   },
   freshMon(){ return { energy:0, stage:0, branch:null }; },
@@ -66,16 +78,27 @@ const Store = {
   sanitize(d){
     if(!d || typeof d!=='object') return null;
     const src=d.pokemon||{}, p={};
+    const prevSchema = Number(d.schema)||0;
     POKEMON.forEach(pk=>{
       const o=src[pk.id];
       p[pk.id] = (o && typeof o==='object')
-        ? { energy:Math.max(0,Number(o.energy)||0),
+        ? { energy:Math.min(ENERGY_PER_STAGE-1, Math.max(0,Number(o.energy)||0)),
             stage:Math.max(0,Math.min(Number(o.stage)||0, pk.stages.length-1)),
             branch:Number.isInteger(o.branch)?o.branch:null }
         : this.freshMon();
     });
+    // 导入的是 v3 存档（60 点/阶）→ 折算成 100 点/阶
+    if(prevSchema < 4){
+      Object.keys(p).forEach(id=>{
+        const m=p[id];
+        if(m && m.stage < this.maxStage(id)){
+          m.energy = Math.min(ENERGY_PER_STAGE-1,
+            Math.round(m.energy * ENERGY_PER_STAGE / OLD_ENERGY_PER_STAGE));
+        }
+      });
+    }
     return {
-      schema:3, pokemon:p,
+      schema:4, pokemon:p,
       lessonDone: (d.lessonDone && typeof d.lessonDone==='object') ? d.lessonDone : {},
       mistakes: Array.isArray(d.mistakes) ? d.mistakes.filter(m=>m && m.q && m.subject) : [],
       attempts: Array.isArray(d.attempts) ? d.attempts.filter(a=>a && a.date) : [],
@@ -102,7 +125,7 @@ const Store = {
   },
   fresh(){
     const p={}; POKEMON.forEach(pk=>p[pk.id]=this.freshMon());
-    return { schema:3, pokemon:p, lessonDone:{}, mistakes:[], attempts:[], books:{},
+    return { schema:4, pokemon:p, lessonDone:{}, mistakes:[], attempts:[], books:{},
              settings:{ autoread:true, sound:true, zhread:true, mic:true },
              lastSession:null, currentSession:Date.now() };
   },

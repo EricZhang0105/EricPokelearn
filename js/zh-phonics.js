@@ -79,73 +79,112 @@ const ZH_WHOLES = [
   {p:'ying', hz:'鹰', word:'老鹰', alias:['ying','鹰','英','影','应','赢','樱']},
 ];
 
-/* ---------------- 拼读音节库（全部为真实音节 + 常用汉字） ---------------- */
-/* ini + fin = syl；hz 用于示范音，word 用于举例加深印象 */
+/* ---------------- 拼读音节库（全部为真实音节 + 常用汉字） ----------------
+ * ini + fin = syl；hz 用于示范音，word 用于举例加深印象。
+ * tone = 示范字的声调（1–4；0 = 轻声，不标调号）。
+ * 题目显示时由 zhToneMark() 给韵母和整个音节补上调号：
+ *    b + ā = bā，这样孩子拼读时能看清「这个韵母是第几声」。
+ * 注意：音频文件名仍用无调号 syl（audio/zh/blend_<syl>.m4a），
+ * 录音本身读的是汉字，声调已经正确。 */
 const ZH_BLENDS = [
-  {ini:'b',fin:'a',  syl:'ba',   hz:'八', word:'八个'},
-  {ini:'b',fin:'o',  syl:'bo',   hz:'波', word:'波浪'},
-  {ini:'b',fin:'i',  syl:'bi',   hz:'笔', word:'铅笔'},
-  {ini:'b',fin:'u',  syl:'bu',   hz:'不', word:'不要'},
-  {ini:'b',fin:'an', syl:'ban',  hz:'班', word:'班级'},
-  {ini:'b',fin:'en', syl:'ben',  hz:'本', word:'书本'},
-  {ini:'b',fin:'ang',syl:'bang', hz:'帮', word:'帮忙'},
-  {ini:'p',fin:'a',  syl:'pa',   hz:'趴', word:'趴下'},
-  {ini:'p',fin:'o',  syl:'po',   hz:'坡', word:'山坡'},
-  {ini:'p',fin:'i',  syl:'pi',   hz:'皮', word:'皮球'},
-  {ini:'p',fin:'u',  syl:'pu',   hz:'铺', word:'铺路'},
-  {ini:'p',fin:'an', syl:'pan',  hz:'盘', word:'盘子'},
-  {ini:'p',fin:'en', syl:'pen',  hz:'盆', word:'花盆'},
-  {ini:'p',fin:'ang',syl:'pang', hz:'旁', word:'旁边'},
-  {ini:'m',fin:'a',  syl:'ma',   hz:'妈', word:'妈妈'},
-  {ini:'m',fin:'o',  syl:'mo',   hz:'摸', word:'摸一摸'},
-  {ini:'m',fin:'e',  syl:'me',   hz:'么', word:'什么'},
-  {ini:'m',fin:'i',  syl:'mi',   hz:'米', word:'大米'},
-  {ini:'m',fin:'u',  syl:'mu',   hz:'木', word:'木头'},
-  {ini:'m',fin:'an', syl:'man',  hz:'慢', word:'慢慢走'},
-  {ini:'m',fin:'en', syl:'men',  hz:'门', word:'大门'},
-  {ini:'m',fin:'ang',syl:'mang', hz:'忙', word:'很忙'},
-  {ini:'d',fin:'a',  syl:'da',   hz:'大', word:'大小'},
-  {ini:'d',fin:'e',  syl:'de',   hz:'的', word:'我的'},
-  {ini:'d',fin:'i',  syl:'di',   hz:'弟', word:'弟弟'},
-  {ini:'d',fin:'u',  syl:'du',   hz:'读', word:'读书'},
-  {ini:'d',fin:'an', syl:'dan',  hz:'单', word:'单独'},
-  {ini:'d',fin:'ang',syl:'dang', hz:'当', word:'当然'},
-  {ini:'t',fin:'a',  syl:'ta',   hz:'他', word:'他们'},
-  {ini:'t',fin:'e',  syl:'te',   hz:'特', word:'特别'},
-  {ini:'t',fin:'i',  syl:'ti',   hz:'踢', word:'踢球'},
-  {ini:'t',fin:'u',  syl:'tu',   hz:'兔', word:'兔子'},
-  {ini:'t',fin:'an', syl:'tan',  hz:'谈', word:'谈话'},
-  {ini:'t',fin:'ang',syl:'tang', hz:'汤', word:'喝汤'},
-  {ini:'n',fin:'a',  syl:'na',   hz:'拿', word:'拿走'},
-  {ini:'n',fin:'e',  syl:'ne',   hz:'呢', word:'好呢'},
-  {ini:'n',fin:'i',  syl:'ni',   hz:'你', word:'你好'},
-  {ini:'n',fin:'u',  syl:'nu',   hz:'努', word:'努力'},
-  {ini:'n',fin:'an', syl:'nan',  hz:'南', word:'南方'},
-  {ini:'l',fin:'a',  syl:'la',   hz:'拉', word:'拉手'},
-  {ini:'l',fin:'e',  syl:'le',   hz:'乐', word:'快乐'},
-  {ini:'l',fin:'i',  syl:'li',   hz:'里', word:'里面'},
-  {ini:'l',fin:'u',  syl:'lu',   hz:'路', word:'马路'},
-  {ini:'l',fin:'an', syl:'lan',  hz:'蓝', word:'蓝天'},
-  {ini:'l',fin:'ang',syl:'lang', hz:'狼', word:'大灰狼'},
-  {ini:'g',fin:'a',  syl:'ga',   hz:'嘎', word:'嘎嘎叫'},
-  {ini:'g',fin:'e',  syl:'ge',   hz:'哥', word:'哥哥'},
-  {ini:'g',fin:'u',  syl:'gu',   hz:'姑', word:'姑姑'},
-  {ini:'g',fin:'an', syl:'gan',  hz:'干', word:'干净'},
-  {ini:'g',fin:'en', syl:'gen',  hz:'根', word:'树根'},
-  {ini:'g',fin:'ang',syl:'gang', hz:'钢', word:'钢笔'},
-  {ini:'k',fin:'a',  syl:'ka',   hz:'咖', word:'咖啡'},
-  {ini:'k',fin:'e',  syl:'ke',   hz:'科', word:'科学'},
-  {ini:'k',fin:'u',  syl:'ku',   hz:'哭', word:'哭泣'},
-  {ini:'k',fin:'an', syl:'kan',  hz:'看', word:'看见'},
-  {ini:'k',fin:'en', syl:'ken',  hz:'肯', word:'肯定'},
-  {ini:'k',fin:'ang',syl:'kang', hz:'康', word:'健康'},
-  {ini:'h',fin:'a',  syl:'ha',   hz:'哈', word:'哈哈笑'},
-  {ini:'h',fin:'e',  syl:'he',   hz:'喝', word:'喝水'},
-  {ini:'h',fin:'u',  syl:'hu',   hz:'虎', word:'老虎'},
-  {ini:'h',fin:'an', syl:'han',  hz:'喊', word:'大喊'},
-  {ini:'h',fin:'en', syl:'hen',  hz:'很', word:'很好'},
-  {ini:'h',fin:'ang',syl:'hang', hz:'行', word:'银行'},
+  {ini:'b',fin:'a',  syl:'ba',   tone:1, hz:'八', word:'八个'},
+  {ini:'b',fin:'o',  syl:'bo',   tone:1, hz:'波', word:'波浪'},
+  {ini:'b',fin:'i',  syl:'bi',   tone:3, hz:'笔', word:'铅笔'},
+  {ini:'b',fin:'u',  syl:'bu',   tone:4, hz:'不', word:'不要'},
+  {ini:'b',fin:'an', syl:'ban',  tone:1, hz:'班', word:'班级'},
+  {ini:'b',fin:'en', syl:'ben',  tone:3, hz:'本', word:'书本'},
+  {ini:'b',fin:'ang',syl:'bang', tone:1, hz:'帮', word:'帮忙'},
+  {ini:'p',fin:'a',  syl:'pa',   tone:1, hz:'趴', word:'趴下'},
+  {ini:'p',fin:'o',  syl:'po',   tone:1, hz:'坡', word:'山坡'},
+  {ini:'p',fin:'i',  syl:'pi',   tone:2, hz:'皮', word:'皮球'},
+  {ini:'p',fin:'u',  syl:'pu',   tone:1, hz:'铺', word:'铺路'},
+  {ini:'p',fin:'an', syl:'pan',  tone:2, hz:'盘', word:'盘子'},
+  {ini:'p',fin:'en', syl:'pen',  tone:2, hz:'盆', word:'花盆'},
+  {ini:'p',fin:'ang',syl:'pang', tone:2, hz:'旁', word:'旁边'},
+  {ini:'m',fin:'a',  syl:'ma',   tone:1, hz:'妈', word:'妈妈'},
+  {ini:'m',fin:'o',  syl:'mo',   tone:1, hz:'摸', word:'摸一摸'},
+  {ini:'m',fin:'e',  syl:'me',   tone:0, hz:'么', word:'什么'},
+  {ini:'m',fin:'i',  syl:'mi',   tone:3, hz:'米', word:'大米'},
+  {ini:'m',fin:'u',  syl:'mu',   tone:4, hz:'木', word:'木头'},
+  {ini:'m',fin:'an', syl:'man',  tone:4, hz:'慢', word:'慢慢走'},
+  {ini:'m',fin:'en', syl:'men',  tone:2, hz:'门', word:'大门'},
+  {ini:'m',fin:'ang',syl:'mang', tone:2, hz:'忙', word:'很忙'},
+  {ini:'d',fin:'a',  syl:'da',   tone:4, hz:'大', word:'大小'},
+  {ini:'d',fin:'e',  syl:'de',   tone:0, hz:'的', word:'我的'},
+  {ini:'d',fin:'i',  syl:'di',   tone:4, hz:'弟', word:'弟弟'},
+  {ini:'d',fin:'u',  syl:'du',   tone:2, hz:'读', word:'读书'},
+  {ini:'d',fin:'an', syl:'dan',  tone:1, hz:'单', word:'单独'},
+  {ini:'d',fin:'ang',syl:'dang', tone:1, hz:'当', word:'当然'},
+  {ini:'t',fin:'a',  syl:'ta',   tone:1, hz:'他', word:'他们'},
+  {ini:'t',fin:'e',  syl:'te',   tone:4, hz:'特', word:'特别'},
+  {ini:'t',fin:'i',  syl:'ti',   tone:1, hz:'踢', word:'踢球'},
+  {ini:'t',fin:'u',  syl:'tu',   tone:4, hz:'兔', word:'兔子'},
+  {ini:'t',fin:'an', syl:'tan',  tone:2, hz:'谈', word:'谈话'},
+  {ini:'t',fin:'ang',syl:'tang', tone:1, hz:'汤', word:'喝汤'},
+  {ini:'n',fin:'a',  syl:'na',   tone:2, hz:'拿', word:'拿走'},
+  {ini:'n',fin:'e',  syl:'ne',   tone:0, hz:'呢', word:'好呢'},
+  {ini:'n',fin:'i',  syl:'ni',   tone:3, hz:'你', word:'你好'},
+  {ini:'n',fin:'u',  syl:'nu',   tone:3, hz:'努', word:'努力'},
+  {ini:'n',fin:'an', syl:'nan',  tone:2, hz:'南', word:'南方'},
+  {ini:'l',fin:'a',  syl:'la',   tone:1, hz:'拉', word:'拉手'},
+  {ini:'l',fin:'e',  syl:'le',   tone:4, hz:'乐', word:'快乐'},
+  {ini:'l',fin:'i',  syl:'li',   tone:3, hz:'里', word:'里面'},
+  {ini:'l',fin:'u',  syl:'lu',   tone:4, hz:'路', word:'马路'},
+  {ini:'l',fin:'an', syl:'lan',  tone:2, hz:'蓝', word:'蓝天'},
+  {ini:'l',fin:'ang',syl:'lang', tone:2, hz:'狼', word:'大灰狼'},
+  {ini:'g',fin:'a',  syl:'ga',   tone:1, hz:'嘎', word:'嘎嘎叫'},
+  {ini:'g',fin:'e',  syl:'ge',   tone:1, hz:'哥', word:'哥哥'},
+  {ini:'g',fin:'u',  syl:'gu',   tone:1, hz:'姑', word:'姑姑'},
+  {ini:'g',fin:'an', syl:'gan',  tone:1, hz:'干', word:'干净'},
+  {ini:'g',fin:'en', syl:'gen',  tone:1, hz:'根', word:'树根'},
+  {ini:'g',fin:'ang',syl:'gang', tone:1, hz:'钢', word:'钢笔'},
+  {ini:'k',fin:'a',  syl:'ka',   tone:1, hz:'咖', word:'咖啡'},
+  {ini:'k',fin:'e',  syl:'ke',   tone:1, hz:'科', word:'科学'},
+  {ini:'k',fin:'u',  syl:'ku',   tone:1, hz:'哭', word:'哭泣'},
+  {ini:'k',fin:'an', syl:'kan',  tone:4, hz:'看', word:'看见'},
+  {ini:'k',fin:'en', syl:'ken',  tone:3, hz:'肯', word:'肯定'},
+  {ini:'k',fin:'ang',syl:'kang', tone:1, hz:'康', word:'健康'},
+  {ini:'h',fin:'a',  syl:'ha',   tone:1, hz:'哈', word:'哈哈笑'},
+  {ini:'h',fin:'e',  syl:'he',   tone:1, hz:'喝', word:'喝水'},
+  {ini:'h',fin:'u',  syl:'hu',   tone:3, hz:'虎', word:'老虎'},
+  {ini:'h',fin:'an', syl:'han',  tone:3, hz:'喊', word:'大喊'},
+  {ini:'h',fin:'en', syl:'hen',  tone:3, hz:'很', word:'很好'},
+  {ini:'h',fin:'ang',syl:'hang', tone:2, hz:'行', word:'银行'},
 ];
+
+/* ---------------- 声调标注（题目/选项显示用） ----------------
+ * 小学标准标调规则：
+ *   1) 有 a 就标 a；没有 a 有 o 就标 o；没有 o 有 e 就标 e
+ *   2) 都没有时，iu / ui 标在后一个元音上
+ *   3) 只剩一个元音，就标它
+ * tone=0 表示轻声 → 不标调号（原样返回） */
+const ZH_TONE_MARKS={
+  a:['ā','á','ǎ','à'], o:['ō','ó','ǒ','ò'], e:['ē','é','ě','è'],
+  i:['ī','í','ǐ','ì'], u:['ū','ú','ǔ','ù'], 'ü':['ǖ','ǘ','ǚ','ǜ']
+};
+function zhToneMark(syl,tone){
+  syl=String(syl||''); tone=Number(tone)||0;
+  if(tone<1 || tone>4 || !syl) return syl;
+  let idx=-1;
+  for(const v of ['a','o','e']){ const i=syl.indexOf(v); if(i>=0){ idx=i; break; } }
+  if(idx<0){
+    const vs=[...syl].map((c,i)=>/[iuü]/.test(c)?i:-1).filter(i=>i>=0);
+    if(!vs.length) return syl;
+    idx = vs.length>1 ? vs[vs.length-1] : vs[0];
+  }
+  const marks=ZH_TONE_MARKS[syl[idx]];
+  return marks ? syl.slice(0,idx)+marks[tone-1]+syl.slice(idx+1) : syl;
+}
+function zhToneName(t){ return (t>=1&&t<=4) ? ['第一声','第二声','第三声','第四声'][t-1] : '轻声'; }
+function zhBlendBySyl(syl){ return ZH_BLENDS.find(x=>x.syl===syl); }
+/* 带调号的干扰项（拼读题选项统一显示声调） */
+function zhBlendDecoysToned(item){
+  return zhBlendDecoys(item).map(s=>{
+    const d=zhBlendBySyl(s);
+    return zhToneMark(s, d ? d.tone : 0);
+  });
+}
+
 
 /* ---------------- 四声辨调题库（8 组 × 4 声） ----------------
  * 每组是同一个音节的四个声调，用「单音常用字」录制，
@@ -217,5 +256,6 @@ function zhJudge(transcripts, target, pool){
 /* Node 环境导出（浏览器里这些是全局 const，不受影响） */
 if(typeof module!=='undefined' && module.exports){
   module.exports={ZH_INITIALS,ZH_FINALS,ZH_WHOLES,ZH_BLENDS,ZH_TONES,zhClip,zhToneClip,
-                  zhInitial,zhFinal,zhWhole,zhBlendDecoys,zhNormalize,zhHit,zhJudge};
+                  zhInitial,zhFinal,zhWhole,zhBlendDecoys,zhNormalize,zhHit,zhJudge,
+                  zhToneMark,zhToneName,zhBlendBySyl,zhBlendDecoysToned,ZH_TONE_MARKS};
 }
