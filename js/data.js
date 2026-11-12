@@ -16,14 +16,16 @@ function numOptions(answer,min,max){
   while(s.size<4){ const d=answer+ri(-3,3); if(d>=min&&d<=max&&d!==answer&&!s.has(d)) s.add(d); }
   return shuffle([...s]).map(String);
 }
-function tenFrame(n){
-  let h='<div class="q-visual" style="font-size:0">';
-  for(let i=0;i<10;i++){
-    h+=`<span style="display:inline-block;width:34px;height:34px;margin:3px;border-radius:8px;
-        background:${i<n?'#FFB15C':'#EFE3CC'};box-shadow:inset 0 0 0 2px #fff;"></span>`;
+/* 方块组：按数值精确渲染 n 个方块，每行最多 10 个（十进位直觉）。
+   removed = 末尾要"拿走"的个数 → 画成灰底 ✕，让孩子看见被减掉的部分。
+   注意：绝不把剩余数量也画出来，否则等于直接给答案。 */
+function blocks(n,{color='#FFB15C',removed=0}={}){
+  let cells='';
+  for(let i=0;i<n;i++){
+    const gone = removed>0 && i>=n-removed;
+    cells+=`<span class="blk${gone?' blk-gone':''}" style="--blk:${color}">${gone?'✕':''}</span>`;
   }
-  h+='</div>';
-  return h;
+  return `<div class="q-visual blk-grid">${cells}</div>`;
 }
 function emojiGroup(n,emoji){
   return '<div class="q-visual">'+emoji.repeat(n)+'</div>';
@@ -94,12 +96,12 @@ const MATH = [
     make(){
       const out=[];
       for(let i=0;i<8;i++){
-        const a=ri(8,19); let b=ri(1,Math.min(20-a,9)); if(a+b>20) b=20-a;
+        const a=ri(8,9), b=ri(11-a,9);          // 保证 a+b>10 且 ≤18，Make-10 才成立
         const ans=a+b, need=10-a, left=b-need;
         out.push({type:'choice', prompt:`Add with Make-10 thinking`, sub:`${a} + ${b} = ?`,
-          visual:tenFrame(a)+`<div class="q-sub">+ ${b} more</div>`+tenFrame(ans),
+          visual:blocks(a)+`<div class="q-sub">+ ${b} more</div>`+blocks(b,{color:'#7BC6F5'}),
           speak:{text:`${a} plus ${b} equals what?`,lang:'en-US'},
-          options:numOptions(ans,11,20), answer:String(ans),
+          options:numOptions(ans,11,18), answer:String(ans),
           explain:`Make 10: ${a}+${need}=10, then 10+${left}=${ans}. So ${a}+${b}=${ans}.`});
       }
       return out;
@@ -111,8 +113,8 @@ const MATH = [
       const out=[];
       for(let i=0;i<8;i++){
         const a=ri(2,10), b=ri(1,a-1); const ans=a-b;
-        out.push({type:'choice', prompt:`How many are left?`,
-          visual:emojiGroup(a,'⭐')+`<div class="q-sub">take away ${b}</div>`+emojiGroup(a-b,'⭐'),
+        out.push({type:'choice', prompt:`How many are left?`, sub:`${a} − ${b} = ?`,
+          visual:blocks(a,{removed:b})+`<div class="q-sub">take away ${b} ✕</div>`,
           speak:{text:`${a} minus ${b} equals what?`,lang:'en-US'},
           options:numOptions(ans,0,9), answer:String(ans), explain:`${a} − ${b} = ${ans}.`});
       }
@@ -124,9 +126,9 @@ const MATH = [
     make(){
       const out=[];
       for(let i=0;i<8;i++){
-        const a=ri(11,20), b=ri(1,a-1); const ans=a-b;
+        const a=ri(11,20), b=ri(1,Math.min(9,a-2)); const ans=a-b;
         out.push({type:'choice', prompt:`How many are left?`, sub:`${a} − ${b} = ?`,
-          visual:tenFrame(a)+`<div class="q-sub">− ${b}</div>`+tenFrame(ans),
+          visual:blocks(a,{removed:b})+`<div class="q-sub">− ${b} take away ✕</div>`,
           speak:{text:`${a} minus ${b} equals what?`,lang:'en-US'},
           options:numOptions(ans,1,19), answer:String(ans), explain:`${a} − ${b} = ${ans}.`});
       }
