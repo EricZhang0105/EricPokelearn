@@ -24,14 +24,109 @@ function show(id){
 
 function setTopTitle(t){ $('#topbarTitle').textContent = t; }
 
-/* ---------- 语音朗读 ---------- */
+/* ---------- 语音：优先播放本地高清录音，浏览器 TTS 只作兜底 ---------- */
+/* 浏览器自带 TTS 在 iPad 上语速放慢后会含糊；英文词库全部预生成了清晰音频 */
+const PREFERRED_VOICES = [
+  'Google US English','Microsoft Aria Online (Natural) - English (United States)',
+  'Samantha (Enhanced)','Ava (Enhanced)','Allison (Enhanced)',
+  'Samantha','Karen','Daniel','Google UK English Female'
+];
+let _cachedVoice=null, _voicesLoaded=false;
+function bestVoice(){
+  if(!('speechSynthesis' in window)) return null;
+  if(_cachedVoice) return _cachedVoice;
+  const vs=speechSynthesis.getVoices()||[];
+  _voicesLoaded = vs.length>0;
+  for(const name of PREFERRED_VOICES){
+    const v=vs.find(x=>x.name===name && /^en/i.test(x.lang));
+    if(v){ _cachedVoice=v; return v; }
+  }
+  const en=vs.find(x=>/^en[-_]US/i.test(x.lang)) || vs.find(x=>/^en/i.test(x.lang));
+  _cachedVoice=en||null;
+  return _cachedVoice;
+}
+if('speechSynthesis' in window){
+  speechSynthesis.onvoiceschanged=()=>{ _cachedVoice=null; bestVoice(); };
+}
 function speak(text,lang){
   if(!('speechSynthesis' in window)) return;
   try{
     const u=new SpeechSynthesisUtterance(text);
-    u.lang=lang||'en-US'; u.rate=0.7; u.pitch=1.05;   // 放慢语速，更适合 5 岁小朋友
+    u.lang=lang||'en-US';
+    u.rate=0.88; u.pitch=1.0;        // 0.7 太慢会拖音含糊，0.88 更清楚
+    const v=bestVoice(); if(v && /^en/i.test(lang||'en-US')) u.voice=v;
     speechSynthesis.cancel(); speechSynthesis.speak(u);
   }catch(e){}
+}
+
+/* 首次触摸解锁 iOS Safari 的音频播放权限（自动读题需要在手势之外播放） */
+document.addEventListener('pointerdown', ()=>{
+  try{
+    const a=new Audio();
+    a.src='data:audio/mp4;base64,';
+    a.play().catch(()=>{});
+  }catch(e){}
+}, {once:true, passive:true});
+
+/* 本地音频播放：AUDIO_MAP / CHEER_MAP 由 js/audio-map.js 提供 */
+let _audio=null, _audioToken=0;
+function playClip(url, onEnd){
+  if(!url) return false;
+  try{
+    if(!_audio) _audio=new Audio();
+    const my=++_audioToken;
+    _audio.pause();
+    _audio.src=url;
+    _audio.currentTime=0;
+    _audio.onended=()=>{ if(my===_audioToken && onEnd) onEnd(); };
+    _audio.play().catch(()=>{ if(onEnd) onEnd(); });
+    return true;
+  }catch(e){ return false; }
+}
+function clipFor(text){
+  if(typeof AUDIO_MAP==='undefined') return null;
+  const k=String(text||'').trim().toLowerCase();
+  return AUDIO_MAP[k] || null;
+}
+/* 读题：有高清录音就放录音，否则才用浏览器 TTS */
+function playSpeak(s, onEnd){
+  if(!s) return;
+  const url=clipFor(s.text);
+  const slowUrl=clipFor(s.text+'::slow');
+  const target=(s.slow && slowUrl) ? slowUrl : url;
+  if(target && playClip(target,onEnd)) return;
+  speak(s.text, s.lang);
+  if(onEnd) setTimeout(onEnd, 1200);
+}
+/* 完成课程：先来一声该宝可梦的叫声，再用它的专属音色说鼓励语 */
+function pokeCry(id){
+  if(!Store.getSetting('sound')) return;
+  const n=[...id].reduce((a,c)=>a+c.charCodeAt(0),0);
+  const base=440 + (n%9)*55;
+  try{
+    if(!_actx) _actx=new (window.AudioContext||window.webkitAudioContext)();
+    if(_actx.state==='suspended') _actx.resume();
+    const c=_actx, o=c.createOscillator(), g=c.createGain();
+    o.type='triangle';
+    o.frequency.setValueAtTime(base, c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(base*1.7, c.currentTime+0.10);
+    o.frequency.exponentialRampToValueAtTime(base*1.15, c.currentTime+0.26);
+    g.gain.setValueAtTime(0.0001,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.14,c.currentTime+0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.32);
+    o.connect(g).connect(c.destination);
+    o.start(); o.stop(c.currentTime+0.34);
+  }catch(e){}
+}
+function playCheer(id){
+  if(!Store.getSetting('sound')) return;
+  const list=(typeof CHEER_MAP!=='undefined' && CHEER_MAP[id]) || [];
+  const url=list.length ? list[Math.floor(Math.random()*list.length)] : null;
+  pokeCry(id||'pikachu');
+  setTimeout(()=>{
+    if(url) playClip(url);
+    else speak('Well done!', 'en-US');
+  }, 330);
 }
 
 /* ---------- 轻量音效（WebAudio 合成，无需音频文件） ---------- */
@@ -113,13 +208,14 @@ function renderCollection(){
   const box=$('#pokeCollection'); box.innerHTML='';
   POKEMON.forEach(pk=>{
     const info=Store.stageInfo(pk.id);
-    const st=info.pk.stages[info.stage];
+    const st=info.form;
     const chip=document.createElement('div');
     chip.className='poke-chip';
     chip.innerHTML=`<div class="face">${pokeImgTag(st,'chip-img')}</div>
       <div class="nm">${st.name}</div>
+      <div class="cn">${st.cn}</div>
       <div class="ebar"><i style="width:${Math.round(info.progress*100)}%"></i></div>
-      <div class="est">${info.maxed?'MAX!':Math.round(info.intoStage)+'/'+info.need+' energy'}</div>`;
+      <div class="est">${info.maxed?'🏆 MAX!':`Lv${info.stage+1} · ${Math.round(info.intoStage)}/${info.need}`}</div>`;
     box.appendChild(chip);
   });
   bindPokeImages(box);
@@ -163,16 +259,19 @@ function startLesson(subject,lessonId){
 
 function openPokemonModal(){
   const picker=$('#pokePicker'); picker.innerHTML='';
+  $('#pokeSearch').value='';
   POKEMON.forEach(pk=>{
     const info=Store.stageInfo(pk.id);
-    const st=info.pk.stages[info.stage];
+    const st=info.form;
     const opt=document.createElement('div');
     opt.className='poke-opt'; opt.dataset.id=pk.id;
+    opt.dataset.search=(pk.name+' '+pk.cn+' '+st.name+' '+st.cn).toLowerCase();
     opt.innerHTML=`<div class="face">${pokeImgTag(st,'opt-img')}</div>
-      <div class="nm">${pk.name}</div>
-      <div class="stage">Now: ${st.name} · ${Math.round(info.intoStage)}/${info.need}</div>`;
+      <div class="nm">${st.name}</div>
+      <div class="cn">${st.cn}</div>
+      <div class="stage">${info.maxed?'MAX!':`⚡ ${Math.round(info.intoStage)}/${info.need} · Stage ${info.stage+1}/${pk.stages.length}`}</div>`;
     opt.onclick=()=>{
-      $$('.poke-opt').forEach(o=>o.classList.remove('sel'));
+      $$('#pokePicker .poke-opt, #branchPicker .poke-opt').forEach(o=>o.classList.remove('sel'));
       opt.classList.add('sel');
       $('#confirmPokemonBtn').disabled=false;
     };
@@ -182,6 +281,11 @@ function openPokemonModal(){
   $('#pokemonModal').classList.remove('hidden');
   bindPokeImages(picker);
 }
+function filterPicker(q){
+  const k=q.trim().toLowerCase();
+  $$('#pokePicker .poke-opt').forEach(o=>o.classList.toggle('filtered', k && !o.dataset.search.includes(k)));
+}
+$('#pokeSearch').oninput=e=>filterPicker(e.target.value);
 
 $('#confirmPokemonBtn').onclick=()=>{
   const sel=$('.poke-opt.sel'); if(!sel) return;
@@ -220,10 +324,10 @@ function beginSession(subject,lessonId){
 /* ---------- 顶部伙伴徽章 ---------- */
 function updateCompanion(){
   const info=Store.stageInfo(state.selectedPokemon);
-  const st=info.pk.stages[info.stage];
+  const st=info.form;
   const badge=$('#companionBadge');
   badge.innerHTML=`${pokeImgTag(st,'badge-img')}<span class="cname">${st.name}</span>
-    <span class="mini-energy">⚡${Math.round(info.intoStage)}/${info.need}</span>`;
+    <span class="mini-energy">Lv${info.stage+1} ${info.maxed?'MAX':`⚡${Math.round(info.intoStage)}/${info.need}`}</span>`;
   bindPokeImages(badge);
 }
 
@@ -249,6 +353,9 @@ function renderQuestion(){
     h+=`<button class="btn-primary" id="passageNext">I read it! ➡️</button>`;
   } else if(q.speak){
     h+=`<button class="speak-btn" id="speakBtn">🔊 Listen</button>`;
+    // 拼写题额外给一个「慢速 + 重复」按钮，初学者听得更准
+    if(q.type==='type' && clipFor(q.speak.text+'::slow'))
+      h+=`<button class="speak-btn" id="slowBtn">🐢 Slow &amp; repeat</button>`;
   }
 
   if(q.type==='choice'){
@@ -268,12 +375,17 @@ function renderQuestion(){
 
   if(q.type==='passage'){
     $('#passageNext').onclick=()=>nextQuestion();
-    if(q.speak) $('#speakBtn').onclick=()=>speak(q.speak.text,q.speak.lang);
-    if(q.speak) setTimeout(()=>speak(q.speak.text,q.speak.lang), 500);
+    if(q.speak) $('#speakBtn').onclick=()=>playSpeak(q.speak);
+    if(q.speak) setTimeout(()=>playSpeak(q.speak), 500);
   } else if(q.speak){
-    $('#speakBtn').onclick=()=>speak(q.speak.text,q.speak.lang);
+    $('#speakBtn').onclick=()=>playSpeak(q.speak);
+    const slowBtn=$('#slowBtn');
+    if(slowBtn) slowBtn.onclick=()=>{
+      const s=Object.assign({}, q.speak, {slow:true});
+      playSpeak(s, ()=>setTimeout(()=>playSpeak(s), 400));
+    };
     // 自动读题：孩子还不太识字，题目带朗读配置时自动念出来（家长端可关）
-    if(Store.getSetting('autoread')) setTimeout(()=>speak(q.speak.text,q.speak.lang), 400);
+    if(Store.getSetting('autoread')) setTimeout(()=>playSpeak(q.speak), 400);
   }
 
   if(q.type==='choice') bindChoice(q,item);
@@ -428,29 +540,61 @@ function nextQuestion(){
 
 /* ---------- 结束课程 ---------- */
 function finishLesson(){
-  const before=Store.stageInfo(state.selectedPokemon).stage;
+  const id=state.selectedPokemon;
   Store.markLesson(state.subject,state.lessonId);
-  Store.addEnergy(state.selectedPokemon,ENERGY_PER_LESSON);
-  // 统计（仅计有答案的题，排除朗读 passage）
+  // 一课只加一次能量，Store 保证最多升 1 阶
+  const evo=Store.addEnergy(id, ENERGY_PER_LESSON);
   const graded=state.questions.filter(x=>x.q.type!=='passage').length;
   Store.recordAttempt(state.subject, state.correct, graded);
-  const after=Store.stageInfo(state.selectedPokemon);
   updateCompanion();
   flashSaved();
-  if(after.stage>before){
-    showEvolve(state.selectedPokemon,after.stage);
+  if(evo.needsBranch){
+    showBranchPicker(id, evo.to, ()=>showEvolve(id, evo.to));
+  }else if(evo.evolved){
+    showEvolve(id, evo.to);
   }else{
     showResult();
   }
 }
 
+/* 分支进化：伊布 8 种、臭臭花 2 种、奇鲁莉安 2 种 */
+function showBranchPicker(id, stage, done){
+  const pk=POKEMON.find(p=>p.id===id);
+  const opts=branchOptions(pk,stage);
+  $('#branchHint').textContent=`${pk.cn} 可以进化成不同的样子，选一个吧！ ✨`;
+  const box=$('#branchPicker'); box.innerHTML='';
+  opts.forEach((f,idx)=>{
+    const o=document.createElement('div');
+    o.className='poke-opt'; o.dataset.idx=idx;
+    o.innerHTML=`<div class="face">${pokeImgTag(f,'opt-img')}</div>
+      <div class="nm">${f.name}</div><div class="cn">${f.cn}</div>`;
+    o.onclick=()=>{
+      $$('#branchPicker .poke-opt').forEach(x=>x.classList.remove('sel'));
+      o.classList.add('sel');
+      $('#confirmBranchBtn').disabled=false;
+    };
+    box.appendChild(o);
+  });
+  $('#confirmBranchBtn').disabled=true;
+  $('#branchModal').classList.remove('hidden');
+  bindPokeImages(box);
+  $('#confirmBranchBtn').onclick=()=>{
+    const sel=$('#branchPicker .poke-opt.sel'); if(!sel) return;
+    Store.setBranch(id, Number(sel.dataset.idx));
+    $('#branchModal').classList.add('hidden');
+    updateCompanion();
+    done();
+  };
+}
+
 function showEvolve(id,stage){
   const pk=POKEMON.find(p=>p.id===id);
-  const st=pk.stages[stage];
-  const prev=pk.stages[stage-1];
-  $('#evolveTitle').textContent=`${pk.name} evolved!`;
+  const info=Store.stageInfo(id);
+  const st=info.form;
+  const prev=formOf(pk, stage-1, null);
+  $('#evolveTitle').textContent=`${pk.name} evolved! (Stage ${stage+1}/${pk.stages.length})`;
   $('#evolveStage').innerHTML=`${pokeImgTag(prev,'evo-img')} ➜ ${pokeImgTag(st,'evo-img')}
-    <br><b>${prev.name} → ${st.name}</b>`;
+    <br><b>${prev.name} → ${st.name}</b><br><span class="muted">${prev.cn} → ${st.cn}</span>`;
   $('#evolveModal').classList.remove('hidden');
   bindPokeImages($('#evolveStage'));
   sfx('evolve');
@@ -462,7 +606,7 @@ function showResult(){
   const pct= total? Math.round(score/total*100) : 100;
   const msg = pct===100?'Perfect! All correct!':pct>=70?'Great job! Keep it up!':'Practice makes perfect!';
   const info=Store.stageInfo(state.selectedPokemon);
-  const st=info.pk.stages[info.stage];
+  const st=info.form;
   $('#progressFill').style.width='100%';
   $('#resultArea').innerHTML=`
     <h2>🎉 Lesson Complete!</h2>
@@ -470,7 +614,7 @@ function showResult(){
     <div class="result-msg">${msg}</div>
     <div class="result-poke">${pokeImgTag(st,'result-img')}</div>
     <div class="result-msg">${st.name} gained ⚡${ENERGY_PER_LESSON} energy<br>
-      ${info.maxed?'Already at final form!':'Energy '+Math.round(info.intoStage)+'/'+info.need+' — almost evolving!'}</div>
+      ${info.maxed?'🏆 MAX! Final form reached!':`Stage ${info.stage+1}/${info.pk.stages.length} · Energy ${Math.round(info.intoStage)}/${info.need} — keep going!`}</div>
     <div class="result-actions">
       <button class="btn-primary" id="moreBtn">More questions 🔄</button>
       <button class="btn-secondary" id="againBtn">Another lesson</button>
@@ -479,6 +623,7 @@ function showResult(){
     </div>`;
   show('screen-result');
   bindPokeImages($('#resultArea'));
+  playCheer(state.selectedPokemon);          // 所选宝可梦专属音色的鼓励语
   $('#moreBtn').onclick=()=>beginSession(state.subject,state.lessonId); // 同宝可梦、同课，刷新新题
   $('#againBtn').onclick=()=>openSubject(state.subject);
   $('#mistakeBtn2').onclick=()=>openMistakes();
@@ -566,8 +711,8 @@ function renderParent(){
 
     <div class="parent-block">
       <h3>Settings</h3>
-      <label class="setting-row"><input type="checkbox" id="optAutoread" ${Store.getSetting('autoread')?'checked':''}/> 🔊 Auto read questions aloud（自动读题）</label>
-      <label class="setting-row"><input type="checkbox" id="optSound" ${Store.getSetting('sound')?'checked':''}/> 🔔 Sound effects（音效）</label>
+      <label class="setting-row"><input type="checkbox" id="optAutoread" ${Store.getSetting('autoread')?'checked':''}/> 🔊 Auto read questions aloud（自动读题，使用高清录音）</label>
+      <label class="setting-row"><input type="checkbox" id="optSound" ${Store.getSetting('sound')?'checked':''}/> 🔔 Sound effects &amp; Pokémon cheers（音效 + 宝可梦鼓励语）</label>
     </div>
 
     <div class="parent-block">

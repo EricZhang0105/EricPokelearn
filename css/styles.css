@@ -255,3 +255,24 @@ body{
 .setting-row{display:flex;align-items:center;gap:10px;padding:10px 4px;font-size:17px;font-weight:600;}
 .setting-row input[type=checkbox]{width:22px;height:22px;accent-color:#FF8A3D;}
 .backup-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+
+/* v3：中文副名、宝可梦搜索、分支选择 */
+.poke-chip .cn,.poke-opt .cn{font-size:11px;color:var(--muted);font-weight:600;line-height:1.2;}
+.poke-search{width:100%;box-sizing:border-box;padding:10px 14px;border:2px solid #EAD7A8;
+  border-radius:14px;font:inherit;font-size:16px;margin-top:6px;background:#FFFDF6;color:#333;}
+.poke-search:focus{outline:none;border-color:#FF8A3D;}
+.poke-opt.filtered{display:none;}
+.branch-picker{grid-template-columns:repeat(4,1fr);}
+#confirmBranchBtn{position:sticky;bottom:0;}
+.speak-btn{margin:4px;}
+
+/* 窄屏修正：长名字不能把网格撑出屏幕 */
+.poke-opt{min-width:0;overflow:hidden;}
+.poke-opt .nm{overflow-wrap:anywhere;font-size:15px;}
+.modal-card{overflow-x:hidden;}
+@media(max-width:560px){
+  .poke-picker,.branch-picker{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .poke-opt{padding:10px 6px;}
+  .poke-opt .face{height:46px;}
+  .poke-opt .poke-img{width:46px;height:46px;}
+}

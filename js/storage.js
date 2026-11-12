@@ -1,17 +1,15 @@
 /* =========================================================
-   存档层：所有进度存于 localStorage
+   存档层 v3：所有进度存于 localStorage
    save = {
-     pokemon: { id: {energy} },          // 每个宝可梦能量
-     lessonDone: { subjectId+lessonId: true },
-     mistakes: [ {subject, lessonId, q, userAnswer, ts, session} ],
-     attempts: [ {date, subject, correct, total} ],   // 家长端统计
-     lastSession: number,                // 上一次会话ID
-     currentSession: number              // 本次会话ID
+     schema: 3,
+     pokemon: { id: {energy, stage, branch} },  // stage 显式记录，一课最多升一阶
+     lessonDone, mistakes, attempts, settings, lastSession, currentSession
    }
+   旧存档（只有 energy）会在 load() 时自动迁移，学习统计/错题保留，
+   进化进度从第一阶重新累计（修掉旧版一次性跳到最终形态的问题）。
    ========================================================= */
-const SAVE_KEY = 'pokeLearnSave_v1';
+const SAVE_KEY = 'pokeLearnSave_v1';   // 保持原 key，做原地迁移，不丢历史数据
 
-/* 探测 localStorage 是否可用（file:// 下 iOS Safari 经常不可用） */
 function testStorage(){
   try{
     const k='__pl_probe__';
@@ -31,25 +29,51 @@ const Store = {
     this.available = testStorage();
     try{ this.data = JSON.parse(localStorage.getItem(SAVE_KEY)) || null; }catch(e){ this.data=null; }
     if(!this.data) this.data = this.fresh();
-    // 保证结构完整
-    this.data.pokemon = this.data.pokemon || {};
     this.data.lessonDone = this.data.lessonDone || {};
-    this.data.mistakes = this.data.mistakes || [];
-    this.data.attempts = this.data.attempts || [];
-    this.data.settings = this.sanitizeSettings(this.data.settings);
+    this.data.mistakes   = this.data.mistakes   || [];
+    this.data.attempts   = this.data.attempts   || [];
+    this.data.settings   = this.sanitizeSettings(this.data.settings);
     this.data.currentSession = this.data.currentSession || Date.now();
+
+    // ---- 迁移：把旧的 {energy} 升级成 {energy, stage, branch} ----
+    const old = this.data.pokemon || {};
+    const p = {};
+    POKEMON.forEach(pk=>{
+      const o = old[pk.id];
+      if(!o || typeof o!=='object'){ p[pk.id]=this.freshMon(); return; }
+      if(typeof o.stage==='number'){
+        p[pk.id]={ energy: Math.max(0,Number(o.energy)||0),
+                   stage: Math.max(0,Math.min(o.stage, pk.stages.length-1)),
+                   branch: Number.isInteger(o.branch) ? o.branch : null };
+      }else{
+        // 旧版：阶段由总能量推算，可能已经跳级 → 归零重新逐级累计
+        p[pk.id]={ energy: Math.min(Math.max(0,Number(o.energy)||0), ENERGY_PER_STAGE-1),
+                   stage:0, branch:null };
+      }
+    });
+    this.data.pokemon = p;
+    this.data.schema = 3;
     return this.data;
   },
+  freshMon(){ return { energy:0, stage:0, branch:null }; },
   sanitizeSettings(s){
     s = s && typeof s==='object' ? s : {};
     return { autoread: s.autoread!==false, sound: s.sound!==false };
   },
-  /* 导入存档前的结构校验与修补（导入文件可能是旧版/手工编辑过） */
+  /* 导入存档前的结构校验与修补 */
   sanitize(d){
     if(!d || typeof d!=='object') return null;
-    const p={}; POKEMON.forEach(pk=>p[pk.id]={energy: Math.max(0, Number(d.pokemon&&d.pokemon[pk.id]&&d.pokemon[pk.id].energy)||0)});
+    const src=d.pokemon||{}, p={};
+    POKEMON.forEach(pk=>{
+      const o=src[pk.id];
+      p[pk.id] = (o && typeof o==='object')
+        ? { energy:Math.max(0,Number(o.energy)||0),
+            stage:Math.max(0,Math.min(Number(o.stage)||0, pk.stages.length-1)),
+            branch:Number.isInteger(o.branch)?o.branch:null }
+        : this.freshMon();
+    });
     return {
-      pokemon: p,
+      schema:3, pokemon:p,
       lessonDone: (d.lessonDone && typeof d.lessonDone==='object') ? d.lessonDone : {},
       mistakes: Array.isArray(d.mistakes) ? d.mistakes.filter(m=>m && m.q && m.subject) : [],
       attempts: Array.isArray(d.attempts) ? d.attempts.filter(a=>a && a.date) : [],
@@ -59,8 +83,8 @@ const Store = {
     };
   },
   fresh(){
-    const p={}; POKEMON.forEach(pk=>p[pk.id]={energy:0});
-    return { pokemon:p, lessonDone:{}, mistakes:[], attempts:[],
+    const p={}; POKEMON.forEach(pk=>p[pk.id]=this.freshMon());
+    return { schema:3, pokemon:p, lessonDone:{}, mistakes:[], attempts:[],
              settings:{ autoread:true, sound:true }, lastSession:null, currentSession:Date.now() };
   },
   save(){
@@ -74,24 +98,60 @@ const Store = {
     }
   },
 
-  // 宝可梦能量与进化
-  getEnergy(id){ return (this.data.pokemon[id]||{energy:0}).energy || 0; },
-  addEnergy(id,amt){
-    if(!this.data.pokemon[id]) this.data.pokemon[id]={energy:0};
-    this.data.pokemon[id].energy += amt;
-    this.save();
+  /* ---------------- 宝可梦能量与进化 ---------------- */
+  ensureMon(id){
+    if(!this.data.pokemon[id]) this.data.pokemon[id]=this.freshMon();
+    return this.data.pokemon[id];
   },
-  // 计算阶段与到下阶进度
+  maxStage(id){
+    const pk=POKEMON.find(p=>p.id===id);
+    return pk ? pk.stages.length-1 : 0;
+  },
+  getEnergy(id){ return this.ensureMon(id).energy||0; },
+
+  /* 加能量。返回 {evolved, from, to, needsBranch}
+   * 关键：无论一次加多少能量，最多只升 1 阶，绝不跳级。 */
+  addEnergy(id,amt){
+    const m=this.ensureMon(id);
+    const max=this.maxStage(id);
+    const from=m.stage;
+    let evolved=false, needsBranch=false;
+    if(m.stage>=max){
+      m.energy=0;                     // 已满级，能量条固定为 MAX
+    }else{
+      m.energy += amt;
+      if(m.energy >= ENERGY_PER_STAGE){
+        m.energy = Math.max(0, m.energy - ENERGY_PER_STAGE);
+        m.stage  = Math.min(m.stage+1, max);   // ← 一次只 +1
+        m.branch = null;
+        evolved  = true;
+        needsBranch = isBranchStage(POKEMON.find(p=>p.id===id), m.stage);
+      }
+    }
+    this.save();
+    return { evolved, from, to:m.stage, needsBranch };
+  },
+  /* 选择分支进化形态（伊布等） */
+  setBranch(id,idx){
+    const m=this.ensureMon(id);
+    const pk=POKEMON.find(p=>p.id===id);
+    if(!pk || !isBranchStage(pk,m.stage)) return false;
+    const opts=branchOptions(pk,m.stage);
+    m.branch=Math.max(0,Math.min(idx,opts.length-1));
+    this.save();
+    return true;
+  },
   stageInfo(id){
-    const pk = POKEMON.find(p=>p.id===id);
-    const energy = this.getEnergy(id);
-    let stage = Math.floor(energy / ENERGY_PER_STAGE);
-    if(stage > pk.stages.length-1) stage = pk.stages.length-1;
-    const intoStage = energy - stage*ENERGY_PER_STAGE;
-    const justEvolved = stage>0 && intoStage < ENERGY_PER_LESSON; // 刚跨过门槛
-    return { pk, stage, intoStage, need:ENERGY_PER_STAGE,
-             progress: intoStage/ENERGY_PER_STAGE, justEvolved,
-             maxed: stage===pk.stages.length-1 && intoStage>=ENERGY_PER_STAGE };
+    const pk=POKEMON.find(p=>p.id===id) || POKEMON[0];
+    const m=this.ensureMon(id);
+    const stage=Math.max(0,Math.min(m.stage, pk.stages.length-1));
+    const branch=m.branch;
+    const maxed = stage===pk.stages.length-1;
+    const intoStage = maxed ? ENERGY_PER_STAGE : m.energy;
+    return { pk, stage, branch, form:formOf(pk,stage,branch),
+             intoStage, need:ENERGY_PER_STAGE, maxed,
+             progress: maxed ? 1 : m.energy/ENERGY_PER_STAGE,
+             isBranch:isBranchStage(pk,stage) };
   },
 
   markLesson(subject,lessonId){
@@ -110,7 +170,6 @@ const Store = {
     this.data.mistakes = this.data.mistakes.filter(x=>x!==m);
     this.save();
   },
-  // 上一节课（上一会话）的错题，用于课前复习
   lastSessionMistakes(){
     const ls=this.data.lastSession;
     if(!ls) return [];
@@ -121,7 +180,6 @@ const Store = {
   },
   allMistakes(){ return this.data.mistakes; },
 
-  // 会话切换：开新会话时把当前设为 last
   rotateSession(){
     this.data.lastSession = this.data.currentSession;
     this.data.currentSession = Date.now();
@@ -133,7 +191,6 @@ const Store = {
     this.data.attempts.push({ date: todayStr(), subject, correct, total });
     this.save();
   },
-  // 最近 days 天，每日正确率与题量
   dailyStats(days){
     days = days || 14;
     const map={};
@@ -152,13 +209,11 @@ const Store = {
     }
     return out;
   },
-  // 各科目当前错题数（趋势）
   mistakeTrends(){
     const map={};
     this.data.mistakes.forEach(m=>{ map[m.subject]=(map[m.subject]||0)+1; });
     return Object.keys(CURRICULUM).map(k=>({ subject:k, label:CURRICULUM[k].label, count:map[k]||0 }));
   },
-  // 总览
   overallStats(){
     const totalQ=this.data.attempts.reduce((s,a)=>s+a.total,0);
     const totalC=this.data.attempts.reduce((s,a)=>s+a.correct,0);
@@ -167,18 +222,13 @@ const Store = {
       accuracy: totalQ ? Math.round(totalC/totalQ*100) : 0,
       lessons, mistakes:this.data.mistakes.length };
   },
-  // 家长端：清空所有数据（谨慎）
   resetAll(){
     const settings=this.data.settings;
     this.data = this.fresh();
     this.data.settings = settings || this.data.settings;
     this.save();
   },
-  // 家长端：导出存档为可下载的 JSON（换设备 / 备份）
-  exportSave(){
-    return JSON.stringify(this.data, null, 2);
-  },
-  // 家长端：从 JSON 文本恢复存档，成功返回 true
+  exportSave(){ return JSON.stringify(this.data, null, 2); },
   importSave(text){
     let d=null;
     try{ d=JSON.parse(text); }catch(e){ return false; }
@@ -188,7 +238,6 @@ const Store = {
     this.save();
     return true;
   },
-  // 设置项
   getSetting(k){ return this.data.settings ? this.data.settings[k]!==false : true; },
   setSetting(k,v){ this.data.settings[k]=v; this.save(); }
 };

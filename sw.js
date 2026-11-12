@@ -4,13 +4,15 @@
  * - 图片（精灵图、图标）：缓存优先 → 秒开且省流量
  * 改了静态文件后请把 CACHE 里的版本号 +1，强制刷新图片缓存。
  */
-const CACHE = 'pokelearn-v2';
+const CACHE = 'pokelearn-v3';
 const SHELL = [
   './',
   './index.html',
   './css/styles.css',
+  './js/pokemon.js',
   './js/data.js',
   './js/storage.js',
+  './js/audio-map.js',
   './js/app.js',
   './manifest.webmanifest'
 ];
@@ -41,8 +43,10 @@ self.addEventListener('fetch', e => {
     e.respondWith(
       caches.match(req).then(r =>
         r || fetch(req).then(res => {
-          const cp = res.clone();
-          caches.open(CACHE).then(c => c.put(req, cp));
+          if(res && res.status===200){
+            const cp = res.clone();
+            caches.open(CACHE).then(c => c.put(req, cp)).catch(()=>{});
+          }
           return res;
         })
       )
@@ -50,11 +54,14 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // 其余（HTML/JS/CSS/manifest）：网络优先，断网回退缓存
+  // 其余（HTML/JS/CSS/音频/manifest）：网络优先，断网回退缓存
   e.respondWith(
     fetch(req).then(res => {
-      const cp = res.clone();
-      caches.open(CACHE).then(c => c.put(req, cp));
+      // 音频可能返回 206 分片，不写缓存避免损坏
+      if(res && res.status===200 && res.ok){
+        const cp = res.clone();
+        caches.open(CACHE).then(c => c.put(req, cp)).catch(()=>{});
+      }
       return res;
     }).catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
   );

@@ -1,65 +1,11 @@
 /* =========================================================
-   小布学习乐园 · 数据层 v2
-   - POKEMON：真实宝可梦图库（官方精灵图 + 进化链）
+   小布学习乐园 · 课程数据层 v3
+   - 宝可梦图库 / 进化常量见 js/pokemon.js（本文件之前加载）
    - CURRICULUM：数学(按 MOE K1 分阶) / 英文(含分级读物) / 中文(拼音)
-   题目对象均为纯数据，可序列化存入错题本：
-   { type:'choice'|'type'|'build'|'passage', prompt, sub, visual, speak,
-     options:[], answer, tiles:[], explain }
+   - 题目对象均为纯数据，可序列化存入错题本：
+     { type:'choice'|'type'|'build'|'passage', prompt, sub, visual, speak,
+       options:[], answer, tiles:[], explain }
    ========================================================= */
-
-const ENERGY_PER_STAGE = 100;   // 每阶所需能量
-const ENERGY_PER_LESSON = 20;   // 每完成一课获得能量
-
-/* 官方高清精灵图（已本地化到 img/pokemon/，断网可用；缺失时 UI 会退回 emoji）
- * 如新增宝可梦：在 POKEMON 里加 imgId 后运行 node fetch_sprites.js 补图 */
-function pokeImg(id){
-  return 'img/pokemon/'+id+'.png';
-}
-
-/* ---------------- 宝可梦库（可自由增删） ---------------- */
-const POKEMON = [
-  { id:'bulbasaur', name:'Bulbasaur', color:'#6FCF57',
-    stages:[{name:'Bulbasaur',emoji:'🌱',imgId:1},{name:'Ivysaur',emoji:'🌿',imgId:2},{name:'Venusaur',emoji:'🌳',imgId:3}] },
-  { id:'charmander', name:'Charmander', color:'#FF7B29',
-    stages:[{name:'Charmander',emoji:'🔥',imgId:4},{name:'Charmeleon',emoji:'🌟',imgId:5},{name:'Charizard',emoji:'🐉',imgId:6}] },
-  { id:'squirtle', name:'Squirtle', color:'#3DA5FF',
-    stages:[{name:'Squirtle',emoji:'💧',imgId:7},{name:'Wartortle',emoji:'🐢',imgId:8},{name:'Blastoise',emoji:'🌊',imgId:9}] },
-  { id:'pikachu', name:'Pikachu', color:'#FFD93D',
-    stages:[{name:'Pikachu',emoji:'⚡',imgId:25},{name:'Raichu',emoji:'🔋',imgId:26}] },
-  { id:'jigglypuff', name:'Jigglypuff', color:'#FFB6D5',
-    stages:[{name:'Jigglypuff',emoji:'🎈',imgId:39},{name:'Wigglytuff',emoji:'🌸',imgId:40}] },
-  { id:'psyduck', name:'Psyduck', color:'#FFC94D',
-    stages:[{name:'Psyduck',emoji:'🦆',imgId:54},{name:'Golduck',emoji:'🐧',imgId:55}] },
-  { id:'snorlax', name:'Snorlax', color:'#B7A98C',
-    stages:[{name:'Snorlax',emoji:'😴',imgId:143}] },
-  { id:'lapras', name:'Lapras', color:'#8FD3E8',
-    stages:[{name:'Lapras',emoji:'🐢',imgId:131}] },
-  { id:'eevee', name:'Eevee', color:'#C9A66B',
-    stages:[{name:'Eevee',emoji:'⭐',imgId:133},{name:'Sylveon',emoji:'🌸',imgId:700}] },
-  { id:'mewtwo', name:'Mewtwo', color:'#B06BD6',
-    stages:[{name:'Mewtwo',emoji:'🌀',imgId:150}] },
-  { id:'mew', name:'Mew', color:'#F2B5E0',
-    stages:[{name:'Mew',emoji:'✨',imgId:151}] },
-  { id:'gastly', name:'Gastly', color:'#9B6BD6',
-    stages:[{name:'Gastly',emoji:'👻',imgId:92},{name:'Haunter',emoji:'💜',imgId:93},{name:'Gengar',emoji:'🟣',imgId:94}] },
-  { id:'dratini', name:'Dratini', color:'#F2A65A',
-    stages:[{name:'Dratini',emoji:'🐉',imgId:147},{name:'Dragonair',emoji:'💎',imgId:148},{name:'Dragonite',emoji:'🐲',imgId:149}] },
-  { id:'gible', name:'Gible', color:'#4FA3D1',
-    stages:[{name:'Gible',emoji:'🦈',imgId:443},{name:'Gabite',emoji:'🌊',imgId:444},{name:'Garchomp',emoji:'🗡️',imgId:445}] },
-  { id:'togepi', name:'Togepi', color:'#FFE08A',
-    stages:[{name:'Togepi',emoji:'🥚',imgId:175},{name:'Togetic',emoji:'🌟',imgId:176},{name:'Togekiss',emoji:'💫',imgId:468}] },
-  { id:'lucario', name:'Lucario', color:'#3A6EA5',
-    stages:[{name:'Lucario',emoji:'🥊',imgId:448}] },
-  { id:'rayquaza', name:'Rayquaza', color:'#2FBF71',    stages:[{name:'Rayquaza',emoji:'🐉',imgId:384}] },
-  { id:'turtwig', name:'Turtwig', color:'#8BC34A',
-    stages:[{name:'Turtwig',emoji:'🌱',imgId:387},{name:'Grotle',emoji:'🌿',imgId:388},{name:'Torterra',emoji:'🌳',imgId:389}] },
-  { id:'piplup', name:'Piplup', color:'#2E9BD6',
-    stages:[{name:'Piplup',emoji:'🐧',imgId:393},{name:'Prinplup',emoji:'💧',imgId:394},{name:'Empoleon',emoji:'⚓',imgId:395}] },
-  { id:'chimchar', name:'Chimchar', color:'#E8773A',
-    stages:[{name:'Chimchar',emoji:'🔥',imgId:390},{name:'Monferno',emoji:'🔥',imgId:391},{name:'Infernape',emoji:'🐵',imgId:392}] },
-  { id:'grookey', name:'Grookey', color:'#5DBB63',
-    stages:[{name:'Grookey',emoji:'🐵',imgId:810},{name:'Thwackey',emoji:'🌿',imgId:811},{name:'Rillaboom',emoji:'🥁',imgId:812}] },
-];
 
 /* ---------------- 工具函数 ---------------- */
 function ri(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
