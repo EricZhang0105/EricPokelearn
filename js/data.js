@@ -316,9 +316,7 @@ const ENGLISH=[
 /* =========================================================
    中文 · 汉语拼音 + 汉字复习（内容保留中文）
    ========================================================= */
-const TONE_MARK={1:'ā',2:'á',3:'ǎ',4:'à'};
-const VOWELS=['a','o','e','i','u'];
-/* 拼音表统一由 js/zh-phonics.js 提供（含呼读音汉字与识别白名单） */
+/* 拼音表统一由 js/zh-phonics.js 提供（含呼读音汉字、四声题库与识别白名单） */
 const INITIALS=ZH_INITIALS.map(x=>x.p);
 const FINALS=ZH_FINALS.map(x=>x.p);
 const CHARS=[
@@ -332,17 +330,30 @@ const CHARS=[
 
 const CHINESE=[
   { id:'c-tone', title:'Tone Practice 声调练习', emoji:'🔊',
-    desc:'认声调：一声平、二声扬、三声拐、四声降',
+    desc:'听声音辨声调：一声平、二声扬、三声拐、四声降',
     make(){
-      const out=[];
-      for(let i=0;i<8;i++){
-        const v=pick(VOWELS), t=ri(1,4);
-        out.push({type:'choice', prompt:`这个拼音是第几声？`,
-          sub:`<span style="font-size:54px;font-weight:800">${TONE_MARK[t]+v}</span>`,
-          options:['第一声','第二声','第三声','第四声'], answer:['第一声','第二声','第三声','第四声'][t-1],
-          explain:`${TONE_MARK[t]+v} 是${['一','二','三','四'][t-1]}声。`});
+      const names=['第一声','第二声','第三声','第四声'];
+      const marks=['—','↗','∨','↘'];   // 平 / 扬 / 拐 / 降，图形化更好认
+      const combos=[];
+      // 先保证四个声调各出一题，再补足 8 题，避免整节课只考一种调
+      [1,2,3,4].forEach(t=>combos.push({g:pick(ZH_TONES), t}));
+      let guard=0;
+      while(combos.length<8 && guard++<200){
+        const g=pick(ZH_TONES), t=ri(1,4);
+        if(!combos.some(x=>x.g.base===g.base && x.t===t)) combos.push({g,t});
       }
-      return out;
+      return shuffle(combos).map(({g,t})=>{
+        const hz=g.hz[t-1], py=g.py[t-1];
+        return {
+          type:'choice', tone:true,
+          prompt:'🔊 听一听，这是第几声？',
+          sub:`<span class="tone-base">${g.base}</span>
+               <div class="tone-tip">点 🔊 可以再听一次 · 一声平、二声扬、三声拐弯、四声降</div>`,
+          speak:{ text:hz, lang:'zh-CN', clip:zhToneClip(g.base,t), autoplay:true },
+          options:names, optionMarks:marks, answer:names[t-1],
+          explain:`「${hz}」${py} 是${['第一','第二','第三','第四'][t-1]}声，例如「${g.word[t-1]}」。`
+        };
+      });
     }},
 
   { id:'c-initial', title:'Initials 声母认读', emoji:'🎤',

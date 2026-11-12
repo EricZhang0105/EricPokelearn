@@ -102,7 +102,8 @@ function playSpeak(s, onEnd){
 /* 完成课程：先来一声该宝可梦的叫声，再用它的专属音色说鼓励语 */
 function pokeCry(id){
   if(!Store.getSetting('sound')) return;
-  const n=[...id].reduce((a,c)=>a+c.charCodeAt(0),0);
+  const key=String(id||'pikachu');        // 允许未选伙伴时调用
+  const n=[...key].reduce((a,c)=>a+c.charCodeAt(0),0);
   const base=440 + (n%9)*55;
   try{
     if(!_actx) _actx=new (window.AudioContext||window.webkitAudioContext)();
@@ -367,8 +368,12 @@ function renderQuestion(){
   }
 
   if(q.type==='choice'){
-    h+=`<div class="option-grid" id="optGrid">`;
-    q.options.forEach(o=>{ h+=`<button class="option-btn" data-v="${o}">${o}</button>`; });
+    h+=`<div class="option-grid ${q.tone?'tone-grid':''}" id="optGrid">`;
+    q.options.forEach((o,i)=>{
+      const label = q.tone && q.optionMarks
+        ? `<span class="tone-mark">${q.optionMarks[i]}</span><span class="tone-name">${o}</span>` : o;
+      h+=`<button class="option-btn" data-v="${o}">${label}</button>`;
+    });
     h+=`</div>`;
   } else if(q.type==='type'){
     h+=`<div class="type-area">
@@ -476,9 +481,12 @@ function bindSpeak(q,item){
   function pass(){
     if(done) return; done=true;
     cleanup(); _stopSpeechInput=null;
-    setStatus('🎉 读对啦！','ok');
+    const buddy=(Store.stageInfo(state.selectedPokemon)||{}).form;
+    setStatus(`🎉 读对啦！${buddy?buddy.name+' 为你欢呼！':'太棒了！'}`,'ok');
     state.correct++; onCorrect(item); sfx('good');
-    showFeedback(true, q.explain, true);
+    // 即时鼓励：不等到课程结束，读对这一刻就让所选宝可梦叫一声
+    setTimeout(()=>pokeCry(state.selectedPokemon), 170);
+    showFeedback(true, q.explain, true, null, false, 1500);  // 多留点时间看清欢呼提示
   }
   function retry(msg){
     tries++; setStatus(msg,'bad');
@@ -697,12 +705,12 @@ function onCorrect(item){
 }
 
 /* ---------- 反馈 & 流程 ---------- */
-function showFeedback(good,explain,autoNext,onWrong,stay){
+function showFeedback(good,explain,autoNext,onWrong,stay,delay){
   const fb=$('#feedback');
   fb.className='feedback '+(good?'good':'bad');
   fb.innerHTML = (good?'🎉 Awesome!':'💡 Try again') + (explain?`<br><span style="font-size:15px">${explain}</span>`:'');
   if(good && autoNext){
-    setTimeout(nextQuestion, 950);
+    setTimeout(nextQuestion, delay||950);
   }else if(!good){
     const btn=document.createElement('button');
     btn.className='btn-secondary'; btn.style.marginTop='10px';
@@ -902,9 +910,9 @@ function renderParent(){
       <h3>Settings</h3>
       <label class="setting-row"><input type="checkbox" id="optAutoread" ${Store.getSetting('autoread')?'checked':''}/> 🔊 Auto read questions aloud（自动读题，使用高清录音）</label>
       <label class="setting-row"><input type="checkbox" id="optSound" ${Store.getSetting('sound')?'checked':''}/> 🔔 Sound effects &amp; Pokémon cheers（音效 + 宝可梦鼓励语）</label>
-      <label class="setting-row"><input type="checkbox" id="optZhread" ${Store.getSetting('zhread')?'checked':''}/> 🧩 中文拼读自动播报（声母 → 韵母 → 音节）</label>
+      <label class="setting-row"><input type="checkbox" id="optZhread" ${Store.getSetting('zhread')?'checked':''}/> 🧩 中文自动播报（拼读 + 声调练习，进题就念一遍）</label>
       <label class="setting-row"><input type="checkbox" id="optMic" ${Store.getSetting('mic')?'checked':''}/> 🎤 语音跟读题（读出声母/韵母，读对才过关）</label>
-      <p class="muted" style="font-size:13px;line-height:1.5">关闭语音跟读后，认读题自动变成「听音选一选」。语音识别需 Chrome/Edge + 联网；iPad 不支持时会自动降级为「录音回放 + 家长确认」。</p>
+      <p class="muted" style="font-size:13px;line-height:1.5">跟读读对时，所选宝可梦会叫一声为孩子欢呼（跟「🔔 音效」开关联动）。关闭语音跟读后，认读题自动变成「听音选一选」。语音识别需 Chrome/Edge + 联网；iPad 不支持时会自动降级为「录音回放 + 家长确认」。</p>
     </div>
 
     <div class="parent-block">

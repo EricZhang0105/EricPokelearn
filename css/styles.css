@@ -296,3 +296,13 @@ body{
   padding:10px 16px;border-radius:14px;text-decoration:none;}
 .replay-box{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
 .replay-box.hidden{display:none;}
+
+/* v5：声调练习 · 听音辨调 */
+.tone-base{display:inline-block;font-size:58px;line-height:1.1;font-weight:800;
+  color:#E76F2C;letter-spacing:3px;font-family:ui-rounded,"Arial Rounded MT Bold",Arial,sans-serif;}
+.tone-tip{font-size:14px;font-weight:600;color:var(--muted);line-height:1.5;margin-top:4px;}
+.tone-grid{grid-template-columns:1fr 1fr !important;gap:10px;}
+.tone-grid .option-btn{font-size:20px;min-height:58px;padding:12px 4px;}
+.tone-grid .option-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
+.tone-mark{font-size:32px;line-height:1.05;font-weight:800;color:#E76F2C;}
+.tone-name{font-size:18px;}

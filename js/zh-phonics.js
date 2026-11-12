@@ -124,6 +124,23 @@ const ZH_BLENDS = [
   {ini:'h',fin:'ang',syl:'hang', hz:'行', word:'银行'},
 ];
 
+/* ---------------- 四声辨调题库（8 组 × 4 声） ----------------
+ * 每组是同一个音节的四个声调，用「单音常用字」录制，
+ * 避免 TTS 把孤立拼音字母念成英文字母名、或多音字变调。
+ * py = 带调号拼音（答对后才显示），hz = 录音用的字，word = 例词（讲解用）。
+ * 题目只给孩子听声音 + 看无调号音节，答案必须靠听辨出来。 */
+const ZH_TONES = [
+  {base:'ma',   py:['mā','má','mǎ','mà'],       hz:['妈','麻','马','骂'], word:['妈妈','麻花','小马','骂人']},
+  {base:'ba',   py:['bā','bá','bǎ','bà'],       hz:['八','拔','把','爸'], word:['八个','拔草','把手','爸爸']},
+  {base:'yi',   py:['yī','yí','yǐ','yì'],       hz:['衣','姨','椅','意'], word:['衣服','阿姨','椅子','主意']},
+  {base:'wu',   py:['wū','wú','wǔ','wù'],       hz:['屋','无','五','雾'], word:['屋子','无声','五个','大雾']},
+  {base:'hu',   py:['hū','hú','hǔ','hù'],       hz:['呼','湖','虎','户'], word:['呼吸','湖水','老虎','窗户']},
+  {base:'xi',   py:['xī','xí','xǐ','xì'],       hz:['西','习','洗','细'], word:['西瓜','学习','洗手','细心']},
+  {base:'wan',  py:['wān','wán','wǎn','wàn'],   hz:['弯','完','晚','万'], word:['弯腰','完成','晚上','一万']},
+  {base:'tang', py:['tāng','táng','tǎng','tàng'], hz:['汤','糖','躺','烫'], word:['喝汤','糖果','躺下','烫伤']},
+];
+function zhToneClip(base,t){ return zhClip('tone', base+'_'+t); }
+
 /* ---------------- 工具 ---------------- */
 function zhClip(kind, key){ return 'audio/zh/'+kind+'_'+key+'.m4a'; }
 function zhInitial(p){ return ZH_INITIALS.find(x=>x.p===p); }
@@ -175,6 +192,6 @@ function zhJudge(transcripts, target, pool){
 
 /* Node 环境导出（浏览器里这些是全局 const，不受影响） */
 if(typeof module!=='undefined' && module.exports){
-  module.exports={ZH_INITIALS,ZH_FINALS,ZH_BLENDS,zhClip,zhInitial,zhFinal,
-                  zhBlendDecoys,zhNormalize,zhHit,zhJudge};
+  module.exports={ZH_INITIALS,ZH_FINALS,ZH_BLENDS,ZH_TONES,zhClip,zhToneClip,
+                  zhInitial,zhFinal,zhBlendDecoys,zhNormalize,zhHit,zhJudge};
 }
