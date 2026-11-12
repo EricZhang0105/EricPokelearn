@@ -356,31 +356,35 @@ const CHINESE=[
       });
     }},
 
-  { id:'c-initial', title:'Initials 声母认读', emoji:'🎤',
-    desc:'看声母 → 大声读出来，读对才过关',
+  /* 认读课默认「听音选一选」：只播示范音，不显示答案拼音；
+   * canSpeak/kind/target/hint 保留，供题目下方「🎤 我来读」切换到跟读模式。 */
+  { id:'c-initial', title:'Initials 声母认读', emoji:'🎧',
+    desc:'听示范音 → 选声母（也可点「我来读」跟读）',
     make(){
       return shuffle(ZH_INITIALS).slice(0,8).map(t=>({
-        type:'speak', kind:'initial', target:t.p,
-        prompt:`读出这个声母 🎤`,
-        sub:`<span class="phonic-big">${t.p}</span>`,
-        speak:{ text:t.hz, lang:'zh-CN', clip:zhClip('initial',t.p) },
-        hint:`先点 🔊 听一听，再对着 🎤 大声读出来`,
-        explain:`声母 ${t.p} 读作「${t.hz}」，要读得又轻又短。`,
-        fallbackOptions:shuffle([t.p,...shuffle(INITIALS.filter(x=>x!==t.p)).slice(0,2)])
+        type:'choice', canSpeak:true, kind:'initial', target:t.p,
+        prompt:'🔊 听一听，选出这个声母',
+        sub:'点 🔊 可以再听一次，然后选出正确的拼音',
+        speak:{ text:t.hz, lang:'zh-CN', clip:zhClip('initial',t.p), autoplay:true },
+        options:shuffle([t.p,...shuffle(INITIALS.filter(x=>x!==t.p)).slice(0,2)]),
+        answer:t.p,
+        hint:'先点 🔊 听一听，再对着 🎤 大声读出来',
+        explain:`声母 ${t.p} 读作「${t.hz}」，要读得又轻又短。`
       }));
     }},
 
-  { id:'c-final', title:'Finals 韵母认读', emoji:'🎤',
-    desc:'看韵母 → 大声读出来，读对才过关',
+  { id:'c-final', title:'Finals 韵母认读', emoji:'🎧',
+    desc:'听示范音 → 选韵母（也可点「我来读」跟读）',
     make(){
       return shuffle(ZH_FINALS).slice(0,8).map(t=>({
-        type:'speak', kind:'final', target:t.p,
-        prompt:`读出这个韵母 🎤`,
-        sub:`<span class="phonic-big">${t.p}</span>`,
-        speak:{ text:t.hz, lang:'zh-CN', clip:zhClip('final',t.p) },
-        hint:`先点 🔊 听一听，再对着 🎤 大声读出来`,
-        explain:`韵母 ${t.p} 读作「${t.hz}」，要读得响亮。`,
-        fallbackOptions:shuffle([t.p,...shuffle(FINALS.filter(x=>x!==t.p)).slice(0,2)])
+        type:'choice', canSpeak:true, kind:'final', target:t.p,
+        prompt:'🔊 听一听，选出这个韵母',
+        sub:'点 🔊 可以再听一次，然后选出正确的拼音',
+        speak:{ text:t.hz, lang:'zh-CN', clip:zhClip('final',t.p), autoplay:true },
+        options:shuffle([t.p,...shuffle(FINALS.filter(x=>x!==t.p)).slice(0,2)]),
+        answer:t.p,
+        hint:'先点 🔊 听一听，再对着 🎤 大声读出来',
+        explain:`韵母 ${t.p} 读作「${t.hz}」，要读得响亮。`
       }));
     }},
 

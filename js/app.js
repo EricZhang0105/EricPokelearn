@@ -375,6 +375,8 @@ function renderQuestion(){
       h+=`<button class="option-btn" data-v="${o}">${label}</button>`;
     });
     h+=`</div>`;
+    if(q.canSpeak && Store.getSetting('mic'))
+      h+=`<button class="btn-link" id="speakModeBtn">🎤 我来读（读出声母/韵母，读对才过关）</button>`;
   } else if(q.type==='type'){
     h+=`<div class="type-area">
       <input class="type-input" id="typeInput" inputmode="text" autocomplete="off" />
@@ -392,7 +394,7 @@ function renderQuestion(){
       </div>
       <div class="mic-status" id="micStatus">读对了才过关哦 ⭐</div>
       <div class="replay-box hidden" id="replayBox"></div>
-      <button class="btn-link" id="choiceModeBtn">🎧 改用「听音选一选」</button>
+      <button class="btn-link" id="choiceModeBtn">🎧 改回「听音选一选」（推荐）</button>
     </div>`;
   }
   area.innerHTML=h;
@@ -415,7 +417,11 @@ function renderQuestion(){
     if(shouldAuto) setTimeout(()=>playSpeak(q.speak), 400);
   }
 
-  if(q.type==='choice') bindChoice(q,item);
+  if(q.type==='choice'){
+    bindChoice(q,item);
+    const sm=$('#speakModeBtn');
+    if(sm) sm.onclick=()=>showSpeakMode(q,item);
+  }
   else if(q.type==='type') bindType(q,item);
   else if(q.type==='build') bindBuild(q,item);
   else if(q.type==='speak') bindSpeak(q,item);
@@ -427,6 +433,8 @@ function bindChoice(q,item){
   $$('#optGrid .option-btn').forEach(btn=>{
     btn.onclick=()=>{
       if(answered) return; answered=true;
+      // 一旦作答就锁定模式，避免和自动跳下一题的定时器打架
+      const sm=$('#speakModeBtn'); if(sm) sm.disabled=true;
       const val=btn.dataset.v;
       const correct = val===q.answer;
       $$('#optGrid .option-btn').forEach(b=>{
@@ -446,17 +454,86 @@ function bindChoice(q,item){
   });
 }
 
-/* ---------- 语音跟读题（声母 / 韵母认读） ----------
+/* ---------- 认读课的两种模式：默认听音选一选，「我来读」是备用入口 ----------
+ * 同一道题可在两种模式间来回切换，共用 target / speak / explain，
+ * 切换不重开题目、不改进度、不重复计分；旧存档里的 speak 错题也能自动降级。
+ */
+function asChoice(q){
+  if(q.type==='choice') return Object.assign({},q,{canSpeak:true});
+  return Object.assign({},q,{
+    type:'choice', canSpeak:true,
+    prompt:`🔊 听一听，选出这个${q.kind==='initial'?'声母':'韵母'}`,
+    sub:'点 🔊 可以再听一次，然后选出正确的拼音',
+    options:q.options||q.fallbackOptions||[], answer:q.target
+  });
+}
+function asSpeak(q){
+  if(q.type==='speak') return q;
+  return Object.assign({},q,{
+    type:'speak',
+    prompt:`读出这个${q.kind==='initial'?'声母':'韵母'} 🎤`,
+    sub:`<span class="phonic-big">${q.target}</span>`,
+    hint:q.hint||'先点 🔊 听一听，再对着 🎤 大声读出来',
+    fallbackOptions:q.options||q.fallbackOptions||[]
+  });
+}
+function choiceCardHTML(cq){
+  let h=`<div class="q-prompt">${cq.prompt}</div><div class="q-sub">${cq.sub}</div>`;
+  if(cq.speak) h+=`<button class="speak-btn" id="speakBtn">🔊 Listen</button>`;
+  h+=`<div class="option-grid ${cq.tone?'tone-grid':''}" id="optGrid">`+
+     cq.options.map((o,i)=>{
+       const label=(cq.tone && cq.optionMarks)
+         ? `<span class="tone-mark">${cq.optionMarks[i]}</span><span class="tone-name">${o}</span>` : o;
+       return `<button class="option-btn" data-v="${o}">${label}</button>`;
+     }).join('')+`</div>`;
+  if(cq.canSpeak && Store.getSetting('mic'))
+    h+=`<button class="btn-link" id="speakModeBtn">🎤 我来读（读出声母/韵母，读对才过关）</button>`;
+  return h;
+}
+function speakCardHTML(sq){
+  return `<div class="q-prompt">${sq.prompt}</div>
+    <div class="q-sub">${sq.sub}</div>
+    <div class="speak-card">
+      <div class="speak-hint">${sq.hint||'大声读出来吧！'}</div>
+      <div class="speak-actions">
+        <button class="btn-secondary" id="demoBtn">🔊 听示范</button>
+        <button class="btn-primary" id="micBtn">🎤 我来读</button>
+      </div>
+      <div class="mic-status" id="micStatus">读对了才过关哦 ⭐</div>
+      <div class="replay-box hidden" id="replayBox"></div>
+      <button class="btn-link" id="choiceModeBtn">🎧 改回「听音选一选」（推荐）</button>
+    </div>`;
+}
+function clearFeedback(){
+  const fb=$('#feedback'); fb.className='feedback hidden'; fb.innerHTML='';
+}
+function showChoiceMode(q,item,replay){
+  stopSpeechInput(); clearFeedback();
+  const cq=asChoice(q);
+  $('#questionArea').innerHTML=choiceCardHTML(cq);
+  const sb=$('#speakBtn'); if(sb) sb.onclick=()=>playSpeak(cq.speak);
+  const sm=$('#speakModeBtn'); if(sm) sm.onclick=()=>showSpeakMode(cq,item);
+  bindChoice(cq,item);
+  if(replay!==false && cq.speak) setTimeout(()=>playSpeak(cq.speak), 300);
+}
+function showSpeakMode(q,item){
+  stopSpeechInput(); clearFeedback();
+  const sq=asSpeak(q);
+  $('#questionArea').innerHTML=speakCardHTML(sq);
+  const db=$('#demoBtn'); if(db) db.onclick=()=>playSpeak(sq.speak);
+  bindSpeak(sq,item);
+}
+
+/* ---------- 语音跟读题（声母 / 韵母认读，作为备用模式） ----------
  * 三条路径按设备能力自动切换，保证孩子不会被卡住：
  *  A 浏览器语音识别可用 → 真正判音，读对才过关（HTTPS + 联网，Chrome 系）
  *  B 识别不可用但能录音 → 录音回放 + 家长确认（iPad Safari 常见）
- *  C 完全不支持 / 家长关闭 → 听音选一选（离线可用，仍可验证）
+ *  C 完全不支持 / 家长关闭 → 听音选一选（默认模式，离线可用）
  * 匹配逻辑见 js/zh-phonics.js 的 zhJudge（同音字白名单）。
  */
 const SR_CLASS = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 function bindSpeak(q,item){
-  const area=$('#questionArea');
   const status=$('#micStatus'), micBtn=$('#micBtn');
   const pool=(typeof ZH_INITIALS!=='undefined' && q.kind==='initial') ? ZH_INITIALS : ZH_FINALS;
   const target=pool.find(x=>x.p===q.target) || pool[0];
@@ -467,7 +544,7 @@ function bindSpeak(q,item){
   function highlightFallback(){
     const b=$('#choiceModeBtn'); if(!b) return;
     b.classList.add('primary');
-    b.textContent='🎧 改用「听音选一选」（推荐）';
+    b.textContent='🎧 改回「听音选一选」（推荐）';
   }
   function cleanup(){
     if(rec){ try{ rec.onresult=null; rec.onend=null; rec.onerror=null; rec.abort(); }catch(e){} rec=null; }
@@ -493,24 +570,11 @@ function bindSpeak(q,item){
     if(tries>=3) highlightFallback();
   }
 
-  /* C：切换成听音辨音选择题 */
+  /* C：切回默认模式「听音选一选」 */
   function switchToChoice(){
     if(done) return;
     cleanup(); _stopSpeechInput=null;
-    const cq=Object.assign({},q,{
-      type:'choice',
-      prompt:`🔊 听一听，选出这个${q.kind==='initial'?'声母':'韵母'}`,
-      sub:'点 🔊 可以再听一次，然后选出正确的拼音',
-      options:q.fallbackOptions||[], answer:q.target
-    });
-    area.innerHTML=`<div class="q-prompt">${cq.prompt}</div>
-      <div class="q-sub">${cq.sub}</div>
-      <button class="speak-btn" id="speakBtn">🔊 Listen</button>
-      <div class="option-grid" id="optGrid">`+
-      cq.options.map(o=>`<button class="option-btn" data-v="${o}">${o}</button>`).join('')+`</div>`;
-    $('#speakBtn').onclick=()=>playSpeak(q.speak);
-    bindChoice(cq,item);
-    setTimeout(()=>playSpeak(q.speak), 300);
+    showChoiceMode(q,item,true);
   }
 
   /* A：语音识别判音 */
@@ -537,9 +601,9 @@ function bindSpeak(q,item){
         got=true;
         const k=e.error||'';
         if(k==='not-allowed'||k==='service-not-allowed'){
-          setStatus('🎙️ 麦克风没开：请家长允许后重试，或改用听音选一选','bad'); highlightFallback();
+          setStatus('🎙️ 麦克风没开：请家长允许后重试，或改回「听音选一选」','bad'); highlightFallback();
         }else if(k==='network'){
-          setStatus('🌐 语音识别需要联网，可改用听音选一选','bad'); highlightFallback();
+          setStatus('🌐 语音识别需要联网，可改回「听音选一选」','bad'); highlightFallback();
         }else if(k!=='aborted'){ retry('没听清，再读一次～'); }
       };
       rec.onend=()=>{
@@ -570,7 +634,7 @@ function bindSpeak(q,item){
     if(done) return;
     const md=navigator.mediaDevices;
     if(!md || !md.getUserMedia || !window.MediaRecorder){
-      setStatus('这台设备不能录音，请改用「听音选一选」','bad'); highlightFallback(); return;
+      setStatus('这台设备不能录音，请改回「听音选一选」','bad'); highlightFallback(); return;
     }
     try{
       stream=await md.getUserMedia({audio:true});
@@ -599,7 +663,7 @@ function bindSpeak(q,item){
       if(micBtn){ micBtn.disabled=true; micBtn.textContent='🎙️ 录音中…'; }
       setTimeout(()=>{ try{ if(recorder && recorder.state==='recording') recorder.stop(); }catch(e){} }, 2200);
     }catch(err){
-      setStatus('麦克风打不开：请家长检查权限，或改用听音选一选','bad');
+      setStatus('麦克风打不开：请家长检查权限，或改回「听音选一选」','bad');
       highlightFallback();
       if(micBtn) micBtn.disabled=false;
     }
@@ -910,9 +974,9 @@ function renderParent(){
       <h3>Settings</h3>
       <label class="setting-row"><input type="checkbox" id="optAutoread" ${Store.getSetting('autoread')?'checked':''}/> 🔊 Auto read questions aloud（自动读题，使用高清录音）</label>
       <label class="setting-row"><input type="checkbox" id="optSound" ${Store.getSetting('sound')?'checked':''}/> 🔔 Sound effects &amp; Pokémon cheers（音效 + 宝可梦鼓励语）</label>
-      <label class="setting-row"><input type="checkbox" id="optZhread" ${Store.getSetting('zhread')?'checked':''}/> 🧩 中文自动播报（拼读 + 声调练习，进题就念一遍）</label>
-      <label class="setting-row"><input type="checkbox" id="optMic" ${Store.getSetting('mic')?'checked':''}/> 🎤 语音跟读题（读出声母/韵母，读对才过关）</label>
-      <p class="muted" style="font-size:13px;line-height:1.5">跟读读对时，所选宝可梦会叫一声为孩子欢呼（跟「🔔 音效」开关联动）。关闭语音跟读后，认读题自动变成「听音选一选」。语音识别需 Chrome/Edge + 联网；iPad 不支持时会自动降级为「录音回放 + 家长确认」。</p>
+      <label class="setting-row"><input type="checkbox" id="optZhread" ${Store.getSetting('zhread')?'checked':''}/> 🧩 中文自动播报（认读 / 拼读 / 声调，进题就念一遍）</label>
+      <label class="setting-row"><input type="checkbox" id="optMic" ${Store.getSetting('mic')?'checked':''}/> 🎤 显示「我来读」跟读入口（认读课默认听音选一选）</label>
+      <p class="muted" style="font-size:13px;line-height:1.5">声母 / 韵母认读默认用「听音选一选」，点题目下方的「🎤 我来读」才切到跟读判音，读对时宝可梦会叫一声为孩子欢呼（跟「🔔 音效」开关联动）。关闭本开关会隐藏「我来读」入口，整节课只做听音选一选。语音识别需 Chrome/Edge + 联网；iPad 不支持时会自动降级为「录音回放 + 家长确认」。</p>
     </div>
 
     <div class="parent-block">

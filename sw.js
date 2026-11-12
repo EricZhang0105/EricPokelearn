@@ -1,11 +1,11 @@
 /* PokeLearn service worker — offline-capable PWA
- * 缓存策略（v5）：
+ * 缓存策略（v6）：
  * - HTML / JS / CSS / manifest：网络优先，断网回退缓存 → 改版后孩子设备立刻拿到新版本
  * - 图片（精灵图、图标）：缓存优先 → 秒开且省流量
  * - 中文音频：安装时预缓存（157 段 / 1.6MB，含四声示范音），第一次打开就能离线听
  * 改了静态文件后请把 CACHE 里的版本号 +1，强制刷新图片缓存。
  */
-const CACHE = 'pokelearn-v5';
+const CACHE = 'pokelearn-v6';
 const SHELL = [
   './',
   './index.html',
