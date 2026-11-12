@@ -475,3 +475,28 @@ body{
   .topbar-title{font-size:16px;}
   .companion-badge{padding:4px 8px;font-size:14px;}
 }
+
+/* =========================================================
+   v13：选宝可梦改成 8 列 —— 一屏能看到更多伙伴，格子更紧凑
+   ========================================================= */
+.modal-card.picker-card{max-width:920px;}
+.poke-picker{grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;align-content:start;}
+.poke-picker .poke-opt{padding:8px 4px;border-width:3px;border-radius:14px;}
+.poke-picker .poke-opt .face{height:50px;}
+.poke-picker .poke-opt .poke-img{width:50px;height:50px;font-size:44px;}
+.poke-picker .poke-opt .nm{font-size:12px;line-height:1.15;margin-top:2px;}
+.poke-picker .poke-opt .cn{font-size:10px;line-height:1.1;}
+.poke-picker .poke-opt .stage{font-size:9px;line-height:1.15;}
+/* 屏幕变窄时逐级减列，格子不会被挤成一条 */
+@media(max-width:700px){
+  .poke-picker{grid-template-columns:repeat(6,minmax(0,1fr));}
+  .poke-picker .poke-opt{padding:7px 3px;}
+  .poke-picker .poke-opt .face{height:44px;}
+  .poke-picker .poke-opt .poke-img{width:44px;height:44px;font-size:38px;}
+  .poke-picker .poke-opt .nm{font-size:11px;}
+}
+@media(max-width:480px){
+  .poke-picker{grid-template-columns:repeat(4,minmax(0,1fr));}
+  .poke-picker .poke-opt .face{height:42px;}
+  .poke-picker .poke-opt .poke-img{width:42px;height:42px;font-size:36px;}
+}
