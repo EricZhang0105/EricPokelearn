@@ -34,6 +34,28 @@ function speak(text,lang){
   }catch(e){}
 }
 
+/* ---------- 轻量音效（WebAudio 合成，无需音频文件） ---------- */
+let _actx=null;
+function tone(freq,t0,dur,type,vol){
+  const c=_actx, o=c.createOscillator(), g=c.createGain();
+  o.type=type||'sine'; o.frequency.value=freq;
+  g.gain.setValueAtTime(0.0001,c.currentTime+t0);
+  g.gain.exponentialRampToValueAtTime(vol||0.18,c.currentTime+t0+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+t0+dur);
+  o.connect(g).connect(c.destination);
+  o.start(c.currentTime+t0); o.stop(c.currentTime+t0+dur+0.05);
+}
+function sfx(kind){
+  if(!Store.getSetting('sound')) return;
+  try{
+    if(!_actx) _actx=new (window.AudioContext||window.webkitAudioContext)();
+    if(_actx.state==='suspended') _actx.resume();
+    if(kind==='good'){ tone(523,0,0.12); tone(659,0.10,0.12); tone(784,0.20,0.18); }
+    else if(kind==='bad'){ tone(220,0,0.15,'triangle',0.10); tone(180,0.12,0.2,'triangle',0.10); }
+    else if(kind==='evolve'){ [523,659,784,1047].forEach((f,i)=>tone(f,i*0.12,0.22)); }
+  }catch(e){}
+}
+
 /* ---------- 存档状态提示 ---------- */
 function updateStorageUI(){
   const warn=$('#storageWarn');
@@ -50,11 +72,14 @@ function updateStorageUI(){
   }
 }
 function flashSaved(){
+  toastMsg(Store.available ? '💾 Progress saved!' : '⚠️ Open via the app to save');
+}
+function toastMsg(msg){
   const t=$('#toast'); if(!t) return;
-  t.textContent = Store.available ? '💾 Progress saved!' : '⚠️ Open via the app to save';
+  t.textContent = msg;
   t.classList.remove('hidden'); t.classList.add('show');
-  clearTimeout(flashSaved._t);
-  flashSaved._t=setTimeout(()=>{ t.classList.remove('show'); t.classList.add('hidden'); }, 1700);
+  clearTimeout(toastMsg._t);
+  toastMsg._t=setTimeout(()=>{ t.classList.remove('show'); t.classList.add('hidden'); }, 2200);
 }
 window.__onSaved = updateStorageUI;
 
@@ -164,7 +189,12 @@ $('#confirmPokemonBtn').onclick=()=>{
   $('#pokemonModal').classList.add('hidden');
   beginSession(pendingLesson.subject,pendingLesson.lessonId);
 };
-$('#homeBtn').onclick=()=>show('screen-home');
+$('#homeBtn').onclick=()=>{
+  // 课程做一半离开会丢本次进度，先跟小朋友确认一下
+  const inLesson = !$('#screen-lesson').classList.contains('hidden') && state.idx < state.total;
+  if(inLesson && !confirm('Leave this lesson? The questions in this lesson will not be saved.')) return;
+  show('screen-home');
+};
 $('#openMistakesBtn').onclick=()=>openMistakes();
 $('#evolveCloseBtn').onclick=()=>{ $('#evolveModal').classList.add('hidden'); showResult(); };
 $('#parentBtn').onclick=()=>show('screen-parent');
@@ -242,6 +272,8 @@ function renderQuestion(){
     if(q.speak) setTimeout(()=>speak(q.speak.text,q.speak.lang), 500);
   } else if(q.speak){
     $('#speakBtn').onclick=()=>speak(q.speak.text,q.speak.lang);
+    // 自动读题：孩子还不太识字，题目带朗读配置时自动念出来（家长端可关）
+    if(Store.getSetting('autoread')) setTimeout(()=>speak(q.speak.text,q.speak.lang), 400);
   }
 
   if(q.type==='choice') bindChoice(q,item);
@@ -263,9 +295,11 @@ function bindChoice(q,item){
       });
       if(correct){
         btn.classList.add('correct'); state.correct++; onCorrect(item);
+        sfx('good');
         showFeedback(true,q.explain,true);
       }else{
         btn.classList.add('wrong');
+        sfx('bad');
         showFeedback(false, q.explain, false, ()=>recordWrong(item,val,q));
       }
     };
@@ -283,9 +317,11 @@ function bindType(q,item){
     const correct = val===q.answer.toLowerCase();
     if(correct){
       state.correct++; onCorrect(item);
+      sfx('good');
       $('#checkBtn').disabled=true; input.disabled=true; hideKeyboard();
       showFeedback(true,q.explain,true);
     }else{
+      sfx('bad');
       input.disabled=true; hideKeyboard();
       showFeedback(false,`Spell it: ${q.answer}`,false,()=>recordWrong(item,val,q));
     }
@@ -293,31 +329,36 @@ function bindType(q,item){
 }
 
 /* ---------- 句子建构题 ---------- */
+/* 用下标跟踪所选词块：句子里出现重复单词（如两个 the）时不会互相干扰 */
 function bindBuild(q,item){
   const pool=$('#buildPool'); const answer=$('#buildAnswer');
-  let chosen=[];
+  let chosen=[];   // 存 q.tiles 的下标
   const render=()=>{
+    const used=new Set(chosen);
     pool.innerHTML='';
-    q.tiles.filter(t=>!chosen.includes(t)).forEach(t=>{
+    q.tiles.forEach((t,i)=>{
+      if(used.has(i)) return;
       const b=document.createElement('button'); b.className='tile'; b.textContent=t;
-      b.onclick=()=>{ chosen.push(t); render(); };
+      b.onclick=()=>{ chosen.push(i); render(); };
       pool.appendChild(b);
     });
     answer.innerHTML='';
-    chosen.forEach((t,i)=>{
-      const b=document.createElement('button'); b.className='tile'; b.textContent=t;
-      b.onclick=()=>{ chosen.splice(i,1); render(); };
+    chosen.forEach((idx,pos)=>{
+      const b=document.createElement('button'); b.className='tile'; b.textContent=q.tiles[idx];
+      b.onclick=()=>{ chosen.splice(pos,1); render(); };
       answer.appendChild(b);
     });
     if(!answer.querySelector('.check-build')){
       const c=document.createElement('button'); c.className='check-btn check-build'; c.textContent='Check ✓';
       c.onclick=()=>{
-        const joined=chosen.join(' ');
+        const joined=chosen.map(i=>q.tiles[i]).join(' ');
         const correct = joined===q.answer;
         if(correct){
           state.correct++; onCorrect(item); c.disabled=true;
+          sfx('good');
           showFeedback(true,'Great! Sentence complete!',true);
         }else{
+          sfx('bad');
           showFeedback(false,'Try the right order again~',false,()=>recordWrong(item,joined,q),true);
         }
       };
@@ -412,6 +453,7 @@ function showEvolve(id,stage){
     <br><b>${prev.name} → ${st.name}</b>`;
   $('#evolveModal').classList.remove('hidden');
   bindPokeImages($('#evolveStage'));
+  sfx('evolve');
 }
 
 function showResult(){
@@ -523,11 +565,59 @@ function renderParent(){
     </div>
 
     <div class="parent-block">
+      <h3>Settings</h3>
+      <label class="setting-row"><input type="checkbox" id="optAutoread" ${Store.getSetting('autoread')?'checked':''}/> 🔊 Auto read questions aloud（自动读题）</label>
+      <label class="setting-row"><input type="checkbox" id="optSound" ${Store.getSetting('sound')?'checked':''}/> 🔔 Sound effects（音效）</label>
+    </div>
+
+    <div class="parent-block">
+      <h3>Backup &amp; Restore</h3>
+      <p class="muted">进度存在这台设备上。换 iPad / 手机前，先在这里导出存档，再到新设备导入。</p>
+      <div class="backup-row">
+        <button class="btn-secondary" id="exportBtn">⬇️ Export save file</button>
+        <button class="btn-secondary" id="importBtn">⬆️ Import save file</button>
+      </div>
+      <input type="file" id="importFile" accept=".json,application/json" class="hidden"/>
+    </div>
+
+    <div class="parent-block">
       <button class="btn-secondary" id="parentHomeBtn">← Back to Home</button>
       <button class="btn-danger" id="resetBtn">Reset all data</button>
     </div>`;
 
   $('#parentHomeBtn').onclick=()=>show('screen-home');
+  $('#optAutoread').onchange=e=>Store.setSetting('autoread', e.target.checked);
+  $('#optSound').onchange=e=>Store.setSetting('sound', e.target.checked);
+
+  // 导出：存档下载为 JSON 文件
+  $('#exportBtn').onclick=()=>{
+    try{
+      const blob=new Blob([Store.exportSave()],{type:'application/json'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='pokelearn-save-'+todayStr()+'.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+      toastMsg('⬇️ Save file downloaded');
+    }catch(e){ toastMsg('Export failed: '+e.message); }
+  };
+
+  // 导入：读取 JSON 文件并恢复（覆盖当前进度，导入前二次确认）
+  $('#importBtn').onclick=()=>$('#importFile').click();
+  $('#importFile').onchange=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      if(confirm('Import this save? Current progress on this device will be REPLACED.')){
+        const ok=Store.importSave(String(reader.result));
+        toastMsg(ok ? '✅ Save imported!' : '❌ Not a valid save file');
+        renderParent();
+      }
+      e.target.value='';
+    };
+    reader.readAsText(f);
+  };
+
   $('#resetBtn').onclick=()=>{
     if(confirm('Reset ALL progress (Pokémon, mistakes, stats)? This cannot be undone.')){
       Store.resetAll();

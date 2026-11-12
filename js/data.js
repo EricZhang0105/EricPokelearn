@@ -10,9 +10,10 @@
 const ENERGY_PER_STAGE = 100;   // 每阶所需能量
 const ENERGY_PER_LESSON = 20;   // 每完成一课获得能量
 
-/* 官方高清精灵图（PokeAPI，离线可缓存） */
+/* 官方高清精灵图（已本地化到 img/pokemon/，断网可用；缺失时 UI 会退回 emoji）
+ * 如新增宝可梦：在 POKEMON 里加 imgId 后运行 node fetch_sprites.js 补图 */
 function pokeImg(id){
-  return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/'+id+'.png';
+  return 'img/pokemon/'+id+'.png';
 }
 
 /* ---------------- 宝可梦库（可自由增删） ---------------- */

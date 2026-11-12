@@ -1,0 +1,10 @@
+{
+  "name": "pokelearn",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Kids learning PWA (English/Chinese/Math) with Pokemon evolution rewards",
+  "scripts": {
+    "start": "node serve.js",
+    "sprites": "node fetch_sprites.js"
+  }
+}

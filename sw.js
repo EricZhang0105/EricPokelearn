@@ -1,5 +1,10 @@
-/* PokeLearn service worker — offline-capable PWA */
-const CACHE = 'pokelearn-v1';
+/* PokeLearn service worker — offline-capable PWA
+ * 缓存策略（v2）：
+ * - HTML / JS / CSS / manifest：网络优先，断网回退缓存 → 改版后孩子设备立刻拿到新版本
+ * - 图片（精灵图、图标）：缓存优先 → 秒开且省流量
+ * 改了静态文件后请把 CACHE 里的版本号 +1，强制刷新图片缓存。
+ */
+const CACHE = 'pokelearn-v2';
 const SHELL = [
   './',
   './index.html',
@@ -9,6 +14,7 @@ const SHELL = [
   './js/app.js',
   './manifest.webmanifest'
 ];
+const IMG_EXT = /\.(png|jpe?g|svg|webp|gif)$/i;
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -28,33 +34,28 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;   // 精灵图已本地化，跨域请求基本不再出现
 
-  // 同源静态资源：缓存优先，回退网络并写入缓存
-  if (url.origin === self.location.origin) {
+  // 图片：缓存优先（内容不变，改版靠版本号清理）
+  if (IMG_EXT.test(url.pathname)) {
     e.respondWith(
       caches.match(req).then(r =>
         r || fetch(req).then(res => {
           const cp = res.clone();
           caches.open(CACHE).then(c => c.put(req, cp));
           return res;
-        }).catch(() => caches.match('./index.html'))
+        })
       )
     );
     return;
   }
 
-  // 跨域：PokeAPI 官方精灵图 —— 运行时缓存（首访后离线可用）
-  if (url.hostname.endsWith('raw.githubusercontent.com') ||
-      url.hostname.endsWith('githubusercontent.com')) {
-    e.respondWith(
-      caches.match(req).then(r =>
-        r || fetch(req).then(res => {
-          const cp = res.clone();
-          caches.open(CACHE).then(c => c.put(req, cp));
-          return res;
-        }).catch(() => new Response('', { status: 404 }))
-      )
-    );
-    return;
-  }
+  // 其余（HTML/JS/CSS/manifest）：网络优先，断网回退缓存
+  e.respondWith(
+    fetch(req).then(res => {
+      const cp = res.clone();
+      caches.open(CACHE).then(c => c.put(req, cp));
+      return res;
+    }).catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
+  );
 });

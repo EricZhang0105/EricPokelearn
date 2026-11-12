@@ -36,12 +36,32 @@ const Store = {
     this.data.lessonDone = this.data.lessonDone || {};
     this.data.mistakes = this.data.mistakes || [];
     this.data.attempts = this.data.attempts || [];
+    this.data.settings = this.sanitizeSettings(this.data.settings);
     this.data.currentSession = this.data.currentSession || Date.now();
     return this.data;
   },
+  sanitizeSettings(s){
+    s = s && typeof s==='object' ? s : {};
+    return { autoread: s.autoread!==false, sound: s.sound!==false };
+  },
+  /* 导入存档前的结构校验与修补（导入文件可能是旧版/手工编辑过） */
+  sanitize(d){
+    if(!d || typeof d!=='object') return null;
+    const p={}; POKEMON.forEach(pk=>p[pk.id]={energy: Math.max(0, Number(d.pokemon&&d.pokemon[pk.id]&&d.pokemon[pk.id].energy)||0)});
+    return {
+      pokemon: p,
+      lessonDone: (d.lessonDone && typeof d.lessonDone==='object') ? d.lessonDone : {},
+      mistakes: Array.isArray(d.mistakes) ? d.mistakes.filter(m=>m && m.q && m.subject) : [],
+      attempts: Array.isArray(d.attempts) ? d.attempts.filter(a=>a && a.date) : [],
+      settings: this.sanitizeSettings(d.settings),
+      lastSession: d.lastSession||null,
+      currentSession: d.currentSession||Date.now()
+    };
+  },
   fresh(){
     const p={}; POKEMON.forEach(pk=>p[pk.id]={energy:0});
-    return { pokemon:p, lessonDone:{}, mistakes:[], attempts:[], lastSession:null, currentSession:Date.now() };
+    return { pokemon:p, lessonDone:{}, mistakes:[], attempts:[],
+             settings:{ autoread:true, sound:true }, lastSession:null, currentSession:Date.now() };
   },
   save(){
     try{
@@ -149,7 +169,26 @@ const Store = {
   },
   // 家长端：清空所有数据（谨慎）
   resetAll(){
+    const settings=this.data.settings;
     this.data = this.fresh();
+    this.data.settings = settings || this.data.settings;
     this.save();
-  }
+  },
+  // 家长端：导出存档为可下载的 JSON（换设备 / 备份）
+  exportSave(){
+    return JSON.stringify(this.data, null, 2);
+  },
+  // 家长端：从 JSON 文本恢复存档，成功返回 true
+  importSave(text){
+    let d=null;
+    try{ d=JSON.parse(text); }catch(e){ return false; }
+    const clean=this.sanitize(d);
+    if(!clean) return false;
+    this.data=clean;
+    this.save();
+    return true;
+  },
+  // 设置项
+  getSetting(k){ return this.data.settings ? this.data.settings[k]!==false : true; },
+  setSetting(k,v){ this.data.settings[k]=v; this.save(); }
 };
