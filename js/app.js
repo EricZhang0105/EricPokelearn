@@ -13,16 +13,34 @@ const state = {
 };
 
 /* ---------- 屏幕切换 ---------- */
+/* 悬浮错题本按钮在哪些界面出现：首页 / 课程列表 / 书架 / 阅读记录。
+ * 上课、结果页、绘本阅读器、家长端、错题本本身不显示，免得挡住题目和按钮。 */
+const FAB_SCREENS=['screen-home','screen-subject','screen-library','screen-reading-log'];
 function show(id){
   $$('.screen').forEach(s=>s.classList.add('hidden'));
   $('#keyboard').classList.add('hidden');
   $('#'+id).classList.remove('hidden');
   $('#topbar').classList.toggle('hidden', id==='screen-home');
   $('#backBtn').classList.toggle('hidden', id==='screen-home');
+  updateMistakeFab(FAB_SCREENS.includes(id));
   if(id==='screen-home') renderHome();
   if(id==='screen-parent') renderParent();
   if(id==='screen-library') renderLibrary();
 }
+
+/* 悬浮错题本：有错题时红底感叹号 + 数字；没有错题时变绿勾，喷火龙照样在 */
+function updateMistakeFab(visible){
+  const fab=$('#mistakeFab'); if(!fab) return;
+  const n=Store.allMistakes().length;
+  if(typeof visible==='boolean') fab.classList.toggle('hidden', !visible);
+  fab.classList.toggle('ok', n===0);
+  $('#fabAlertMark').textContent = n ? '!' : '✓';
+  const cnt=$('#fabCount');
+  cnt.textContent = n;
+  cnt.classList.toggle('hidden', n===0);
+  fab.title = n ? `${n} mistake${n>1?'s':''} to review` : 'No mistakes — great job!';
+}
+
 
 /* ---------- 返回上一级菜单 ----------
  * 每个界面都有「← Back」，回到它上一层菜单，而不是只能跳回首页：
@@ -227,11 +245,7 @@ function bindPokeImages(root){
 /* ---------- 首页 ---------- */
 function renderHome(){
   renderCollection();
-  const ms=Store.allMistakes();
-  $('#mistakeSummary').textContent = ms.length
-    ? `${ms.length} mistake${ms.length>1?'s':''} to review 💪`
-    : 'No mistakes yet — great job!';
-  $('#openMistakesBtn').classList.toggle('hidden', ms.length===0);
+  updateMistakeFab();
   // 绘本库入口：顺手显示阅读进度
   const libSub = $('#libraryEntry .subject-sub');
   if(libSub && typeof availableBooks==='function'){
@@ -428,7 +442,7 @@ $('#cancelPickBtn').onclick=closePokemonPicker;
 $('#pokemonModal').addEventListener('click',e=>{
   if(e.target.id==='pokemonModal') closePokemonPicker();
 });
-$('#openMistakesBtn').onclick=()=>openMistakes();
+$('#mistakeFab').onclick=()=>openMistakes();
 $('#evolveCloseBtn').onclick=()=>{ $('#evolveModal').classList.add('hidden'); showResult(); };
 $('#parentBtn').onclick=()=>show('screen-parent');
 

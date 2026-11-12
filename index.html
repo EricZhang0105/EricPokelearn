@@ -66,11 +66,6 @@
           <h2>🐾 My Pokémon</h2>
           <div class="poke-collection" id="pokeCollection"></div>
         </div>
-        <div class="panel" id="mistakePanel">
-          <h2>📒 Mistake Book</h2>
-          <p id="mistakeSummary" class="muted">No mistakes yet — great job!</p>
-          <button class="btn-secondary" id="openMistakesBtn">View mistake book</button>
-        </div>
       </div>
     </section>
 
@@ -200,6 +195,14 @@
 
   <!-- 屏幕键盘容器 -->
   <div id="keyboard" class="keyboard hidden"></div>
+
+  <!-- 悬浮错题本入口：喷火龙 + 头顶红色感叹号（有错题时显示数字） -->
+  <button id="mistakeFab" class="mistake-fab hidden" aria-label="Mistake Book 错题本">
+    <span class="fab-alert"><span id="fabAlertMark">!</span></span>
+    <img class="fab-img" src="img/pokemon/6.webp" alt="" onerror="this.classList.add('hidden');this.parentNode.classList.add('no-img');">
+    <span class="fab-emoji">🔥</span>
+    <span class="fab-count hidden" id="fabCount">0</span>
+  </button>
 
   <!-- 保存提示气泡 -->
   <div id="toast" class="toast hidden"></div>

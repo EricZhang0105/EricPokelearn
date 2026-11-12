@@ -500,3 +500,58 @@ body{
   .poke-picker .poke-opt .face{height:42px;}
   .poke-picker .poke-opt .poke-img{width:42px;height:42px;font-size:36px;}
 }
+
+/* =========================================================
+   v14：首页「我的宝可梦」8 列 + 悬浮错题本（喷火龙 + 头顶红色感叹号）
+   ========================================================= */
+.home-panels{grid-template-columns:1fr;}
+.poke-collection{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;}
+.poke-chip{width:auto;min-width:0;padding:6px 3px;border-radius:12px;overflow:hidden;}
+.poke-chip .face{height:44px;}
+.poke-chip .poke-img{width:44px;height:44px;font-size:34px;}
+.poke-chip .nm{font-size:10.5px;line-height:1.12;margin-top:2px;overflow-wrap:anywhere;}
+.poke-chip .cn{font-size:9px;line-height:1.1;}
+.poke-chip .ebar{height:6px;margin-top:4px;}
+.poke-chip .est{font-size:8.5px;line-height:1.1;}
+.poke-chip .chip-branch{font-size:8.5px;margin-top:2px;padding:1px 3px;}
+
+/* 悬浮错题本按钮：喷火龙头顶一枚红色感叹号 */
+.mistake-fab{position:fixed;right:18px;bottom:20px;width:84px;height:84px;border-radius:50%;
+  border:4px solid #FFD9B0;background:#FFFDF6;box-shadow:0 8px 20px rgba(0,0,0,.22);
+  padding:0;cursor:pointer;z-index:45;display:flex;align-items:flex-end;justify-content:center;
+  overflow:visible;transition:transform .12s;}
+.mistake-fab:active{transform:scale(.93);}
+.mistake-fab.hidden{display:none !important;}
+.mistake-fab .fab-img{width:66px;height:66px;object-fit:contain;margin-bottom:2px;pointer-events:none;}
+.mistake-fab .fab-emoji{display:none;font-size:34px;line-height:1;margin-bottom:12px;}
+.mistake-fab.no-img .fab-emoji{display:block;}
+.mistake-fab .fab-alert{position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  width:34px;height:34px;border-radius:50%;background:#FF3B30;color:#fff;
+  font-weight:900;font-size:22px;line-height:28px;text-align:center;
+  border:3px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.28);
+  animation:fabPulse 1.5s ease-in-out infinite;}
+.mistake-fab.ok .fab-alert{background:#46C98B;animation:none;}
+@keyframes fabPulse{
+  0%,100%{transform:translateX(-50%) scale(1);}
+  50%{transform:translateX(-50%) scale(1.14);}
+}
+.mistake-fab .fab-count{position:absolute;right:-4px;bottom:-2px;min-width:26px;height:26px;
+  border-radius:13px;background:#FF7A2F;color:#fff;font-size:13px;font-weight:800;
+  line-height:22px;text-align:center;padding:0 6px;border:2px solid #fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);}
+
+@media(max-width:700px){
+  .poke-collection{grid-template-columns:repeat(6,minmax(0,1fr));}
+  .poke-chip .face{height:40px;}
+  .poke-chip .poke-img{width:40px;height:40px;font-size:32px;}
+  .poke-chip .nm{font-size:10px;}
+  .mistake-fab{width:74px;height:74px;right:14px;bottom:16px;}
+  .mistake-fab .fab-img{width:58px;height:58px;}
+}
+@media(max-width:480px){
+  .poke-collection{grid-template-columns:repeat(4,minmax(0,1fr));}
+  .poke-chip .nm{font-size:9.5px;}
+  .mistake-fab{width:66px;height:66px;}
+  .mistake-fab .fab-img{width:52px;height:52px;}
+  .mistake-fab .fab-alert{width:28px;height:28px;font-size:18px;line-height:22px;top:-10px;}
+}
