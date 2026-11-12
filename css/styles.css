@@ -128,6 +128,10 @@ body{
 
 /* 打字题 */
 .type-area{text-align:center;margin-top:8px;}
+.type-hint{font-size:16px;color:#8A6A3A;margin-bottom:8px;letter-spacing:2px;}
+/* 语法题：把空格标出来，句子本身放大好读 */
+.gram-sent{font-size:21px;font-weight:600;line-height:1.55;letter-spacing:.3px;}
+.gram-sent b{color:#FF8A3D;text-decoration:underline;}
 .type-input{font:inherit;font-size:30px;text-align:center;width:70%;max-width:320px;
   padding:12px;border:3px solid #FFD9B0;border-radius:16px;background:#FFFDF6;color:var(--ink);
   -webkit-user-select:text;user-select:text;}

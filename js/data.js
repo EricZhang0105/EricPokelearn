@@ -179,15 +179,36 @@ const MATH = [
    英文 · 全英文（阅读 / 拼写 / 写作 / 分级读物）
    ========================================================= */
 const SIGHT=['the','a','I','you','he','she','we','to','and','is','it','in','on','at','can','see','look','go','big','red','blue','cat','dog','sun','run','hot','cup','book','ball','tree'];
-const READS=[
-  {s:'The cat is red.',q:'Is the cat red?',o:['Yes','No'],a:'Yes'},
-  {s:'I see a big dog.',q:'What do I see?',o:['a dog','a cat','a sun'],a:'a dog'},
-  {s:'The sun is hot.',q:'Is the sun cold?',o:['Yes','No'],a:'No'},
-  {s:'We go to the park.',q:'Where do we go?',o:['park','school','home'],a:'park'},
-  {s:'The ball is blue.',q:'What color is the ball?',o:['blue','red','green'],a:'blue'},
-  {s:'Mom has a book.',q:'What does Mom have?',o:['a book','a ball','a dog'],a:'a book'},
-  {s:'The dog can run.',q:'What can the dog do?',o:['run','sleep','fly'],a:'run'},
-  {s:'I like my cup.',q:'What do I like?',o:['my cup','my book','my dog'],a:'my cup'},
+/* 阅读理解：一篇短文配 3 道题（2 选择 + 1 短答），先读后答 */
+const READ_PASSAGES=[
+  { id:'rp-cat', title:'Sam and the Cat', visual:'🐱',
+    text:'Sam has a red cat. The cat sits on a mat. Sam pats the cat. The cat is happy.',
+    qs:[
+      {q:'What color is the cat?', o:['red','blue','green'], a:'red'},
+      {q:'Where does the cat sit?', o:['on a mat','on a bed','in a box'], a:'on a mat'},
+      {q:'How does the cat feel?', short:true, a:'happy', accept:['happy','glad'], hint:'h _ _ _ _'}
+    ]},
+  { id:'rp-dog', title:"Ben's Dog", visual:'🐶',
+    text:'Ben has a big dog. The dog can run fast. The dog can jump high. Ben loves his dog.',
+    qs:[
+      {q:'What does Ben have?', o:['a dog','a cat','a fish'], a:'a dog'},
+      {q:'Can the dog jump?', o:['Yes','No'], a:'Yes'},
+      {q:'Who loves the dog?', short:true, a:'Ben', accept:['ben'], hint:'B _ _'}
+    ]},
+  { id:'rp-sun', title:'The Big Sun', visual:'☀️',
+    text:'The sun is big. The sun is hot. We can see the sun in the day. We play in the sun.',
+    qs:[
+      {q:'Is the sun hot?', o:['Yes','No'], a:'Yes'},
+      {q:'When can we see the sun?', o:['in the day','at night','in the rain'], a:'in the day'},
+      {q:'What do we do in the sun?', short:true, a:'play', accept:['play','we play'], hint:'p _ _ _'}
+    ]},
+  { id:'rp-park', title:'At the Park', visual:'🌳',
+    text:'We go to the park. I see a red ball. Tom kicks the ball. We are happy at the park.',
+    qs:[
+      {q:'Where do we go?', o:['the park','the school','the shop'], a:'the park'},
+      {q:'What color is the ball?', o:['red','yellow','black'], a:'red'},
+      {q:'Who kicks the ball?', short:true, a:'Tom', accept:['tom'], hint:'T _ _'}
+    ]},
 ];
 const CVC=['cat','dog','sun','pig','cup','hat','bug','pen','top','map','fox','bus','red','box','leg','sit','hot','run'];
 const PHON=[
@@ -202,6 +223,18 @@ const BUILD=[
   {tiles:['We','go','to','school','.'],a:'We go to school .'},
   {tiles:['I','like','my','book','.'],a:'I like my book .'},
   {tiles:['The','sun','is','hot','.'],a:'The sun is hot .'},
+];
+
+/* 语法：常见结构，每题一个知识点，答对后播报完整句子 */
+const GRAMMAR_ITEMS=[
+  {s:'I see ___ apple.',            o:['a','an'],        a:'an',   why:'an 用在元音音素前：an apple'},
+  {s:'The cats ___ sleeping.',      o:['is','are'],      a:'are',  why:'cats 是复数，用 are'},
+  {s:'One cat, two ___.',           o:['cat','cats'],    a:'cats', why:'两个以上名词要加 -s'},
+  {s:'The ball is ___ the box.',    o:['in','on'],       a:'in',   why:'在盒子里面用 in'},
+  {s:'Tom is a boy. ___ is happy.', o:['He','She'],      a:'He',   why:'男孩用 He，女孩用 She'},
+  {s:'She ___ reading a book.',     o:['is','are'],      a:'is',   why:'She 是单数，用 is'},
+  {s:'He ___ to school every day.', o:['go','goes'],     a:'goes', why:'第三人称单数动词加 -es'},
+  {s:'___ is your name?',           o:['What','Who'],    a:'What', why:'问名字用 What is your name?'},
 ];
 
 /* 分级读物（原创可解码读物，按 Level 分级） */
@@ -253,17 +286,6 @@ const ENGLISH=[
       return out;
     }},
 
-  { id:'e-read', title:'Reading & Understanding', emoji:'📚',
-    desc:'Read the sentence and answer (all English)',
-    make(){
-      const out=[];
-      shuffle(READS).slice(0,8).forEach(r=>{
-        out.push({type:'choice', prompt:`Read the sentence, then answer`, sub:`"${r.s}"`,
-          speak:{text:r.s,lang:'en-US'}, options:shuffle(r.o), answer:r.a, explain:`"${r.s}" → ${r.a}.`});
-      });
-      return out;
-    }},
-
   { id:'e-spell', title:'Spelling (Listen & Type)', emoji:'✍️',
     desc:'Hear the word and spell it',
     make(){
@@ -276,16 +298,55 @@ const ENGLISH=[
       return out;
     }},
 
+  /* 阅读理解：2 篇短文 × (读 + 2 选择 + 1 短答)，放在拼写之后 */
+  { id:'e-read', title:'Reading & Understanding', emoji:'📚',
+    desc:'Read a short story, then answer questions',
+    make(){
+      const out=[];
+      shuffle(READ_PASSAGES).slice(0,2).forEach(p=>{
+        out.push({type:'passage', title:p.title, text:p.text, visual:p.visual,
+          speak:{text:p.text,lang:'en-US'}});
+        p.qs.forEach(x=>{
+          if(x.short){
+            out.push({type:'type', short:true, prompt:`Short answer`,
+              sub:x.q, hint:x.hint, accept:x.accept,
+              speak:{text:x.q,lang:'en-US'}, answer:x.a,
+              explain:`Answer: ${x.a}.`});
+          }else{
+            out.push({type:'choice', prompt:`Question`, sub:x.q,
+              speak:{text:x.q,lang:'en-US'}, options:shuffle(x.o), answer:x.a,
+              explain:`Answer: ${x.a}.`});
+          }
+        });
+      });
+      return out;
+    }},
+
   { id:'e-build', title:'Sentence Building (Writing)', emoji:'🧱',
     desc:'Tap words in order to make a sentence',
     make(){
       const out=[];
       shuffle(BUILD).slice(0,6).forEach(b=>{
         out.push({type:'build', prompt:`Tap the words in order to build a sentence`,
-          sub:`Put the words in the right order`, tiles:shuffle(b.tiles), answer:b.a});
+          sub:`Put the words in the right order`, tiles:shuffle(b.tiles), answer:b.a,
+          speak:{text:b.a.replace(/ \./g,'.'),lang:'en-US'}});
       });
       return out;
     }},
+
+  /* 语法：a/an、单复数、be 动词、介词、代词、三单，各一题 */
+  { id:'e-grammar', title:'Grammar Basics', emoji:'🔧',
+    desc:'Pick the word that fits: a/an, is/are, plurals, in/on',
+    make(){
+      return GRAMMAR_ITEMS.map(g=>{
+        const full=g.s.replace('___',g.a);
+        return {type:'choice', prompt:`Choose the correct word`,
+          sub:`<span class="gram-sent">${g.s.replace('___','<b>___</b>')}</span>`,
+          speak:{text:full,lang:'en-US'}, options:shuffle(g.o), answer:g.a,
+          explain:`${full} — ${g.why}`};
+      });
+    }},
+
 
   { id:'e-phonics', title:'Phonics Review', emoji:'🔡',
     desc:'Listen to the word and pick its first letter',

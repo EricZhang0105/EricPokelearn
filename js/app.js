@@ -351,7 +351,8 @@ function renderQuestion(){
   $('#feedback').className='feedback hidden';
 
   const area=$('#questionArea');
-  let h=`<div class="q-prompt">${q.prompt}</div>`;
+  // 阅读短文题没有 prompt 字段，别渲染出 "undefined"
+  let h = (q.type==='passage' || !q.prompt) ? '' : `<div class="q-prompt">${q.prompt}</div>`;
   if(q.sub && q.type!=='passage') h+=`<div class="q-sub">${q.sub}</div>`;
   if(q.visual) h+=`<div class="q-visual">${q.visual}</div>`;
 
@@ -379,6 +380,7 @@ function renderQuestion(){
       h+=`<button class="btn-link" id="speakModeBtn">🎤 我来读（读出声母/韵母，读对才过关）</button>`;
   } else if(q.type==='type'){
     h+=`<div class="type-area">
+      ${q.hint?`<div class="type-hint">💡 ${q.hint}</div>`:''}
       <input class="type-input" id="typeInput" inputmode="text" autocomplete="off" />
       <div><button class="check-btn" id="checkBtn">Check ✓</button></div>
     </div>`;
@@ -680,14 +682,20 @@ function bindSpeak(q,item){
 }
 
 /* ---------- 打字题 ---------- */
+/* 答案归一化：忽略大小写、句点、多余空格，短答可配多个可接受写法 */
+function normAnswer(s){
+  return String(s||'').toLowerCase().trim()
+    .replace(/[.,!?;:'"’“”]/g,'').replace(/\s+/g,' ');
+}
 function bindType(q,item){
   const input=$('#typeInput');
   buildKeyboard(input);
   input.focus();
   $('#checkBtn').onclick=()=>{
-    const val=input.value.trim().toLowerCase();
+    const val=input.value.trim();
     if(!val) return;
-    const correct = val===q.answer.toLowerCase();
+    const pool=(q.accept&&q.accept.length?q.accept:[q.answer]).map(normAnswer);
+    const correct = pool.includes(normAnswer(val));
     if(correct){
       state.correct++; onCorrect(item);
       sfx('good');
@@ -696,7 +704,8 @@ function bindType(q,item){
     }else{
       sfx('bad');
       input.disabled=true; hideKeyboard();
-      showFeedback(false,`Spell it: ${q.answer}`,false,()=>recordWrong(item,val,q));
+      const lead=q.short?'Answer':'Spell it';
+      showFeedback(false,`${lead}: ${q.answer}`,false,()=>recordWrong(item,val,q));
     }
   };
 }
@@ -729,7 +738,14 @@ function bindBuild(q,item){
         if(correct){
           state.correct++; onCorrect(item); c.disabled=true;
           sfx('good');
-          showFeedback(true,'Great! Sentence complete!',true);
+          // 拼对后把完整句子读给孩子听，读完再进下一题（不打断朗读）
+          const said=q.speak?q.speak.text:joined.replace(/ \./g,'.');
+          showFeedback(true,`✅ ${said}`,false);
+          let moved=false, guard=null;
+          const go=()=>{ if(moved) return; moved=true; if(guard) clearTimeout(guard); nextQuestion(); };
+          guard=setTimeout(go, 4200);                    // 音频缺失/被拦截时的兜底
+          if(q.speak) playSpeak(q.speak, ()=>setTimeout(go, 350));
+          else setTimeout(go, 1600);
         }else{
           sfx('bad');
           showFeedback(false,'Try the right order again~',false,()=>recordWrong(item,joined,q),true);
