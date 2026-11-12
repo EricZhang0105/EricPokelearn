@@ -1,0 +1,16 @@
+{
+  "name": "PokeLearn · Learn with Pokémon",
+  "short_name": "PokeLearn",
+  "description": "Fun English, Chinese & Math lessons for kids, with Pokémon evolution rewards.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF7E6",
+  "theme_color": "#FF8A3D",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "apple touch icon" }
+  ]
+}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#FF8A3D" />
+  <title>PokeLearn · Learn with Pokémon</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- 存档不可用时的警告（用 file:// 直接打开会出现） -->
+  <div id="storageWarn" class="storage-warn hidden">
+    ⚠️ Progress can't be saved on this page. Please open the app from the home-screen icon
+    or a local server so your Pokémon keep their levels. Ask a grown-up for help.
+  </div>
+
+  <!-- 顶部栏 -->
+  <header id="topbar" class="topbar hidden">
+    <button class="home-btn" id="homeBtn">🏠 Home</button>
+    <div class="topbar-title" id="topbarTitle">PokeLearn</div>
+    <div class="companion-badge" id="companionBadge"></div>
+  </header>
+
+  <main id="app">
+
+    <!-- 首页 -->
+    <section id="screen-home" class="screen">
+      <div class="home-hero">
+        <h1>🌟 PokeLearn 🌟</h1>
+        <p class="subtitle">Learn English, Chinese &amp; Math with Pokémon!</p>
+        <div id="saveStatus" class="save-status"></div>
+        <button class="btn-secondary parent-link" id="parentBtn">👨‍👩‍👧 Parents</button>
+      </div>
+
+      <div class="subject-grid" id="subjectGrid">
+        <button class="subject-card math" data-subject="math">
+          <span class="subject-emoji">🔢</span>
+          <span class="subject-name">Math</span>
+          <span class="subject-sub">English · within 20</span>
+        </button>
+        <button class="subject-card english" data-subject="english">
+          <span class="subject-emoji">🔤</span>
+          <span class="subject-name">English</span>
+          <span class="subject-sub">Read · Spell · Write</span>
+        </button>
+        <button class="subject-card chinese" data-subject="chinese">
+          <span class="subject-emoji">🇨🇳</span>
+          <span class="subject-name">中文 Chinese</span>
+          <span class="subject-sub">Pinyin · Characters</span>
+        </button>
+      </div>
+
+      <div class="home-panels">
+        <div class="panel" id="pokemonPanel">
+          <h2>🐾 My Pokémon</h2>
+          <div class="poke-collection" id="pokeCollection"></div>
+        </div>
+        <div class="panel" id="mistakePanel">
+          <h2>📒 Mistake Book</h2>
+          <p id="mistakeSummary" class="muted">No mistakes yet — great job!</p>
+          <button class="btn-secondary" id="openMistakesBtn">View mistake book</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 科目课程列表 -->
+    <section id="screen-subject" class="screen hidden">
+      <h2 id="subjectTitle">Subject</h2>
+      <p class="muted" id="subjectHint"></p>
+      <div class="lesson-list" id="lessonList"></div>
+    </section>
+
+    <!-- 课程进行中 -->
+    <section id="screen-lesson" class="screen hidden">
+      <div class="lesson-progress">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-text" id="progressText">1 / 8</div>
+      </div>
+      <div class="review-tag hidden" id="reviewTag">🌟 Review time</div>
+      <div id="questionArea" class="question-area"></div>
+      <div id="feedback" class="feedback hidden"></div>
+    </section>
+
+    <!-- 结果页 -->
+    <section id="screen-result" class="screen hidden">
+      <div id="resultArea" class="result-area"></div>
+    </section>
+
+    <!-- 错题本 -->
+    <section id="screen-mistakes" class="screen hidden">
+      <h2>📒 Mistake Book</h2>
+      <p class="muted">These need more practice. Tap "Practice again" to redo.</p>
+      <div id="mistakeList" class="mistake-list"></div>
+    </section>
+
+    <!-- 家长端 -->
+    <section id="screen-parent" class="screen hidden">
+      <div id="parentArea" class="parent-area"></div>
+    </section>
+
+  </main>
+
+  <!-- 宝可梦选择弹窗 -->
+  <div id="pokemonModal" class="modal hidden">
+    <div class="modal-card">
+      <h2>Pick your Pokémon buddy 🐣</h2>
+      <p class="muted">Finish a lesson and it earns energy. Fill the bar to evolve!</p>
+      <div class="poke-picker" id="pokePicker"></div>
+      <button class="btn-primary" id="confirmPokemonBtn" disabled>Let's go! 🚀</button>
+    </div>
+  </div>
+
+  <!-- 进化庆祝弹窗 -->
+  <div id="evolveModal" class="modal hidden">
+    <div class="modal-card evolve-card">
+      <div class="evolve-spark">✨</div>
+      <h2 id="evolveTitle">Evolved!</h2>
+      <div class="evolve-stage" id="evolveStage"></div>
+      <button class="btn-primary" id="evolveCloseBtn">Awesome!</button>
+    </div>
+  </div>
+
+  <!-- 屏幕键盘容器 -->
+  <div id="keyboard" class="keyboard hidden"></div>
+
+  <!-- 保存提示气泡 -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',()=>{
+        navigator.serviceWorker.register('sw.js').catch(()=>{});
+      });
+    }
+  </script>
+</body>
+</html>

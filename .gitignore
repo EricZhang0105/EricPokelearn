@@ -1,0 +1,6 @@
+# 项目记忆/本地数据，不进公开仓库
+.workbuddy/
+
+# 系统/编辑器
+.DS_Store
+Thumbs.db
