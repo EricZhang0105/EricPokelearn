@@ -32,6 +32,7 @@ const Store = {
     this.data.lessonDone = this.data.lessonDone || {};
     this.data.mistakes   = this.data.mistakes   || [];
     this.data.attempts   = this.data.attempts   || [];
+    this.data.books      = (this.data.books && typeof this.data.books==='object') ? this.data.books : {};
     this.data.settings   = this.sanitizeSettings(this.data.settings);
     this.data.currentSession = this.data.currentSession || Date.now();
 
@@ -78,14 +79,30 @@ const Store = {
       lessonDone: (d.lessonDone && typeof d.lessonDone==='object') ? d.lessonDone : {},
       mistakes: Array.isArray(d.mistakes) ? d.mistakes.filter(m=>m && m.q && m.subject) : [],
       attempts: Array.isArray(d.attempts) ? d.attempts.filter(a=>a && a.date) : [],
+      books: this.sanitizeBooks(d.books),
       settings: this.sanitizeSettings(d.settings),
       lastSession: d.lastSession||null,
       currentSession: d.currentSession||Date.now()
     };
   },
+  sanitizeBooks(b){
+    const out={};
+    if(!b || typeof b!=='object') return out;
+    Object.keys(b).forEach(id=>{
+      const r=b[id];
+      if(!r || typeof r!=='object') return;
+      out[id]={ read: !!r.read,
+                times: Math.max(0, Number(r.times)||0),
+                page: Math.max(0, Number(r.page)||0),
+                pages: Math.max(0, Number(r.pages)||0),
+                last: typeof r.last==='string' ? r.last : '',
+                totalPages: Math.max(0, Number(r.totalPages)||0) };
+    });
+    return out;
+  },
   fresh(){
     const p={}; POKEMON.forEach(pk=>p[pk.id]=this.freshMon());
-    return { schema:3, pokemon:p, lessonDone:{}, mistakes:[], attempts:[],
+    return { schema:3, pokemon:p, lessonDone:{}, mistakes:[], attempts:[], books:{},
              settings:{ autoread:true, sound:true, zhread:true, mic:true },
              lastSession:null, currentSession:Date.now() };
   },
@@ -161,6 +178,66 @@ const Store = {
   },
   isLessonDone(subject,lessonId){
     return !!this.data.lessonDone[subject+':'+lessonId];
+  },
+
+  /* ---------------- 绘本阅读记录 ----------------
+     books = { bookId: {read, times, page, pages, last, totalPages} }
+     read    : 是否读完过（书架上的"已读"标记）
+     times   : 读完次数（重复读会累加，用于星星）
+     page    : 上次读到第几页（0 基），下次继续读
+     last    : 最后一次阅读日期 YYYY-MM-DD                     */
+  bookRec(id){ return this.data.books[id] || null; },
+  isBookRead(id){ const r=this.data.books[id]; return !!(r && r.read); },
+  bookPage(id){ const r=this.data.books[id]; return r ? (r.page||0) : 0; },
+  bookTimes(id){ const r=this.data.books[id]; return r ? (r.times||0) : 0; },
+
+  /* 翻页时记录进度（不标记已读） */
+  touchBook(id, page, totalPages){
+    const r=this.data.books[id] || (this.data.books[id]={read:false,times:0,page:0,pages:0,last:'',totalPages:0});
+    r.page = Math.max(0, page|0);
+    if(totalPages) r.pages = totalPages;
+    r.last = todayStr();
+    this.save();
+  },
+  /* 读完一本：点亮已读 + 累加次数 + 页数统计 */
+  markBookRead(id, totalPages){
+    const r=this.data.books[id] || (this.data.books[id]={read:false,times:0,page:0,pages:0,last:'',totalPages:0});
+    if(!r.read) r.read = true;
+    r.times = (r.times||0) + 1;
+    r.last = todayStr();
+    if(totalPages){
+      r.pages = totalPages;
+      r.totalPages = Math.max(r.totalPages||0, totalPages);
+    }
+    this.save();
+    return r;
+  },
+  unmarkBookRead(id){
+    const r=this.data.books[id]; if(!r) return;
+    r.read=false; r.times=0; this.save();
+  },
+  /* 阅读统计：按语言 / 级别汇总，以及最近读过的书 */
+  bookStats(allBooks){
+    const recs=this.data.books||{};
+    const list=(allBooks||[]).filter(b=>recs[b.id] && recs[b.id].read);
+    const byLang={}, byLevel={};
+    list.forEach(b=>{
+      byLang[b.lang]=(byLang[b.lang]||0)+1;
+      byLevel[b.level]=(byLevel[b.level]||0)+1;
+    });
+    const finishes=list.reduce((n,b)=>n+(recs[b.id].times||0),0);
+    const pages=list.reduce((n,b)=>n+(recs[b.id].pages||b.pages.length),0);
+    const recent=list.filter(b=>recs[b.id].last)
+      .sort((a,b)=>(recs[b.id].last||'').localeCompare(recs[a.id].last||''));
+    // 最近 7 天读完的
+    const days=[]; const today=new Date();
+    for(let i=0;i<7;i++){
+      const d=new Date(today); d.setDate(today.getDate()-i);
+      days.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
+    }
+    const week=list.filter(b=>days.includes(recs[b.id].last)).length;
+    const inProgress=Object.keys(recs).filter(id=>!recs[id].read && recs[id].page>0).length;
+    return { read:list.length, byLang, byLevel, finishes, pages, week, inProgress, recent, recs };
   },
 
   // 错题

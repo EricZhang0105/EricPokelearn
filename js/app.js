@@ -20,6 +20,7 @@ function show(id){
   $('#topbar').classList.toggle('hidden', id==='screen-home');
   if(id==='screen-home') renderHome();
   if(id==='screen-parent') renderParent();
+  if(id==='screen-library') renderLibrary();
 }
 
 function setTopTitle(t){ $('#topbarTitle').textContent = t; }
@@ -203,6 +204,13 @@ function renderHome(){
     ? `${ms.length} mistake${ms.length>1?'s':''} to review 💪`
     : 'No mistakes yet — great job!';
   $('#openMistakesBtn').classList.toggle('hidden', ms.length===0);
+  // 绘本库入口：顺手显示阅读进度
+  const libSub = $('#libraryEntry .subject-sub');
+  if(libSub && typeof availableBooks==='function'){
+    const avail = availableBooks();
+    const st = Store.bookStats(BOOKS);
+    libSub.textContent = `已读 ${st.read} / ${avail.length} 本 · 每周一上新 5 本`;
+  }
   updateStorageUI();
 }
 
@@ -1053,5 +1061,296 @@ function renderParent(){
   };
 }
 
+/* =========================================================
+   绘本库（Picture Books）
+   中文 / English 双库 · K1/K2/P1/P2 分档 · 每周一自动上新 5 本
+   阅读记录存在 Store.data.books
+   ========================================================= */
+const libState = { lang:'zh', level:'all' };
+let reader = { book:null, page:0 };
+
+/* 朗读整句：中文优先 zh-CN 语音，英文用已选好的清晰语音 */
+function sayText(text, lang){
+  if(!('speechSynthesis' in window) || !text) return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang = lang || 'en-US';
+    u.rate = /^zh/i.test(u.lang) ? 0.86 : 0.82;
+    u.pitch = 1.05;
+    const vs = speechSynthesis.getVoices() || [];
+    if(/^zh/i.test(u.lang)){
+      const v = vs.find(x=>/^zh[-_]CN/i.test(x.lang)) || vs.find(x=>/^zh/i.test(x.lang));
+      if(v) u.voice=v;
+    }else{
+      const v=bestVoice(); if(v) u.voice=v;
+    }
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+function levelInfo(id){ return BOOK_LEVELS.find(l=>l.id===id) || { label:id, color:'#7A6EF0' }; }
+
+function openLibrary(){
+  setTopTitle('📚 Picture Books');
+  show('screen-library');
+}
+
+function renderLibrary(){
+  const avail = availableBooks();
+  const langBooks = avail.filter(b=>b.lang===libState.lang);
+  const shown = langBooks.filter(b=>libState.level==='all' || b.level===libState.level);
+  const recs = Store.data.books || {};
+
+  // 顶部一句话：本周新书 + 总进度
+  const stats = Store.bookStats(BOOKS);
+  const newIds = thisWeekBooks().map(b=>b.id);
+  $('#libSub').textContent =
+    `本周上新 5 本 · 已读 ${stats.read} / ${avail.length} 本 · 下周一 ${nextBookUnlockDate()} 再上新`;
+
+  // 语言切换
+  $('#libTabs').innerHTML = BOOK_LANGS.map(l=>{
+    const cnt = avail.filter(b=>b.lang===l.id).length;
+    const read = avail.filter(b=>b.lang===l.id && recs[b.id] && recs[b.id].read).length;
+    return `<button class="lib-tab ${libState.lang===l.id?'active':''}" data-lang="${l.id}">
+      <span class="lt-flag">${l.flag}</span><span class="lt-name">${l.label}</span>
+      <span class="lt-cnt">${read}/${cnt}</span></button>`;
+  }).join('');
+
+  // 级别筛选
+  const levels = [{id:'all', label:'全部'}].concat(
+    BOOK_LEVELS.filter(l=>langBooks.some(b=>b.level===l.id)).map(l=>({ id:l.id, label:`${l.label} · ${l.cn}` })));
+  $('#libLevels').innerHTML = levels.map(l=>{
+    const n = l.id==='all' ? langBooks.length : langBooks.filter(b=>b.level===l.id).length;
+    return `<button class="lib-chip ${libState.level===l.id?'active':''}" data-level="${l.id}">${l.label} <b>${n}</b></button>`;
+  }).join('');
+
+  // 书架
+  const grid=$('#bookGrid');
+  if(!shown.length){
+    grid.innerHTML = `<div class="book-empty">这一档还没有绘本，换个级别看看吧 📚</div>`;
+  }else{
+    // 新书排前面
+    const ordered = shown.slice().sort((a,b)=>{
+      const na=newIds.includes(a.id)?1:0, nb=newIds.includes(b.id)?1:0;
+      if(na!==nb) return nb-na;
+      const ra=(recs[a.id]&&recs[a.id].read)?1:0, rb=(recs[b.id]&&recs[b.id].read)?1:0;
+      return ra-rb;
+    });
+    grid.innerHTML = ordered.map(b=>{
+      const r = recs[b.id] || null;
+      const lv = levelInfo(b.level);
+      const isNew = newIds.includes(b.id);
+      const times = r ? (r.times||0) : 0;
+      const partial = r && !r.read && r.page>0 ? `<div class="bc-progress"><i style="width:${Math.round((r.page+1)/b.pages.length*100)}%"></i></div>` : '';
+      return `<div class="book-card" data-id="${b.id}">
+        <div class="book-cover">
+          ${bookArt(b.pages[0].art)}
+          ${r && r.read ? '<span class="bc-read">✓ 已读</span>' : ''}
+          ${isNew ? '<span class="bc-new">NEW</span>' : ''}
+          ${times>1 ? `<span class="bc-stars">${'⭐'.repeat(Math.min(times,3))}</span>` : ''}
+        </div>
+        <div class="book-info">
+          <div class="book-title">${b.title}</div>
+          <div class="book-sub"><span class="book-lv" style="background:${lv.color}">${lv.label}</span>
+            ${b.pages.length} 页${b.lang==='zh'?'':''}${r&&!r.read&&r.page>0?` · 读到第 ${r.page+1} 页`:''}</div>
+          ${partial}
+        </div>
+      </div>`;
+    }).join('');
+    $$('#bookGrid .book-card').forEach(c=>{ c.onclick=()=>openBook(c.dataset.id); });
+  }
+
+  // 底部
+  $('#libFooter').innerHTML = `
+    <div class="lf-note">📅 每周一自动上新 5 本，旧绘本一直保留在书架上。</div>
+    <button class="btn-secondary" id="openLogBtn">📖 阅读记录 Reading Log</button>`;
+  $('#openLogBtn').onclick=()=>{ setTopTitle('📖 Reading Log'); show('screen-reading-log'); renderReadingLog(); };
+
+  $$('#libTabs .lib-tab').forEach(t=>{
+    t.onclick=()=>{ libState.lang=t.dataset.lang; libState.level='all'; renderLibrary(); };
+  });
+  $$('#libLevels .lib-chip').forEach(c=>{
+    c.onclick=()=>{ libState.level=c.dataset.level; renderLibrary(); };
+  });
+}
+
+/* ---------------- 阅读器 ---------------- */
+function openBook(id){
+  const b = BOOKS.find(x=>x.id===id);
+  if(!b) return;
+  reader.book=b;
+  const p = Math.min(Store.bookPage(id), b.pages.length-1);
+  reader.page = Math.max(0, p);
+  setTopTitle(b.title);
+  show('screen-reader');
+  renderReaderPage(true);
+}
+
+function renderReaderPage(firstTime){
+  const b=reader.book; if(!b) return;
+  const pg=b.pages[reader.page];
+  $('#readerTitle').textContent = b.title;
+  $('#readerMeta').textContent = `${levelInfo(b.level).label} · ${b.titleEn||''}`;
+  const r=Store.bookRec(b.id);
+  $('#readerBadge').innerHTML = r && r.read ? `<span class="rb-read">✓ 已读 ${r.times>1?'×'+r.times:''}</span>` : '';
+  $('#readerArt').innerHTML = bookArt(pg.art);
+  $('#readerText').textContent = pg.t;
+  $('#readerText').className = 'reader-text ' + (b.lang==='zh' ? 'zh' : 'en') +
+    (pg.t.length>46 ? ' small' : '');
+
+  $('#readerDots').innerHTML = b.pages.map((_,i)=>
+    `<span class="dot ${i===reader.page?'on':''}"></span>`).join('');
+
+  $('#prevPage').disabled = reader.page===0;
+  const last = reader.page === b.pages.length-1;
+  $('#nextPage').classList.toggle('hidden', last);
+  $('#finishBook').classList.toggle('hidden', !last);
+
+  Store.touchBook(b.id, reader.page, b.pages.length);
+
+  if(Store.getSetting('autoread')){
+    setTimeout(()=>{ if(reader.book===b && reader.page===b.pages.indexOf(pg)) sayText(pg.t, b.lang==='zh'?'zh-CN':'en-US'); }, firstTime?260:120);
+  }
+}
+
+function turnPage(delta){
+  const b=reader.book; if(!b) return;
+  const next = reader.page + delta;
+  if(next<0 || next>=b.pages.length) return;
+  reader.page=next;
+  renderReaderPage(false);
+}
+
+function finishBook(){
+  const b=reader.book; if(!b) return;
+  const before = Store.isBookRead(b.id);
+  Store.markBookRead(b.id, b.pages.length);
+  const times = Store.bookTimes(b.id);
+  if(Store.getSetting('sound')) sfx('good');
+  toastMsg(before ? `🎉 又读了一遍！第 ${times} 次读完「${b.title}」` : `🎉 读完啦！「${b.title}」已点亮已读`);
+  setTimeout(()=>{ reader.book=null; show('screen-library'); }, 900);
+}
+
+$('#readerBack').onclick=()=>{ reader.book=null; show('screen-library'); };
+$('#prevPage').onclick=()=>turnPage(-1);
+$('#nextPage').onclick=()=>turnPage(1);
+$('#finishBook').onclick=()=>finishBook();
+$('#readAloud').onclick=()=>{
+  const b=reader.book; if(!b) return;
+  sayText(b.pages[reader.page].t, b.lang==='zh'?'zh-CN':'en-US');
+};
+document.addEventListener('keydown', e=>{
+  if($('#screen-reader').classList.contains('hidden')) return;
+  if(e.key==='ArrowRight') turnPage(1);
+  if(e.key==='ArrowLeft') turnPage(-1);
+});
+/* 手指左右滑动翻页（iPad 上最自然） */
+(function bindSwipe(){
+  const el=$('#reader'); let x0=null, y0=null;
+  el.addEventListener('touchstart', e=>{ const t=e.changedTouches[0]; x0=t.clientX; y0=t.clientY; }, {passive:true});
+  el.addEventListener('touchend', e=>{
+    if(x0===null) return;
+    const t=e.changedTouches[0];
+    const dx=t.clientX-x0, dy=t.clientY-y0;
+    if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)) turnPage(dx<0?1:-1);
+    x0=null; y0=null;
+  }, {passive:true});
+})();
+
+/* ---------------- 阅读记录 ---------------- */
+function renderReadingLog(){
+  const avail = availableBooks();
+  const st = Store.bookStats(BOOKS);
+  const readIds = st.recent.map(b=>b.id);
+  const inProg = avail.filter(b=>{
+    const r=st.recs[b.id];
+    return r && !r.read && r.page>0;
+  });
+
+  const statCards = [
+    ['已读绘本','📚',st.read],
+    ['本周读完','📅',st.week],
+    ['累计阅读','🔁',st.finishes+' 次'],
+    ['读过的页','📄',st.pages]
+  ].map(([lbl,ico,val])=>`<div class="stat-card"><div class="stat-num">${val}</div>
+      <div class="stat-lbl">${ico} ${lbl}</div></div>`).join('');
+
+  const langRows = BOOK_LANGS.map(l=>{
+    const total = avail.filter(b=>b.lang===l.id).length;
+    const read = avail.filter(b=>b.lang===l.id && st.recs[b.id] && st.recs[b.id].read).length;
+    const pct = total ? Math.round(read/total*100) : 0;
+    return `<div class="tr-row"><div class="tr-name">${l.flag} ${l.label}</div>
+      <div class="tr-track"><div class="tr-fill" style="width:${pct}%"></div></div>
+      <div class="tr-count">${read}/${total}</div></div>`;
+  }).join('');
+
+  const levelRows = BOOK_LEVELS.map(l=>{
+    const total = avail.filter(b=>b.level===l.id).length;
+    if(!total) return '';
+    const read = avail.filter(b=>b.level===l.id && st.recs[b.id] && st.recs[b.id].read).length;
+    const pct = Math.round(read/total*100);
+    return `<div class="tr-row"><div class="tr-name">${l.label} ${l.cn}</div>
+      <div class="tr-track"><div class="tr-fill" style="width:${pct}%;background:linear-gradient(90deg,${l.color},${l.color}cc)"></div></div>
+      <div class="tr-count">${read}/${total}</div></div>`;
+  }).join('');
+
+  const recentHtml = readIds.length ? st.recent.map(b=>{
+    const r=st.recs[b.id], lv=levelInfo(b.level);
+    const stars='⭐'.repeat(Math.min(r.times||1,5));
+    return `<div class="log-book" data-id="${b.id}">
+      <div class="lb-cover">${bookArt(b.pages[0].art)}</div>
+      <div class="lb-body">
+        <div class="lb-title">${b.title} <span class="book-lv" style="background:${lv.color}">${lv.label}</span></div>
+        <div class="lb-meta">${r.times||1} 次 · 最近 ${r.last||'—'} · ${stars}</div>
+      </div>
+      <button class="btn-secondary lb-btn">再读一遍</button>
+    </div>`;
+  }).join('') : `<p class="muted">还没有读完的绘本，去书架上挑一本吧 📚</p>`;
+
+  const progHtml = inProg.length ? `<div class="parent-block"><h3>继续读（读了一半）</h3>`+
+    inProg.map(b=>{
+      const r=st.recs[b.id];
+      return `<div class="log-book" data-id="${b.id}">
+        <div class="lb-cover">${bookArt(b.pages[0].art)}</div>
+        <div class="lb-body"><div class="lb-title">${b.title}</div>
+          <div class="lb-meta">读到第 ${r.page+1} / ${b.pages.length} 页</div></div>
+        <button class="btn-secondary lb-btn">继续读</button></div>`;
+    }).join('')+`</div>` : '';
+
+  const unread = avail.filter(b=>!(st.recs[b.id] && st.recs[b.id].read)).length;
+
+  $('#readingLog').innerHTML = `
+    <div class="stat-grid">${statCards}</div>
+    <div class="parent-block"><h3>中文 / English</h3>${langRows}</div>
+    <div class="parent-block"><h3>按级别</h3>${levelRows}</div>
+    ${progHtml}
+    <div class="parent-block"><h3>读过的绘本（${st.read} 本）</h3>${recentHtml}</div>
+    <div class="lib-footer">
+      <div class="lf-note">还有 ${unread} 本没读 · 每周一自动上新 5 本</div>
+      <button class="btn-secondary" id="logBackBtn">← 返回书架</button>
+    </div>`;
+
+  $$('#readingLog .log-book').forEach(el=>{
+    el.querySelector('.lb-btn').onclick=()=>openBook(el.dataset.id);
+  });
+  $('#logBackBtn').onclick=()=>show('screen-library');
+}
+
+$('#libraryEntry').onclick=()=>openLibrary();
+
 /* ---------- 启动 ---------- */
 show('screen-home');
+
+/* 深链接：#library / #reading-log / #book/<id> 可直接打开对应页面
+   （iPad 主屏也可以单独放一个「绘本库」快捷方式） */
+(function bootRoute(){
+  const h=(location.hash||'').replace(/^#\/?/,'');
+  if(h.indexOf('library')===0){
+    const lg=h.split('/')[1];
+    if(lg==='en'||lg==='zh') libState.lang=lg;
+    openLibrary();
+  }
+  else if(h==='reading-log'){ setTopTitle('📖 Reading Log'); show('screen-reading-log'); renderReadingLog(); }
+  else if(h.indexOf('book/')===0) openBook(h.slice(5));
+})();

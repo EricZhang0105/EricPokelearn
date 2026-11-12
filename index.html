@@ -51,6 +51,11 @@
           <span class="subject-name">中文 Chinese</span>
           <span class="subject-sub">Pinyin · Characters</span>
         </button>
+        <button class="subject-card library" id="libraryEntry">
+          <span class="subject-emoji">📚</span>
+          <span class="subject-name">绘本库 Picture Books</span>
+          <span class="subject-sub">中文 · English · 每周上新 5 本</span>
+        </button>
       </div>
 
       <div class="home-panels">
@@ -94,6 +99,50 @@
       <h2>📒 Mistake Book</h2>
       <p class="muted">These need more practice. Tap "Practice again" to redo.</p>
       <div id="mistakeList" class="mistake-list"></div>
+    </section>
+
+    <!-- 绘本库（书架） -->
+    <section id="screen-library" class="screen hidden">
+      <div class="lib-head">
+        <h2>📚 Picture Books 绘本库</h2>
+        <p class="muted" id="libSub"></p>
+      </div>
+      <div class="lib-tabs" id="libTabs"></div>
+      <div class="lib-levels" id="libLevels"></div>
+      <div class="book-grid" id="bookGrid"></div>
+      <div class="lib-footer" id="libFooter"></div>
+    </section>
+
+    <!-- 绘本阅读器 -->
+    <section id="screen-reader" class="screen hidden">
+      <div class="reader-head">
+        <button class="btn-secondary reader-back" id="readerBack">← Books</button>
+        <div class="reader-title-wrap">
+          <div class="reader-title" id="readerTitle"></div>
+          <div class="reader-meta" id="readerMeta"></div>
+        </div>
+        <div class="reader-badge" id="readerBadge"></div>
+      </div>
+      <div class="reader" id="reader">
+        <div class="reader-art" id="readerArt"></div>
+        <div class="reader-text" id="readerText"></div>
+      </div>
+      <div class="reader-dots" id="readerDots"></div>
+      <div class="reader-controls">
+        <button class="btn-secondary" id="prevPage">◀ 上一页</button>
+        <button class="btn-secondary" id="readAloud">🔊 朗读</button>
+        <button class="btn-primary" id="nextPage">下一页 ▶</button>
+        <button class="btn-primary hidden" id="finishBook">✅ 读完了</button>
+      </div>
+    </section>
+
+    <!-- 阅读记录 -->
+    <section id="screen-reading-log" class="screen hidden">
+      <div class="lib-head">
+        <h2>📖 阅读记录 Reading Log</h2>
+        <p class="muted">读过的绘本会点亮已读标记，重复阅读会累加星星。</p>
+      </div>
+      <div id="readingLog"></div>
     </section>
 
     <!-- 家长端 -->
@@ -143,6 +192,7 @@
   <script src="js/pokemon.js"></script>
   <script src="js/zh-phonics.js"></script>
   <script src="js/data.js"></script>
+  <script src="js/books.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/audio-map.js"></script>
   <script src="js/app.js"></script>
