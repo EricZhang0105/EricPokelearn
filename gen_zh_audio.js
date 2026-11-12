@@ -1,8 +1,9 @@
 /* 生成中文拼音模块的本地音频（不依赖设备 TTS，iPad 上读音一致、离线可听）
  *   1) 声母 / 韵母：呼读音汉字读两遍（b → 「玻，玻」）
- *   2) 拼读练习：声母 → 韵母 → 合起来 → 例词，四段播报
- *   3) 汉字配对：单字读两遍
- *   4) 声调练习：8 组音节 × 4 声，单音字读两遍（孩子靠听辨调，不显示调号）
+ *   2) 整体认读音节：16 个，示范字读两遍（zhi → 「知，知」）
+ *   3) 拼读练习：声母 → 韵母 → 合起来 → 例词，四段播报
+ *   4) 汉字配对：单字读两遍
+ *   5) 声调练习：8 组音节 × 4 声，单音字读两遍（孩子靠听辨调，不显示调号）
  * 运行： node gen_zh_audio.js [--force]   （默认跳过已生成，--force 全量重做）
  * 依赖： macOS say / afconvert
  * 产物： audio/zh/*.m4a, js/zh-audio-list.js
@@ -32,8 +33,8 @@ vm.runInContext(
   'function ri(){return 0} function pick(a){return a[0]} function shuffle(a){return a.slice()}\n'+
   fs.readFileSync(path.join(ROOT,'js','zh-phonics.js'),'utf8')+'\n'+
   fs.readFileSync(path.join(ROOT,'js','data.js'),'utf8')+'\n'+
-  ';globalThis.__X={ZH_INITIALS,ZH_FINALS,ZH_BLENDS,ZH_TONES,CHARS,zhInitial,zhFinal};',ctx);
-const {ZH_INITIALS,ZH_FINALS,ZH_BLENDS,ZH_TONES,CHARS,zhInitial,zhFinal}=ctx.__X;
+  ';globalThis.__X={ZH_INITIALS,ZH_FINALS,ZH_WHOLES,ZH_BLENDS,ZH_TONES,CHARS,zhInitial,zhFinal};',ctx);
+const {ZH_INITIALS,ZH_FINALS,ZH_WHOLES,ZH_BLENDS,ZH_TONES,CHARS,zhInitial,zhFinal}=ctx.__X;
 
 const tasks=[];
 function add(kind,key,text){
@@ -45,6 +46,9 @@ function add(kind,key,text){
 /* --- 声母 / 韵母示范音 --- */
 ZH_INITIALS.forEach(t=>add('initial',t.p,`${t.hz}[[slnc 520]]${t.hz}。`));
 ZH_FINALS.forEach(t=>add('final',t.p,`${t.hz}[[slnc 520]]${t.hz}。`));
+
+/* --- 整体认读音节示范音（共 16 个，读两遍） --- */
+ZH_WHOLES.forEach(t=>add('whole',t.p,`${t.hz}[[slnc 520]]${t.hz}。`));
 
 /* --- 拼读播报：玻，啊，八。八个。 --- */
 ZH_BLENDS.forEach(it=>{
@@ -59,7 +63,7 @@ CHARS.forEach((ch,i)=>add('char',i,`${ch.c}[[slnc 500]]${ch.c}。`));
 /* --- 声调示范音：同一个音节的四个声调，只录单音字，不加提示语 --- */
 ZH_TONES.forEach(g=>g.hz.forEach((hz,i)=>add('tone',g.base+'_'+(i+1),`${hz}[[slnc 520]]${hz}。`)));
 
-console.log(`待生成 ${tasks.length} 段中文音频：${ZH_INITIALS.length} 声母 / ${ZH_FINALS.length} 韵母 / ${ZH_BLENDS.length} 拼读 / ${CHARS.length} 汉字 / ${ZH_TONES.length*4} 声调`);
+console.log(`待生成 ${tasks.length} 段中文音频：${ZH_INITIALS.length} 声母 / ${ZH_FINALS.length} 韵母 / ${ZH_WHOLES.length} 整体认读 / ${ZH_BLENDS.length} 拼读 / ${CHARS.length} 汉字 / ${ZH_TONES.length*4} 声调`);
 
 /* 峰值归一化 + 裁掉首尾静音：让 157 段音量一致，也避免开头半秒没声音 */
 function masterWav(file){

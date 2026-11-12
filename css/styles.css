@@ -456,3 +456,22 @@ body{
 .fam-card[data-branch]:active{transform:scale(.97);}
 .fam-foot{font-size:13px;color:var(--muted);text-align:center;margin-top:4px;line-height:1.5;}
 @media(max-width:560px){.fam-forms{grid-template-columns:repeat(3,minmax(0,1fr));}}
+
+/* =========================================================
+   v11：返回上一级菜单 / 取消选宝可梦
+   ========================================================= */
+.topbar-left{display:flex;align-items:center;gap:8px;flex:0 0 auto;}
+.back-btn{background:#FFD9B0;font-weight:800;}
+.back-btn.hidden{display:none;}
+.modal-card{position:relative;}
+.modal-x{position:absolute;top:12px;right:12px;border:none;background:#FFF0D2;color:#8A4B12;
+  font-size:20px;font-weight:800;line-height:1;width:42px;height:42px;border-radius:12px;
+  cursor:pointer;box-shadow:var(--shadow);}
+.modal-x:active{transform:scale(.94);}
+@media(max-width:520px){
+  .topbar{padding:8px 10px;}
+  .topbar-left{gap:6px;}
+  .topbar .home-btn{font-size:15px;padding:7px 10px;}
+  .topbar-title{font-size:16px;}
+  .companion-badge{padding:4px 8px;font-size:14px;}
+}

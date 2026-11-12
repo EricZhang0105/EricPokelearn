@@ -56,6 +56,29 @@ const ZH_FINALS = [
   {p:'ong', hz:'翁', alias:['ong','翁','嗡','瓮','红','东']},
 ];
 
+/* ---------------- 整体认读音节（16 个） ----------------
+ * 这些音节「不用拼，直接读」，是小学拼音教学里单独列出来的一组：
+ * zhi chi shi ri zi ci si yi wu yu ye yue yuan yin yun ying。
+ * 用常用字做示范音（zhi → 「知」），判音仍走同音字白名单。 */
+const ZH_WHOLES = [
+  {p:'zhi',  hz:'知', word:'知道', alias:['zhi','知','只','之','织','直','纸','汁']},
+  {p:'chi',  hz:'吃', word:'吃饭', alias:['chi','吃','尺','池','迟','翅','持']},
+  {p:'shi',  hz:'狮', word:'狮子', alias:['shi','狮','诗','十','是','时','石','师']},
+  {p:'ri',   hz:'日', word:'日出', alias:['ri','日','入','如','热','肉']},
+  {p:'zi',   hz:'字', word:'汉字', alias:['zi','字','子','紫','自','资','姿']},
+  {p:'ci',   hz:'刺', word:'刺猬', alias:['ci','刺','次','词','此','瓷','慈']},
+  {p:'si',   hz:'丝', word:'丝瓜', alias:['si','丝','四','思','司','死','寺']},
+  {p:'yi',   hz:'衣', word:'衣服', alias:['yi','衣','一','医','依','椅','已']},
+  {p:'wu',   hz:'乌', word:'乌鸦', alias:['wu','乌','屋','五','无','舞','雾']},
+  {p:'yu',   hz:'鱼', word:'金鱼', alias:['yu','鱼','雨','玉','语','与','羽']},
+  {p:'ye',   hz:'叶', word:'树叶', alias:['ye','叶','夜','爷','也','野','业']},
+  {p:'yue',  hz:'月', word:'月亮', alias:['yue','月','乐','越','阅','岳']},
+  {p:'yuan', hz:'圆', word:'圆圈', alias:['yuan','圆','元','远','园','原','愿']},
+  {p:'yin',  hz:'音', word:'声音', alias:['yin','音','因','银','引','饮','印']},
+  {p:'yun',  hz:'云', word:'白云', alias:['yun','云','运','允','晕','韵']},
+  {p:'ying', hz:'鹰', word:'老鹰', alias:['ying','鹰','英','影','应','赢','樱']},
+];
+
 /* ---------------- 拼读音节库（全部为真实音节 + 常用汉字） ---------------- */
 /* ini + fin = syl；hz 用于示范音，word 用于举例加深印象 */
 const ZH_BLENDS = [
@@ -145,6 +168,7 @@ function zhToneClip(base,t){ return zhClip('tone', base+'_'+t); }
 function zhClip(kind, key){ return 'audio/zh/'+kind+'_'+key+'.m4a'; }
 function zhInitial(p){ return ZH_INITIALS.find(x=>x.p===p); }
 function zhFinal(p){ return ZH_FINALS.find(x=>x.p===p); }
+function zhWhole(p){ return ZH_WHOLES.find(x=>x.p===p); }
 
 /* 拼读题的两个干扰项：改声母或改韵母，且必须是库里真实存在的音节 */
 function zhBlendDecoys(item){
@@ -192,6 +216,6 @@ function zhJudge(transcripts, target, pool){
 
 /* Node 环境导出（浏览器里这些是全局 const，不受影响） */
 if(typeof module!=='undefined' && module.exports){
-  module.exports={ZH_INITIALS,ZH_FINALS,ZH_BLENDS,ZH_TONES,zhClip,zhToneClip,
-                  zhInitial,zhFinal,zhBlendDecoys,zhNormalize,zhHit,zhJudge};
+  module.exports={ZH_INITIALS,ZH_FINALS,ZH_WHOLES,ZH_BLENDS,ZH_TONES,zhClip,zhToneClip,
+                  zhInitial,zhFinal,zhWhole,zhBlendDecoys,zhNormalize,zhHit,zhJudge};
 }

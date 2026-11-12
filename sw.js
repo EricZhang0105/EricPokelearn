@@ -5,7 +5,7 @@
  * - 中文音频：安装时预缓存（157 段 / 3.7MB，Tingting 高清语音，含四声示范音），第一次打开就能离线听
  * 改了静态文件后请把 CACHE 里的版本号 +1，强制刷新图片缓存。
  */
-const CACHE = 'pokelearn-v10';
+const CACHE = 'pokelearn-v11';
 const SHELL = [
   './',
   './index.html',

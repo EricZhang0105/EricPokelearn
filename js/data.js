@@ -50,15 +50,14 @@ const MATH = [
     }},
 
   { id:'m-bonds10', level:1, title:'Number Bonds to 10', emoji:'🧩',
-    desc:'Part–Whole: ways to make 10 (MOE N2/K1)',
+    desc:'Two parts make the whole: 8 + 1 = ? (MOE N2/K1)',
     make(){
       const out=[];
       for(let i=0;i<8;i++){
-        const w=ri(4,10), p1=ri(1,w-1), p2=w-p1;
-        const miss=Math.random()<0.5?p1:p2, shown=miss===p1?p2:p1;
-        out.push({type:'choice', prompt:`What is the missing part?`, sub:`${w} = ${shown} + ?`,
-          speak:{text:`${w} equals ${shown} plus what?`,lang:'en-US'},
-          options:numOptions(miss,1,9), answer:String(miss), explain:`${w} = ${p1} + ${p2}.`});
+        const p1=ri(2,8), p2=ri(2,10-p1), w=p1+p2;   // 两个部分都在 2–8，整句写成 8 + 1 = ?
+        out.push({type:'choice', prompt:`Add the two parts`, sub:`${p1} + ${p2} = ?`,
+          speak:{text:`${p1} plus ${p2} equals what?`,lang:'en-US'},
+          options:numOptions(w,2,10), answer:String(w), explain:`${p1} + ${p2} = ${w}.`});
       }
       return out;
     }},
@@ -78,15 +77,16 @@ const MATH = [
     }},
 
   { id:'m-bonds20', level:2, title:'Number Bonds to 20', emoji:'🧩',
-    desc:'Split 20 into two parts (MOE K1)',
+    desc:'Two parts make the whole: 12 + 5 = ? (MOE K1)',
     make(){
       const out=[];
       for(let i=0;i<8;i++){
-        const w=ri(11,20), p1=ri(1,w-1), p2=w-p1;
-        const miss=Math.random()<0.5?p1:p2, shown=miss===p1?p2:p1;
-        out.push({type:'choice', prompt:`Find the missing part`, sub:`${w} = ${shown} + ?`,
-          speak:{text:`${w} equals ${shown} plus what?`,lang:'en-US'},
-          options:numOptions(miss,1,19), answer:String(miss), explain:`${w} = ${p1} + ${p2}.`});
+        let p1,p2,guard=0;                            // 两部分都在 2–10，合起来 11–20
+        do{ p1=ri(2,10); p2=ri(2,10); }while(p1+p2<11 && guard++<50);
+        const w=p1+p2;
+        out.push({type:'choice', prompt:`Add the two parts`, sub:`${p1} + ${p2} = ?`,
+          speak:{text:`${p1} plus ${p2} equals what?`,lang:'en-US'},
+          options:numOptions(w,9,20), answer:String(w), explain:`${p1} + ${p2} = ${w}.`});
       }
       return out;
     }},
@@ -382,6 +382,7 @@ const ENGLISH=[
 /* 拼音表统一由 js/zh-phonics.js 提供（含呼读音汉字、四声题库与识别白名单） */
 const INITIALS=ZH_INITIALS.map(x=>x.p);
 const FINALS=ZH_FINALS.map(x=>x.p);
+const WHOLES=ZH_WHOLES.map(x=>x.p);
 const CHARS=[
   {c:'水',p:'shuǐ'},{c:'火',p:'huǒ'},{c:'山',p:'shān'},{c:'木',p:'mù'},
   {c:'日',p:'rì'},{c:'月',p:'yuè'},{c:'人',p:'rén'},{c:'口',p:'kǒu'},
@@ -448,6 +449,21 @@ const CHINESE=[
         answer:t.p,
         hint:'先点 🔊 听一听，再对着 🎤 大声读出来',
         explain:`韵母 ${t.p} 读作「${t.hz}」，要读得响亮。`
+      }));
+    }},
+
+  { id:'c-whole', title:'Whole Syllables 整体认读音节', emoji:'🔤',
+    desc:'16 个「不用拼、直接读」的音节（听音选一选，也可点「我来读」）',
+    make(){
+      return shuffle(ZH_WHOLES).slice(0,8).map(t=>({
+        type:'choice', canSpeak:true, kind:'whole', target:t.p,
+        prompt:'🔊 听一听，选出这个整体认读音节',
+        sub:'整体认读音节不用拼，看到就能直接读出来',
+        speak:{ text:t.hz, lang:'zh-CN', clip:zhClip('whole',t.p), autoplay:true },
+        options:shuffle([t.p,...shuffle(WHOLES.filter(x=>x!==t.p)).slice(0,2)]),
+        answer:t.p,
+        hint:'先点 🔊 听一听，再对着 🎤 大声读出来',
+        explain:`${t.p} 是整体认读音节，直接读作「${t.hz}」，例如「${t.word}」。`
       }));
     }},
 

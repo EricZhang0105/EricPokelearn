@@ -18,9 +18,37 @@ function show(id){
   $('#keyboard').classList.add('hidden');
   $('#'+id).classList.remove('hidden');
   $('#topbar').classList.toggle('hidden', id==='screen-home');
+  $('#backBtn').classList.toggle('hidden', id==='screen-home');
   if(id==='screen-home') renderHome();
   if(id==='screen-parent') renderParent();
   if(id==='screen-library') renderLibrary();
+}
+
+/* ---------- 返回上一级菜单 ----------
+ * 每个界面都有「← Back」，回到它上一层菜单，而不是只能跳回首页：
+ *   课程列表 → 首页；上课中 → 课程列表（会先确认，免得丢本次题目）；
+ *   结果页 → 课程列表；绘本阅读器 / 阅读记录 → 书架；书架 / 错题本 / 家长端 → 首页。 */
+function currentScreen(){
+  const el=$$('.screen').find(s=>!s.classList.contains('hidden'));
+  return el ? el.id : 'screen-home';
+}
+function goBack(){
+  const cur=currentScreen();
+  if(cur==='screen-lesson'){
+    const inLesson = state.idx < state.total;
+    if(inLesson && !confirm('Leave this lesson? The questions in this lesson will not be saved.')) return;
+    if(state.subject) openSubject(state.subject); else show('screen-home');
+    return;
+  }
+  if(cur==='screen-reader'){ reader.book=null; show('screen-library'); return; }
+  if(cur==='screen-result' || cur==='screen-subject'){
+    if(cur==='screen-result' && state.subject) openSubject(state.subject);
+    else show('screen-home');
+    return;
+  }
+  const map={ 'screen-mistakes':'screen-home', 'screen-parent':'screen-home',
+              'screen-library':'screen-home', 'screen-reading-log':'screen-library' };
+  show(map[cur] || 'screen-home');
 }
 
 function setTopTitle(t){ $('#topbarTitle').textContent = t; }
@@ -377,7 +405,7 @@ function filterPicker(q){
 $('#pokeSearch').oninput=e=>filterPicker(e.target.value);
 
 $('#confirmPokemonBtn').onclick=()=>{
-  const sel=$('.poke-opt.sel'); if(!sel) return;
+  const sel=$('#pokePicker .poke-opt.sel'); if(!sel) return;
   state.selectedPokemon=sel.dataset.id;
   $('#pokemonModal').classList.add('hidden');
   beginSession(pendingLesson.subject,pendingLesson.lessonId);
@@ -388,6 +416,18 @@ $('#homeBtn').onclick=()=>{
   if(inLesson && !confirm('Leave this lesson? The questions in this lesson will not be saved.')) return;
   show('screen-home');
 };
+$('#backBtn').onclick=goBack;
+
+/* 选宝可梦弹窗可以取消：点「✖ 取消」或点弹窗外面的空白处都能退出，
+   退出后仍停在课程列表，不会误入课程。 */
+function closePokemonPicker(){
+  $('#pokemonModal').classList.add('hidden');
+  pendingLesson=null;
+}
+$('#cancelPickBtn').onclick=closePokemonPicker;
+$('#pokemonModal').addEventListener('click',e=>{
+  if(e.target.id==='pokemonModal') closePokemonPicker();
+});
 $('#openMistakesBtn').onclick=()=>openMistakes();
 $('#evolveCloseBtn').onclick=()=>{ $('#evolveModal').classList.add('hidden'); showResult(); };
 $('#parentBtn').onclick=()=>show('screen-parent');
@@ -464,7 +504,7 @@ function renderQuestion(){
     });
     h+=`</div>`;
     if(q.canSpeak && Store.getSetting('mic'))
-      h+=`<button class="btn-link" id="speakModeBtn">🎤 我来读（读出声母/韵母，读对才过关）</button>`;
+      h+=`<button class="btn-link" id="speakModeBtn">🎤 我来读（读出${zhKindLabel(q.kind)}，读对才过关）</button>`;
   } else if(q.type==='type'){
     h+=`<div class="type-area">
       ${q.hint?`<div class="type-hint">💡 ${q.hint}</div>`:''}
@@ -547,11 +587,19 @@ function bindChoice(q,item){
  * 同一道题可在两种模式间来回切换，共用 target / speak / explain，
  * 切换不重开题目、不改进度、不重复计分；旧存档里的 speak 错题也能自动降级。
  */
+function zhKindLabel(kind){
+  return kind==='initial' ? '声母' : kind==='final' ? '韵母' : '整体认读音节';
+}
+function zhKindPool(kind){
+  if(kind==='initial') return ZH_INITIALS;
+  if(kind==='whole')   return ZH_WHOLES;
+  return ZH_FINALS;
+}
 function asChoice(q){
   if(q.type==='choice') return Object.assign({},q,{canSpeak:true});
   return Object.assign({},q,{
     type:'choice', canSpeak:true,
-    prompt:`🔊 听一听，选出这个${q.kind==='initial'?'声母':'韵母'}`,
+    prompt:`🔊 听一听，选出这个${zhKindLabel(q.kind)}`,
     sub:'点 🔊 可以再听一次，然后选出正确的拼音',
     options:q.options||q.fallbackOptions||[], answer:q.target
   });
@@ -560,7 +608,7 @@ function asSpeak(q){
   if(q.type==='speak') return q;
   return Object.assign({},q,{
     type:'speak',
-    prompt:`读出这个${q.kind==='initial'?'声母':'韵母'} 🎤`,
+    prompt:`读出这个${zhKindLabel(q.kind)} 🎤`,
     sub:`<span class="phonic-big">${q.target}</span>`,
     hint:q.hint||'先点 🔊 听一听，再对着 🎤 大声读出来',
     fallbackOptions:q.options||q.fallbackOptions||[]
@@ -576,7 +624,7 @@ function choiceCardHTML(cq){
        return `<button class="option-btn" data-v="${o}">${label}</button>`;
      }).join('')+`</div>`;
   if(cq.canSpeak && Store.getSetting('mic'))
-    h+=`<button class="btn-link" id="speakModeBtn">🎤 我来读（读出声母/韵母，读对才过关）</button>`;
+    h+=`<button class="btn-link" id="speakModeBtn">🎤 我来读（读出${zhKindLabel(cq.kind)}，读对才过关）</button>`;
   return h;
 }
 function speakCardHTML(sq){
@@ -624,7 +672,7 @@ const SR_CLASS = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 function bindSpeak(q,item){
   const status=$('#micStatus'), micBtn=$('#micBtn');
-  const pool=(typeof ZH_INITIALS!=='undefined' && q.kind==='initial') ? ZH_INITIALS : ZH_FINALS;
+  const pool=zhKindPool(q.kind);
   const target=pool.find(x=>x.p===q.target) || pool[0];
   let done=false, tries=0, silent=0, useRecorder=!SR_CLASS;
   let rec=null, recorder=null, stream=null, replayUrl=null;

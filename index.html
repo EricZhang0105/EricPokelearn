@@ -19,7 +19,10 @@
 
   <!-- 顶部栏 -->
   <header id="topbar" class="topbar hidden">
-    <button class="home-btn" id="homeBtn">🏠 Home</button>
+    <div class="topbar-left">
+      <button class="home-btn back-btn" id="backBtn">← Back</button>
+      <button class="home-btn" id="homeBtn">🏠 Home</button>
+    </div>
     <div class="topbar-title" id="topbarTitle">PokeLearn</div>
     <div class="companion-badge" id="companionBadge"></div>
   </header>
@@ -155,8 +158,10 @@
   <!-- 宝可梦选择弹窗 -->
   <div id="pokemonModal" class="modal hidden">
     <div class="modal-card">
+      <button class="modal-x" id="cancelPickBtn" aria-label="取消选择">✕</button>
       <h2>Pick your Pokémon buddy 🐣</h2>
-      <p class="muted">Finish a lesson and it earns energy. Fill the bar to evolve!</p>
+      <p class="muted">Finish a lesson and it earns energy. Fill the bar to evolve!<br>
+        点右上角 ✕ 或弹窗外的空白处都可以取消</p>
       <input id="pokeSearch" class="poke-search" type="text" inputmode="search" placeholder="🔍 Find a buddy (中文/English)" autocomplete="off" />
       <div class="poke-picker" id="pokePicker"></div>
       <button class="btn-primary" id="confirmPokemonBtn" disabled>Let's go! 🚀</button>
