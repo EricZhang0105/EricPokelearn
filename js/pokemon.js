@@ -12,15 +12,20 @@ const ENERGY_PER_LESSON = 20;   // 每完成一课获得能量
 /* 官方高清精灵图（已本地化，见 img/pokemon/） */
 function pokeImg(id){ return 'img/pokemon/'+id+'.webp'; }
 
-const S = (name,cn,emoji,imgId)=>({name,cn,emoji,imgId});
+/* evo = 官方进化条件（石頭 / 亲密度 / 时间…），只用于给孩子看的说明 */
+const S = (name,cn,emoji,imgId,evo)=>({name,cn,emoji,imgId,evo});
 const C = (id,name,cn,color,emoji,stages)=>({id,name,cn,color,emoji,stages});
 
-/* 分支形态：伊布 8 种进化 */
+/* 分支形态：伊布 8 种进化（官方：全部由「进化石 / 亲密度 + 时间 / 地点 / 妖精招」决定） */
 const EEVEELUTIONS = [
-  S('Vaporeon','水伊布','💧',134), S('Jolteon','雷伊布','⚡',135),
-  S('Flareon','火伊布','🔥',136),  S('Espeon','太阳伊布','☀️',196),
-  S('Umbreon','月亮伊布','🌙',197),S('Leafeon','叶伊布','🍃',470),
-  S('Glaceon','冰伊布','❄️',471),  S('Sylveon','仙子伊布','🎀',700)
+  S('Vaporeon','水伊布','💧',134,'水之石'),
+  S('Jolteon','雷伊布','⚡',135,'雷之石'),
+  S('Flareon','火伊布','🔥',136,'火之石'),
+  S('Espeon','太阳伊布','☀️',196,'白天 · 高亲密度'),
+  S('Umbreon','月亮伊布','🌙',197,'夜晚 · 高亲密度'),
+  S('Leafeon','叶伊布','🍃',470,'苔藓岩石'),
+  S('Glaceon','冰伊布','❄️',471,'冰之石'),
+  S('Sylveon','仙子伊布','🎀',700,'妖精招 + 高亲密度')
 ];
 
 const POKEMON = [
@@ -54,7 +59,7 @@ const POKEMON = [
     S('Zubat','超音蝠','🦇',41), S('Golbat','大嘴蝠','🦇',42), S('Crobat','叉字蝠','💜',169)]),
   C('oddish','Oddish','走路草','#79C77A','🌱',[
     S('Oddish','走路草','🌱',43), S('Gloom','臭臭花','🌼',44),
-    [S('Vileplume','霸王花','🌺',45), S('Bellossom','美丽花','💃',182)]]),
+    [S('Vileplume','霸王花','🌺',45,'叶之石'), S('Bellossom','美丽花','💃',182,'日之石')]]),
   C('diglett','Diglett','地鼠','#C69B6D','🕳️',[
     S('Diglett','地鼠','🕳️',50), S('Dugtrio','三地鼠','🕳️',51)]),
   /* ★ 喵喵（火箭队那只） */
@@ -65,11 +70,12 @@ const POKEMON = [
   C('growlithe','Growlithe','卡蒂狗','#F3974C','🐶',[
     S('Growlithe','卡蒂狗','🐶',58), S('Arcanine','风速狗','🔥',59)]),
   C('poliwag','Poliwag','蚊香蝌蚪','#6FA8DC','💧',[
-    S('Poliwag','蚊香蝌蚪','💧',60), S('Poliwhirl','蚊香君','🌀',61), S('Poliwrath','蚊香泳士','🥊',62)]),
+    S('Poliwag','蚊香蝌蚪','💧',60), S('Poliwhirl','蚊香君','🌀',61),
+    [S('Poliwrath','蚊香泳士','🥊',62,'水之石'), S('Politoed','蚊香蛙皇','👑',186,'王者之证')]]),
   C('abra','Abra','凯西','#E3B36B','🧘',[
     S('Abra','凯西','🧘',63), S('Kadabra','勇基拉','🥄',64), S('Alakazam','胡地','🔮',65)]),
   C('machop','Machop','腕力','#C98C6B','💪',[
-    S('Machop','腕力','💪',66), S('Machoke','豪喇花枝','🦾',67), S('Machamp','怪力','🏋️',68)]),
+    S('Machop','腕力','💪',66), S('Machoke','豪力','🦾',67), S('Machamp','怪力','🏋️',68)]),
   C('geodude','Geodude','小拳石','#A89A7C','🪨',[
     S('Geodude','小拳石','🪨',74), S('Graveler','隆隆石','⛰️',75), S('Golem','隆隆岩','🗿',76)]),
   C('ponyta','Ponyta','小火马','#FFAE7B','🐴',[
@@ -126,7 +132,7 @@ const POKEMON = [
     S('Mudkip','水跃鱼','💧',258), S('Marshtomp','沼跃鱼','🌊',259), S('Swampert','巨沼怪','🏞️',260)]),
   C('ralts','Ralts','拉鲁拉丝','#A7D7C5','🌸',[
     S('Ralts','拉鲁拉丝','🌸',280), S('Kirlia','奇鲁莉安','💃',281),
-    [S('Gardevoir','沙奈朵','✨',282), S('Gallade','艾路雷朵','⚔️',475)]]),
+    [S('Gardevoir','沙奈朵','✨',282,'等级 30'), S('Gallade','艾路雷朵','⚔️',475,'觉醒之石（雄性）')]]),
   C('beldum','Beldum','铁哑铃','#8FA8BF','🔩',[
     S('Beldum','铁哑铃','🔩',374), S('Metang','金属怪','⚙️',375), S('Metagross','巨金怪','🤖',376)]),
   C('bagon','Bagon','宝贝龙','#7BA7D0','🐲',[
@@ -180,3 +186,9 @@ function formOf(pk, stage, branch){
 /* 这一阶是否有多个可选进化形态 */
 function isBranchStage(pk, stage){ return Array.isArray(pk.stages[stage]); }
 function branchOptions(pk, stage){ return isBranchStage(pk,stage) ? pk.stages[stage] : []; }
+/* 这条进化链里哪些阶是「多选一」的分支阶 */
+function branchStages(pk){ return pk.stages.map((s,i)=>Array.isArray(s)?i:-1).filter(i=>i>=0); }
+/* 整条链里最多的分支形态数（伊布 8、臭臭花 2…），用于头像角标 */
+function chainBranchCount(pk){
+  return branchStages(pk).reduce((m,i)=>Math.max(m, branchOptions(pk,i).length), 0);
+}

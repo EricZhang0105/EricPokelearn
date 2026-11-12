@@ -221,15 +221,93 @@ function renderCollection(){
     const st=info.form;
     const chip=document.createElement('div');
     chip.className='poke-chip';
+    // 有多选一分支的（伊布 8 种、臭臭花 2 种…）在头像上直接标出来，点开能看全部形态
+    const badge = info.chainBranch>1
+      ? `<div class="chip-branch">🧬 ×${info.chainBranch}</div>` : '';
     chip.innerHTML=`<div class="face">${pokeImgTag(st,'chip-img')}</div>
       <div class="nm">${st.name}</div>
       <div class="cn">${st.cn}</div>
       <div class="ebar"><i style="width:${Math.round(info.progress*100)}%"></i></div>
-      <div class="est">${info.maxed?'🏆 MAX!':`Lv${info.stage+1} · ${Math.round(info.intoStage)}/${info.need}`}</div>`;
+      <div class="est">${info.maxed?'🏆 MAX!':`Lv${info.stage+1} · ${Math.round(info.intoStage)}/${info.need}`}</div>${badge}`;
+    chip.title=`看 ${pk.cn} 的进化家族`;
+    chip.onclick=()=>openFamily(pk.id);
     box.appendChild(chip);
   });
   bindPokeImages(box);
 }
+
+/* ---------- 进化家族图鉴 ----------
+   伊布这类「2 阶但有 8 种形态」的宝可梦，光看 Lv1/Lv2 会以为只有 2 个等级，
+   所以点首页头像可以打开完整家族：每个阶段、每种分支形态、进化条件都列出来；
+   如果已经到了分支阶，还能点别的形态直接换过去（8 种都能试）。 */
+function openFamily(id){
+  const pk=POKEMON.find(p=>p.id===id); if(!pk) return;
+  const info=Store.stageInfo(id);
+  const bIdx=branchStages(pk);
+  const multi=bIdx.length ? branchOptions(pk,bIdx[0]).length : 0;
+  const branchStageNo=bIdx.length ? bIdx[0]+1 : 0;
+
+  $('#familyTitle').textContent=`${pk.emoji} ${pk.cn} · ${pk.name}`;
+  $('#familyHint').innerHTML = multi>1
+    ? `${pk.cn} 只有 <b>1 次</b>进化，但第 ${branchStageNo} 阶可以变成 <b>${multi} 种</b>不同的样子（官方设定）✨`
+    : `一共 ${pk.stages.length} 个阶段 · 每 ${ENERGY_PER_STAGE} 点能量进化一次 ⚡`;
+
+  let h='';
+  pk.stages.forEach((s,si)=>{
+    const forms=Array.isArray(s)?s:[s];
+    const label = si===0 ? '第 1 阶 · 最初形态'
+                : (si===pk.stages.length-1 ? `第 ${si+1} 阶 · 最终形态` : `第 ${si+1} 阶`);
+    const note = (Array.isArray(s)&&forms.length>1)
+      ? `<span class="fam-branch-note">选 1 种 · 共 ${forms.length} 种</span>` : '';
+    h+=`<div class="fam-stage ${si===info.stage?'cur':''}">
+      <div class="fam-stage-head">
+        <span class="fam-stage-name">${label}</span>${note}
+        ${si===info.stage?'<span class="fam-now">现在</span>':''}
+      </div>
+      <div class="fam-forms">`;
+    forms.forEach((f,fi)=>{
+      const owned = si<info.stage;
+      const isCur = si===info.stage;
+      const sel   = isCur && !!Array.isArray(s) && (info.branch||0)===fi;
+      const canPick = isCur && !!Array.isArray(s);
+      const tag = sel ? '<div class="fam-tag now">✔ 现在这个</div>'
+                : owned ? '<div class="fam-tag ok">✔ 曾经拥有</div>'
+                : canPick ? '<div class="fam-tag pick">点它换形态</div>'
+                : si>info.stage ? '<div class="fam-tag lock">🔒 还没到</div>' : '';
+      h+=`<div class="fam-card ${isCur?'is-cur':''} ${sel?'sel':''} ${owned?'owned':''} ${si>info.stage?'locked':''}"
+             ${canPick?`data-branch="${fi}"`:''}>
+        <div class="fam-face">${pokeImgTag(f,'fam-img')}</div>
+        <div class="fam-nm">${f.name}</div>
+        <div class="fam-cn">${f.cn}</div>
+        ${f.evo?`<div class="fam-evo">${f.evo}</div>`:''}
+        ${tag}
+      </div>`;
+    });
+    h+='</div></div>';
+  });
+  h+=`<div class="fam-foot">${info.maxed
+        ? '🏆 已经到最终形态了！换个伙伴继续收集吧～'
+        : `再完成 <b>${Math.ceil((info.need-info.intoStage)/ENERGY_PER_LESSON)}</b> 节课就能进化到下一阶 ⚡`}</div>`;
+
+  $('#familyBody').innerHTML=h;
+  bindPokeImages($('#familyBody'));
+
+  // 已到分支阶：点另一种形态即可立刻换过去（伊布 8 种都能收集）
+  $$('#familyBody .fam-card[data-branch]').forEach(c=>{
+    c.onclick=()=>{
+      const fi=Number(c.dataset.branch);
+      if(fi===(info.branch||0)) return;
+      const f=branchOptions(pk,info.stage)[fi];
+      if(!confirm(`让 ${pk.cn} 变成「${f.cn}」吗？`)) return;
+      Store.setBranch(id,fi);
+      updateCompanion();
+      toastMsg(`✨ ${pk.cn} 变成了 ${f.cn}！`);
+      openFamily(id);
+    };
+  });
+  $('#familyModal').classList.remove('hidden');
+}
+$('#familyCloseBtn').onclick=()=>$('#familyModal').classList.add('hidden');
 
 /* ---------- 科目列表（修复：点击科目卡片） ---------- */
 $$('.subject-card').forEach(c=>{
@@ -276,10 +354,11 @@ function openPokemonModal(){
     const opt=document.createElement('div');
     opt.className='poke-opt'; opt.dataset.id=pk.id;
     opt.dataset.search=(pk.name+' '+pk.cn+' '+st.name+' '+st.cn).toLowerCase();
+    const bn = info.chainBranch>1 ? ` · ${info.chainBranch} 形态` : '';
     opt.innerHTML=`<div class="face">${pokeImgTag(st,'opt-img')}</div>
       <div class="nm">${st.name}</div>
       <div class="cn">${st.cn}</div>
-      <div class="stage">${info.maxed?'MAX!':`⚡ ${Math.round(info.intoStage)}/${info.need} · Stage ${info.stage+1}/${pk.stages.length}`}</div>`;
+      <div class="stage">${info.maxed?`MAX!${bn}`:`⚡ ${Math.round(info.intoStage)}/${info.need} · Stage ${info.stage+1}/${pk.stages.length}${bn}`}</div>`;
     opt.onclick=()=>{
       $$('#pokePicker .poke-opt, #branchPicker .poke-opt').forEach(o=>o.classList.remove('sel'));
       opt.classList.add('sel');
@@ -846,13 +925,18 @@ function finishLesson(){
 function showBranchPicker(id, stage, done){
   const pk=POKEMON.find(p=>p.id===id);
   const opts=branchOptions(pk,stage);
-  $('#branchHint').textContent=`${pk.cn} 可以进化成不同的样子，选一个吧！ ✨`;
+  const multi = opts.length>3;
+  $('#branchHint').innerHTML = multi
+    ? `${pk.cn} 可以变成 <b>${opts.length} 种</b>不同的样子！选一个吧 ✨<br>
+       <span class="muted">选完也能在首页点头像看全家福、随时换另一种</span>`
+    : `${pk.cn} 有 ${opts.length} 条进化路线，选一个吧！ ✨`;
   const box=$('#branchPicker'); box.innerHTML='';
   opts.forEach((f,idx)=>{
     const o=document.createElement('div');
     o.className='poke-opt'; o.dataset.idx=idx;
     o.innerHTML=`<div class="face">${pokeImgTag(f,'opt-img')}</div>
-      <div class="nm">${f.name}</div><div class="cn">${f.cn}</div>`;
+      <div class="nm">${f.name}</div><div class="cn">${f.cn}</div>
+      ${f.evo?`<div class="stage">${f.evo}</div>`:''}`;
     o.onclick=()=>{
       $$('#branchPicker .poke-opt').forEach(x=>x.classList.remove('sel'));
       o.classList.add('sel');
@@ -877,9 +961,13 @@ function showEvolve(id,stage){
   const info=Store.stageInfo(id);
   const st=info.form;
   const prev=formOf(pk, stage-1, null);
-  $('#evolveTitle').textContent=`${pk.name} evolved! (Stage ${stage+1}/${pk.stages.length})`;
+  const opts=isBranchStage(pk,stage)?branchOptions(pk,stage):[];
+  $('#evolveTitle').textContent = opts.length>1
+    ? `${pk.cn} 进化了！它有 ${opts.length} 种样子 ✨`
+    : `${pk.name} evolved!`;
   $('#evolveStage').innerHTML=`${pokeImgTag(prev,'evo-img')} ➜ ${pokeImgTag(st,'evo-img')}
-    <br><b>${prev.name} → ${st.name}</b><br><span class="muted">${prev.cn} → ${st.cn}</span>`;
+    <br><b>${prev.name} → ${st.name}</b><br><span class="muted">${prev.cn} → ${st.cn}</span>
+    ${opts.length>1?`<br><span class="muted">现在可以在首页点 ${pk.cn} 的头像，看全部 ${opts.length} 种形态并随时换</span>`:''}`;
   $('#evolveModal').classList.remove('hidden');
   bindPokeImages($('#evolveStage'));
   sfx('evolve');
@@ -892,6 +980,7 @@ function showResult(){
   const msg = pct===100?'Perfect! All correct!':pct>=70?'Great job! Keep it up!':'Practice makes perfect!';
   const info=Store.stageInfo(state.selectedPokemon);
   const st=info.form;
+  const branchTip = info.chainBranch>1 ? ` · 可变成 ${info.chainBranch} 种形态` : '';
   $('#progressFill').style.width='100%';
   $('#resultArea').innerHTML=`
     <h2>🎉 Lesson Complete!</h2>
@@ -899,7 +988,7 @@ function showResult(){
     <div class="result-msg">${msg}</div>
     <div class="result-poke">${pokeImgTag(st,'result-img')}</div>
     <div class="result-msg">${st.name} gained ⚡${ENERGY_PER_LESSON} energy<br>
-      ${info.maxed?'🏆 MAX! Final form reached!':`Stage ${info.stage+1}/${info.pk.stages.length} · Energy ${Math.round(info.intoStage)}/${info.need} — keep going!`}</div>
+      ${info.maxed?`🏆 MAX! Final form reached!${branchTip}`:`Stage ${info.stage+1}/${info.pk.stages.length} · Energy ${Math.round(info.intoStage)}/${info.need} — keep going!${branchTip}`}</div>
     <div class="result-actions">
       <button class="btn-primary" id="moreBtn">More questions 🔄</button>
       <button class="btn-secondary" id="againBtn">Another lesson</button>

@@ -414,3 +414,45 @@ body{
 .lb-title{font-size:16px;font-weight:800;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .lb-meta{font-size:12px;color:var(--muted);margin-top:3px;letter-spacing:-1px;}
 .lb-btn{font-size:14px;padding:9px 12px;flex:0 0 auto;}
+
+/* =========================================================
+   v10：宝可梦进化家族图鉴（伊布 8 种形态可视 + 可切换）
+   ========================================================= */
+.poke-chip{cursor:pointer;}
+.poke-chip:active{transform:scale(.96);}
+.chip-branch{margin-top:4px;font-size:10px;font-weight:800;color:#6D3FD1;
+  background:#EEE6FF;border-radius:8px;padding:2px 0;letter-spacing:.2px;}
+
+.family-card{max-width:620px;}
+.family-body{margin:12px 0 8px;text-align:left;}
+.fam-stage{border:2px dashed #EFE3CC;border-radius:16px;padding:10px 12px;
+  margin-bottom:10px;background:#FFFDF7;}
+.fam-stage.cur{border-color:#FFB15C;background:#FFF7EB;}
+.fam-stage-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.fam-stage-name{font-size:14px;font-weight:800;color:#8A4B12;}
+.fam-branch-note{font-size:11px;font-weight:700;color:#6D3FD1;background:#EEE6FF;
+  padding:2px 8px;border-radius:8px;}
+.fam-now{margin-left:auto;font-size:11px;font-weight:800;color:#fff;
+  background:#FF8A3D;padding:2px 8px;border-radius:8px;}
+.fam-forms{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;}
+.fam-card{position:relative;background:#fff;border:3px solid transparent;border-radius:14px;
+  padding:8px 6px;text-align:center;box-shadow:var(--shadow);}
+.fam-card .fam-face{height:62px;display:flex;align-items:center;justify-content:center;}
+.fam-card .fam-img{width:62px;height:62px;object-fit:contain;}
+.fam-nm{font-size:13px;font-weight:800;line-height:1.15;overflow-wrap:anywhere;}
+.fam-cn{font-size:12px;color:var(--muted);}
+.fam-evo{font-size:10px;font-weight:700;color:#6D3FD1;margin-top:3px;line-height:1.25;}
+.fam-tag{margin-top:5px;font-size:10px;font-weight:800;padding:2px 6px;
+  border-radius:8px;display:inline-block;}
+.fam-tag.now{background:#E6F9EE;color:#2E9E63;}
+.fam-tag.ok{background:#EFF4FF;color:#4A6FA5;}
+.fam-tag.pick{background:#FFF0D2;color:#B5501A;}
+.fam-tag.lock{background:#F2EEE6;color:#9A8E7C;}
+.fam-card.is-cur{border-color:#FFD08A;}
+.fam-card.sel{border-color:var(--good);background:#F3FCF7;}
+.fam-card.owned{opacity:.92;}
+.fam-card.locked{opacity:.62;}
+.fam-card[data-branch]{cursor:pointer;}
+.fam-card[data-branch]:active{transform:scale(.97);}
+.fam-foot{font-size:13px;color:var(--muted);text-align:center;margin-top:4px;line-height:1.5;}
+@media(max-width:560px){.fam-forms{grid-template-columns:repeat(3,minmax(0,1fr));}}

@@ -167,10 +167,16 @@ const Store = {
     const branch=m.branch;
     const maxed = stage===pk.stages.length-1;
     const intoStage = maxed ? ENERGY_PER_STAGE : m.energy;
+    const nextStage = Math.min(stage+1, pk.stages.length-1);
+    const curOptions  = isBranchStage(pk,stage) ? branchOptions(pk,stage) : null;
+    const nextOptions = (!maxed && isBranchStage(pk,nextStage)) ? branchOptions(pk,nextStage) : null;
     return { pk, stage, branch, form:formOf(pk,stage,branch),
              intoStage, need:ENERGY_PER_STAGE, maxed,
              progress: maxed ? 1 : m.energy/ENERGY_PER_STAGE,
-             isBranch:isBranchStage(pk,stage) };
+             isBranch:isBranchStage(pk,stage),
+             curOptions, nextOptions,
+             branchCount:(curOptions||nextOptions||[]).length,
+             chainBranch:chainBranchCount(pk) };
   },
 
   markLesson(subject,lessonId){
