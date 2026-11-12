@@ -1,12 +1,13 @@
 {
   "name": "pokelearn",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "private": true,
   "description": "Kids learning PWA (English/Chinese/Math) with Pokemon evolution rewards",
   "scripts": {
     "start": "node serve.js",
     "sprites": "node fetch_sprites.js",
     "audio": "node gen_audio.js",
-    "assets": "node fetch_sprites.js && node gen_audio.js"
+    "zh-audio": "node gen_zh_audio.js",
+    "assets": "node fetch_sprites.js && node gen_audio.js && node gen_zh_audio.js"
   }
 }

@@ -58,7 +58,8 @@ const Store = {
   freshMon(){ return { energy:0, stage:0, branch:null }; },
   sanitizeSettings(s){
     s = s && typeof s==='object' ? s : {};
-    return { autoread: s.autoread!==false, sound: s.sound!==false };
+    return { autoread: s.autoread!==false, sound: s.sound!==false,
+             zhread: s.zhread!==false, mic: s.mic!==false };
   },
   /* 导入存档前的结构校验与修补 */
   sanitize(d){
@@ -85,7 +86,8 @@ const Store = {
   fresh(){
     const p={}; POKEMON.forEach(pk=>p[pk.id]=this.freshMon());
     return { schema:3, pokemon:p, lessonDone:{}, mistakes:[], attempts:[],
-             settings:{ autoread:true, sound:true }, lastSession:null, currentSession:Date.now() };
+             settings:{ autoread:true, sound:true, zhread:true, mic:true },
+             lastSession:null, currentSession:Date.now() };
   },
   save(){
     try{

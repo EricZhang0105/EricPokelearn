@@ -276,3 +276,23 @@ body{
   .poke-opt .face{height:46px;}
   .poke-opt .poke-img{width:46px;height:46px;}
 }
+
+/* v4：中文拼音 · 语音跟读题 */
+.phonic-big{display:inline-block;font-size:76px;line-height:1.1;font-weight:800;
+  color:#E76F2C;letter-spacing:2px;font-family:ui-rounded,"Arial Rounded MT Bold",Arial,sans-serif;}
+.q-sub .phonic-big{margin:2px 0 6px;}
+.speak-card{margin:10px auto 4px;text-align:center;}
+.speak-hint{font-size:16px;font-weight:700;color:var(--muted);margin-bottom:12px;}
+.speak-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.speak-actions button{min-width:132px;}
+.mic-status{min-height:24px;margin:12px 4px 6px;font-size:15px;font-weight:700;color:var(--muted);}
+.mic-status.ok{color:#2E9E5B;}
+.mic-status.bad{color:#D8534F;}
+.mic-status.listening{color:#E07A20;animation:pl-pulse 1s ease-in-out infinite;}
+@keyframes pl-pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.btn-link{background:none;border:none;color:var(--muted);text-decoration:underline;
+  font:inherit;font-size:14px;cursor:pointer;margin-top:8px;padding:6px;}
+.btn-link.primary{color:#B5501A;font-weight:800;font-size:15px;background:#FFF1DF;
+  padding:10px 16px;border-radius:14px;text-decoration:none;}
+.replay-box{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
+.replay-box.hidden{display:none;}

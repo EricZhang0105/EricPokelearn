@@ -318,8 +318,9 @@ const ENGLISH=[
    ========================================================= */
 const TONE_MARK={1:'ā',2:'á',3:'ǎ',4:'à'};
 const VOWELS=['a','o','e','i','u'];
-const INITIALS=['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
-const FINALS=['a','o','e','i','u','ai','ei','ao','ou','an','en','ang','eng','ing','ong'];
+/* 拼音表统一由 js/zh-phonics.js 提供（含呼读音汉字与识别白名单） */
+const INITIALS=ZH_INITIALS.map(x=>x.p);
+const FINALS=ZH_FINALS.map(x=>x.p);
 const CHARS=[
   {c:'水',p:'shuǐ'},{c:'火',p:'huǒ'},{c:'山',p:'shān'},{c:'木',p:'mù'},
   {c:'日',p:'rì'},{c:'月',p:'yuè'},{c:'人',p:'rén'},{c:'口',p:'kǒu'},
@@ -344,57 +345,57 @@ const CHINESE=[
       return out;
     }},
 
-  { id:'c-initial', title:'Initials 声母认读', emoji:'🔤',
-    desc:'认识声母 b p m f d t n l …',
+  { id:'c-initial', title:'Initials 声母认读', emoji:'🎤',
+    desc:'看声母 → 大声读出来，读对才过关',
     make(){
-      const out=[];
-      for(let i=0;i<8;i++){
-        const t=pick(INITIALS);
-        const decoys=shuffle(INITIALS.filter(x=>x!==t)).slice(0,2);
-        out.push({type:'choice', prompt:`请圈出声母：${t}`, sub:`下面哪个和上面一样？`,
-          options:shuffle([t,...decoys]), answer:t, explain:`声母 ${t} 要认得它的形状。`});
-      }
-      return out;
+      return shuffle(ZH_INITIALS).slice(0,8).map(t=>({
+        type:'speak', kind:'initial', target:t.p,
+        prompt:`读出这个声母 🎤`,
+        sub:`<span class="phonic-big">${t.p}</span>`,
+        speak:{ text:t.hz, lang:'zh-CN', clip:zhClip('initial',t.p) },
+        hint:`先点 🔊 听一听，再对着 🎤 大声读出来`,
+        explain:`声母 ${t.p} 读作「${t.hz}」，要读得又轻又短。`,
+        fallbackOptions:shuffle([t.p,...shuffle(INITIALS.filter(x=>x!==t.p)).slice(0,2)])
+      }));
     }},
 
-  { id:'c-final', title:'Finals 韵母认读', emoji:'🔡',
-    desc:'认识韵母 a o e i u ai ei ao …',
+  { id:'c-final', title:'Finals 韵母认读', emoji:'🎤',
+    desc:'看韵母 → 大声读出来，读对才过关',
     make(){
-      const out=[];
-      for(let i=0;i<8;i++){
-        const t=pick(FINALS);
-        const decoys=shuffle(FINALS.filter(x=>x!==t)).slice(0,2);
-        out.push({type:'choice', prompt:`请圈出韵母：${t}`, sub:`下面哪个和上面一样？`,
-          options:shuffle([t,...decoys]), answer:t, explain:`韵母 ${t} 要读得响亮。`});
-      }
-      return out;
+      return shuffle(ZH_FINALS).slice(0,8).map(t=>({
+        type:'speak', kind:'final', target:t.p,
+        prompt:`读出这个韵母 🎤`,
+        sub:`<span class="phonic-big">${t.p}</span>`,
+        speak:{ text:t.hz, lang:'zh-CN', clip:zhClip('final',t.p) },
+        hint:`先点 🔊 听一听，再对着 🎤 大声读出来`,
+        explain:`韵母 ${t.p} 读作「${t.hz}」，要读得响亮。`,
+        fallbackOptions:shuffle([t.p,...shuffle(FINALS.filter(x=>x!==t.p)).slice(0,2)])
+      }));
     }},
 
   { id:'c-blend', title:'Blending 拼读练习', emoji:'🧩',
-    desc:'声母+韵母，拼出一个音节',
+    desc:'声母+韵母，带语音播报：听 → 跟读 → 选音节',
     make(){
-      const out=[];
-      for(let i=0;i<8;i++){
-        const ini=pick(['b','p','m','d','t','n','l','g','k','h']);
-        const fin=pick(['a','o','e','i','u','an','en','ang']);
-        const syl=ini+fin;
-        const d1=(ini==='b'?'p':ini==='p'?'b':pick(['b','p','m']))+fin;
-        const d2=ini+(fin==='a'?'o':fin==='o'?'a':pick(['a','o','e']));
-        out.push({type:'choice', prompt:`拼一拼：${ini} + ${fin} = ?`, sub:`把声母和韵母连起来读`,
-          options:shuffle([syl,d1,d2]), answer:syl, explain:`${ini} + ${fin} = ${syl}。`});
-      }
-      return out;
+      return shuffle(ZH_BLENDS).slice(0,8).map(it=>({
+        type:'choice', prompt:`拼一拼：${it.ini} + ${it.fin} = ?`,
+        sub:`🔊 仔细听：声母 → 韵母 → 合起来怎么读`,
+        speak:{ text:`${it.ini}-${it.fin}-${it.syl}`, lang:'zh-CN',
+                clip:zhClip('blend',it.syl), autoplay:true },
+        options:shuffle([it.syl,...zhBlendDecoys(it)]), answer:it.syl,
+        explain:`${it.ini} + ${it.fin} = ${it.syl}。例如「${it.word}」的「${it.hz}」。`
+      }));
     }},
 
   { id:'c-char', title:'Characters 汉字拼音配对', emoji:'🇨🇳',
     desc:'给认识的汉字找正确的拼音',
     make(){
       const out=[];
-      shuffle(CHARS).slice(0,8).forEach(ch=>{
-        const decoys=shuffle(CHARS.filter(x=>x!==ch)).slice(0,2).map(x=>x.p);
+      shuffle(CHARS.map((c,i)=>Object.assign({},c,{i}))).slice(0,8).forEach(ch=>{
+        const decoys=shuffle(CHARS.filter(x=>x.c!==ch.c)).slice(0,2).map(x=>x.p);
         out.push({type:'choice', prompt:`这个字的拼音是？`,
           sub:`<span style="font-size:54px;font-weight:800">${ch.c}</span>`,
-          speak:{text:ch.c,lang:'zh-CN'}, options:shuffle([ch.p,...decoys]), answer:ch.p,
+          speak:{text:ch.c,lang:'zh-CN',clip:zhClip('char',ch.i)},
+          options:shuffle([ch.p,...decoys]), answer:ch.p,
           explain:`${ch.c} 读 ${ch.p}。`});
       });
       return out;

@@ -88,9 +88,10 @@ function clipFor(text){
   const k=String(text||'').trim().toLowerCase();
   return AUDIO_MAP[k] || null;
 }
-/* 读题：有高清录音就放录音，否则才用浏览器 TTS */
+/* 读题：优先播放题目自带的本地录音（中文拼音），其次查英文词库，最后才用浏览器 TTS */
 function playSpeak(s, onEnd){
   if(!s) return;
+  if(s.clip && playClip(s.clip,onEnd)) return;
   const url=clipFor(s.text);
   const slowUrl=clipFor(s.text+'::slow');
   const target=(s.slow && slowUrl) ? slowUrl : url;
@@ -331,8 +332,15 @@ function updateCompanion(){
   bindPokeImages(badge);
 }
 
+/* ---------- 语音输入：切题时必须先停掉上一题的麦克风 ---------- */
+let _stopSpeechInput=null;
+function stopSpeechInput(){
+  if(_stopSpeechInput){ try{ _stopSpeechInput(); }catch(e){} _stopSpeechInput=null; }
+}
+
 /* ---------- 渲染题目 ---------- */
 function renderQuestion(){
+  stopSpeechInput();
   const item=state.questions[state.idx];
   const q=item.q;
   $('#reviewTag').classList.toggle('hidden', !item.isReview);
@@ -351,7 +359,7 @@ function renderQuestion(){
         <div class="passage-text">${q.text}</div></div>`;
     if(q.speak) h+=`<button class="speak-btn" id="speakBtn">🔊 Read to me</button>`;
     h+=`<button class="btn-primary" id="passageNext">I read it! ➡️</button>`;
-  } else if(q.speak){
+  } else if(q.speak && q.type!=='speak'){
     h+=`<button class="speak-btn" id="speakBtn">🔊 Listen</button>`;
     // 拼写题额外给一个「慢速 + 重复」按钮，初学者听得更准
     if(q.type==='type' && clipFor(q.speak.text+'::slow'))
@@ -370,6 +378,17 @@ function renderQuestion(){
   } else if(q.type==='build'){
     h+=`<div class="build-answer" id="buildAnswer"></div>
       <div class="build-pool" id="buildPool"></div>`;
+  } else if(q.type==='speak'){
+    h+=`<div class="speak-card">
+      <div class="speak-hint">${q.hint||'大声读出来吧！'}</div>
+      <div class="speak-actions">
+        <button class="btn-secondary" id="demoBtn">🔊 听示范</button>
+        <button class="btn-primary" id="micBtn">🎤 我来读</button>
+      </div>
+      <div class="mic-status" id="micStatus">读对了才过关哦 ⭐</div>
+      <div class="replay-box hidden" id="replayBox"></div>
+      <button class="btn-link" id="choiceModeBtn">🎧 改用「听音选一选」</button>
+    </div>`;
   }
   area.innerHTML=h;
 
@@ -377,6 +396,8 @@ function renderQuestion(){
     $('#passageNext').onclick=()=>nextQuestion();
     if(q.speak) $('#speakBtn').onclick=()=>playSpeak(q.speak);
     if(q.speak) setTimeout(()=>playSpeak(q.speak), 500);
+  } else if(q.type==='speak'){
+    $('#demoBtn').onclick=()=>playSpeak(q.speak);
   } else if(q.speak){
     $('#speakBtn').onclick=()=>playSpeak(q.speak);
     const slowBtn=$('#slowBtn');
@@ -384,13 +405,15 @@ function renderQuestion(){
       const s=Object.assign({}, q.speak, {slow:true});
       playSpeak(s, ()=>setTimeout(()=>playSpeak(s), 400));
     };
-    // 自动读题：孩子还不太识字，题目带朗读配置时自动念出来（家长端可关）
-    if(Store.getSetting('autoread')) setTimeout(()=>playSpeak(q.speak), 400);
+    // 中文拼读题独立开关（默认开）：声母→韵母→音节 自动播报
+    const shouldAuto = q.speak.autoplay ? Store.getSetting('zhread') : Store.getSetting('autoread');
+    if(shouldAuto) setTimeout(()=>playSpeak(q.speak), 400);
   }
 
   if(q.type==='choice') bindChoice(q,item);
   else if(q.type==='type') bindType(q,item);
   else if(q.type==='build') bindBuild(q,item);
+  else if(q.type==='speak') bindSpeak(q,item);
 }
 
 /* ---------- 选择题 ---------- */
@@ -416,6 +439,172 @@ function bindChoice(q,item){
       }
     };
   });
+}
+
+/* ---------- 语音跟读题（声母 / 韵母认读） ----------
+ * 三条路径按设备能力自动切换，保证孩子不会被卡住：
+ *  A 浏览器语音识别可用 → 真正判音，读对才过关（HTTPS + 联网，Chrome 系）
+ *  B 识别不可用但能录音 → 录音回放 + 家长确认（iPad Safari 常见）
+ *  C 完全不支持 / 家长关闭 → 听音选一选（离线可用，仍可验证）
+ * 匹配逻辑见 js/zh-phonics.js 的 zhJudge（同音字白名单）。
+ */
+const SR_CLASS = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+function bindSpeak(q,item){
+  const area=$('#questionArea');
+  const status=$('#micStatus'), micBtn=$('#micBtn');
+  const pool=(typeof ZH_INITIALS!=='undefined' && q.kind==='initial') ? ZH_INITIALS : ZH_FINALS;
+  const target=pool.find(x=>x.p===q.target) || pool[0];
+  let done=false, tries=0, silent=0, useRecorder=!SR_CLASS;
+  let rec=null, recorder=null, stream=null, replayUrl=null;
+
+  function setStatus(msg,cls){ status.textContent=msg; status.className='mic-status '+(cls||''); }
+  function highlightFallback(){
+    const b=$('#choiceModeBtn'); if(!b) return;
+    b.classList.add('primary');
+    b.textContent='🎧 改用「听音选一选」（推荐）';
+  }
+  function cleanup(){
+    if(rec){ try{ rec.onresult=null; rec.onend=null; rec.onerror=null; rec.abort(); }catch(e){} rec=null; }
+    if(recorder){ try{ recorder.onstop=null; if(recorder.state==='recording') recorder.stop(); }catch(e){} recorder=null; }
+    if(stream){ try{ stream.getTracks().forEach(t=>t.stop()); }catch(e){} stream=null; }
+    if(replayUrl){ try{ URL.revokeObjectURL(replayUrl); }catch(e){} replayUrl=null; }
+    if(micBtn) micBtn.disabled=false;
+  }
+  _stopSpeechInput=cleanup;
+
+  function pass(){
+    if(done) return; done=true;
+    cleanup(); _stopSpeechInput=null;
+    setStatus('🎉 读对啦！','ok');
+    state.correct++; onCorrect(item); sfx('good');
+    showFeedback(true, q.explain, true);
+  }
+  function retry(msg){
+    tries++; setStatus(msg,'bad');
+    if(tries>=3) highlightFallback();
+  }
+
+  /* C：切换成听音辨音选择题 */
+  function switchToChoice(){
+    if(done) return;
+    cleanup(); _stopSpeechInput=null;
+    const cq=Object.assign({},q,{
+      type:'choice',
+      prompt:`🔊 听一听，选出这个${q.kind==='initial'?'声母':'韵母'}`,
+      sub:'点 🔊 可以再听一次，然后选出正确的拼音',
+      options:q.fallbackOptions||[], answer:q.target
+    });
+    area.innerHTML=`<div class="q-prompt">${cq.prompt}</div>
+      <div class="q-sub">${cq.sub}</div>
+      <button class="speak-btn" id="speakBtn">🔊 Listen</button>
+      <div class="option-grid" id="optGrid">`+
+      cq.options.map(o=>`<button class="option-btn" data-v="${o}">${o}</button>`).join('')+`</div>`;
+    $('#speakBtn').onclick=()=>playSpeak(q.speak);
+    bindChoice(cq,item);
+    setTimeout(()=>playSpeak(q.speak), 300);
+  }
+
+  /* A：语音识别判音 */
+  function startRecognition(){
+    if(done) return;
+    let got=false;
+    try{
+      rec=new SR_CLASS();
+      rec.lang='zh-CN'; rec.continuous=false;
+      rec.interimResults=false; rec.maxAlternatives=5;
+      rec.onstart=()=>setStatus('🎧 我在听… 大声读出来！','listening');
+      rec.onresult=e=>{
+        got=true; silent=0;
+        const alts=[];
+        for(let i=e.resultIndex||0;i<e.results.length;i++){
+          const r=e.results[i];
+          for(let j=0;j<r.length;j++) alts.push(r[j].transcript);
+        }
+        const v=zhJudge(alts,target,pool);
+        if(v.ok){ pass(); return; }
+        retry(v.wrong ? `听到「${v.heard}」，再读一次～` : `没听清（${v.heard}），再读一次～`);
+      };
+      rec.onerror=e=>{
+        got=true;
+        const k=e.error||'';
+        if(k==='not-allowed'||k==='service-not-allowed'){
+          setStatus('🎙️ 麦克风没开：请家长允许后重试，或改用听音选一选','bad'); highlightFallback();
+        }else if(k==='network'){
+          setStatus('🌐 语音识别需要联网，可改用听音选一选','bad'); highlightFallback();
+        }else if(k!=='aborted'){ retry('没听清，再读一次～'); }
+      };
+      rec.onend=()=>{
+        rec=null;
+        if(micBtn){ micBtn.disabled=false; micBtn.textContent='🎤 我再读一次'; }
+        if(done) return;
+        if(!got){
+          silent++;
+          if(silent>=2){
+            useRecorder=true;
+            setStatus('这台设备的语音识别不可用，已切换「录音回放 + 家长确认」','bad');
+            if(micBtn) micBtn.textContent='🎤 我来读（录音）';
+            highlightFallback();
+          }else setStatus('没有收到声音，再试一次～','bad');
+        }
+      };
+      rec.start();
+      if(micBtn){ micBtn.disabled=true; micBtn.textContent='🎧 正在听…'; }
+    }catch(err){
+      rec=null; useRecorder=true;
+      setStatus('语音识别启动失败，改用录音回放','bad');
+      startRecorder();
+    }
+  }
+
+  /* B：录音回放 + 家长确认 */
+  async function startRecorder(){
+    if(done) return;
+    const md=navigator.mediaDevices;
+    if(!md || !md.getUserMedia || !window.MediaRecorder){
+      setStatus('这台设备不能录音，请改用「听音选一选」','bad'); highlightFallback(); return;
+    }
+    try{
+      stream=await md.getUserMedia({audio:true});
+      recorder=new MediaRecorder(stream);
+      const chunks=[];
+      recorder.ondataavailable=e=>{ if(e.data && e.data.size) chunks.push(e.data); };
+      recorder.onstop=()=>{
+        try{ stream && stream.getTracks().forEach(t=>t.stop()); }catch(e){}
+        stream=null; recorder=null;
+        if(micBtn){ micBtn.disabled=false; micBtn.textContent='🎤 再读一次'; }
+        if(done) return;
+        if(!chunks.length){ setStatus('没录到声音，再读一次～','bad'); return; }
+        const blob=new Blob(chunks,{type:'audio/webm'});
+        if(replayUrl) URL.revokeObjectURL(replayUrl);
+        replayUrl=URL.createObjectURL(blob);
+        setStatus('🔊 听听自己读的，再请家长确认 ✓','ok');
+        const box=$('#replayBox'); if(!box) return;
+        box.classList.remove('hidden');
+        box.innerHTML=`<button class="btn-secondary" id="replayBtn">▶️ 回放我的声音</button>
+          <button class="btn-primary" id="parentOkBtn">✅ 家长确认：读对了</button>`;
+        $('#replayBtn').onclick=()=>{ const a=new Audio(replayUrl); a.play().catch(()=>{}); };
+        $('#parentOkBtn').onclick=()=>pass();
+      };
+      recorder.start();
+      setStatus('🎙️ 录音中… 现在大声读（约 2 秒）','listening');
+      if(micBtn){ micBtn.disabled=true; micBtn.textContent='🎙️ 录音中…'; }
+      setTimeout(()=>{ try{ if(recorder && recorder.state==='recording') recorder.stop(); }catch(e){} }, 2200);
+    }catch(err){
+      setStatus('麦克风打不开：请家长检查权限，或改用听音选一选','bad');
+      highlightFallback();
+      if(micBtn) micBtn.disabled=false;
+    }
+  }
+
+  /* 家长端关掉了麦克风 → 直接走 C */
+  if(!Store.getSetting('mic')){ switchToChoice(); return; }
+  if(useRecorder){
+    setStatus('这台设备用「录音回放 + 家长确认」','');
+    if(micBtn) micBtn.textContent='🎤 我来读（录音）';
+  }
+  micBtn.onclick=()=> useRecorder ? startRecorder() : startRecognition();
+  $('#choiceModeBtn').onclick=()=>switchToChoice();
 }
 
 /* ---------- 打字题 ---------- */
@@ -713,6 +902,9 @@ function renderParent(){
       <h3>Settings</h3>
       <label class="setting-row"><input type="checkbox" id="optAutoread" ${Store.getSetting('autoread')?'checked':''}/> 🔊 Auto read questions aloud（自动读题，使用高清录音）</label>
       <label class="setting-row"><input type="checkbox" id="optSound" ${Store.getSetting('sound')?'checked':''}/> 🔔 Sound effects &amp; Pokémon cheers（音效 + 宝可梦鼓励语）</label>
+      <label class="setting-row"><input type="checkbox" id="optZhread" ${Store.getSetting('zhread')?'checked':''}/> 🧩 中文拼读自动播报（声母 → 韵母 → 音节）</label>
+      <label class="setting-row"><input type="checkbox" id="optMic" ${Store.getSetting('mic')?'checked':''}/> 🎤 语音跟读题（读出声母/韵母，读对才过关）</label>
+      <p class="muted" style="font-size:13px;line-height:1.5">关闭语音跟读后，认读题自动变成「听音选一选」。语音识别需 Chrome/Edge + 联网；iPad 不支持时会自动降级为「录音回放 + 家长确认」。</p>
     </div>
 
     <div class="parent-block">
@@ -733,6 +925,8 @@ function renderParent(){
   $('#parentHomeBtn').onclick=()=>show('screen-home');
   $('#optAutoread').onchange=e=>Store.setSetting('autoread', e.target.checked);
   $('#optSound').onchange=e=>Store.setSetting('sound', e.target.checked);
+  $('#optZhread').onchange=e=>Store.setSetting('zhread', e.target.checked);
+  $('#optMic').onchange=e=>Store.setSetting('mic', e.target.checked);
 
   // 导出：存档下载为 JSON 文件
   $('#exportBtn').onclick=()=>{

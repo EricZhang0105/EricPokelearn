@@ -1,26 +1,35 @@
 /* PokeLearn service worker — offline-capable PWA
- * 缓存策略（v2）：
+ * 缓存策略（v4）：
  * - HTML / JS / CSS / manifest：网络优先，断网回退缓存 → 改版后孩子设备立刻拿到新版本
  * - 图片（精灵图、图标）：缓存优先 → 秒开且省流量
+ * - 中文拼音音频：安装时预缓存（125 段 / 1.4MB），第一次打开就能离线听
  * 改了静态文件后请把 CACHE 里的版本号 +1，强制刷新图片缓存。
  */
-const CACHE = 'pokelearn-v3';
+const CACHE = 'pokelearn-v4';
 const SHELL = [
   './',
   './index.html',
   './css/styles.css',
   './js/pokemon.js',
+  './js/zh-phonics.js',
   './js/data.js',
   './js/storage.js',
   './js/audio-map.js',
+  './js/zh-audio-list.js',
   './js/app.js',
   './manifest.webmanifest'
 ];
+try { importScripts('./js/zh-audio-list.js'); } catch (e) {}
+const ZH_AUDIO_FILES = self.ZH_AUDIO_LIST || [];
 const IMG_EXT = /\.(png|jpe?g|svg|webp|gif)$/i;
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(SHELL).catch(() => {})).then(() => self.skipWaiting())
+    caches.open(CACHE).then(async c => {
+      try { await c.addAll(SHELL); } catch (err) {}
+      // 逐条写入，单条失败不影响其余音频
+      await Promise.all(ZH_AUDIO_FILES.map(p => c.add('./' + p).catch(() => {})));
+    }).then(() => self.skipWaiting())
   );
 });
 
