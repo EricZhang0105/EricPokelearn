@@ -6,8 +6,9 @@
    - 分支由小朋友在进化那一刻自己选，选完写入存档
    ========================================================= */
 
-const ENERGY_PER_STAGE = 100;   // 每阶所需能量（10 套题进化一次，攒够有成就感）
-const ENERGY_PER_LESSON = 10;   // 每完成一套题获得能量
+const ENERGY_PER_STAGE = 100;   // 每阶所需能量（攒满进化一阶）
+const ENERGY_PER_LESSON = 10;   // 每完成一套题获得能量（旧规则，仅部分文案还在用）
+const ENERGY_PER_ANSWER = 2;    // 每道题：答对 +2，答错 −2
 
 /* 官方高清精灵图（已本地化，见 img/pokemon/） */
 function pokeImg(id){ return 'img/pokemon/'+id+'.webp'; }

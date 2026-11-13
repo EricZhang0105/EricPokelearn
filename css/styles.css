@@ -555,3 +555,84 @@ body{
   .mistake-fab .fab-img{width:52px;height:52px;}
   .mistake-fab .fab-alert{width:28px;height:28px;font-size:18px;line-height:22px;top:-10px;}
 }
+
+/* =========================================================
+   v15：每套 10 题 · 答对+2/答错−2 · 退化/昏倒 · 全对放技能
+   ========================================================= */
+/* 昏倒 / 退化的宝可梦：灰化 */
+img.img-dead,img.result-dead{filter:grayscale(1) opacity(.6);}
+.poke-opt.dead{filter:grayscale(1);opacity:.55;background:#E8E4DC;}
+.poke-opt.dead .nm,.poke-opt.dead .cn,.poke-opt.dead .stage{color:#8A857C;}
+
+/* 全屏剧情动画层 */
+.fx-overlay{position:fixed;inset:0;z-index:70;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;}
+.fx-overlay.hidden{display:none !important;}
+.fx-stage{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+/* 进化：深色舞台 + 白光闪烁 */
+.fx-overlay.fx-evo{background:radial-gradient(circle at 50% 42%,#3b3b55 0%,#14141f 70%);}
+.fx-flash{animation:fxFlash .5s steps(2,end) infinite;}
+@keyframes fxFlash{
+  0%{filter:brightness(0) invert(1);}
+  50%{filter:brightness(3) saturate(0);}
+  100%{filter:brightness(0) invert(1);}
+}
+.fx-born{animation:fxBorn .9s cubic-bezier(.2,1.6,.4,1) both;}
+@keyframes fxBorn{
+  0%{transform:scale(.2);filter:brightness(4) saturate(0);}
+  60%{transform:scale(1.18);filter:brightness(1.6);}
+  100%{transform:scale(1);filter:none;}
+}
+/* 被击败：暗红舞台 + 抖动倒下 + 灰化 */
+.fx-overlay.fx-defeat{background:radial-gradient(circle at 50% 42%,#4b1f1f 0%,#120a0a 70%);}
+.fx-fall{animation:fxFall 1.6s ease-in both;filter:grayscale(.9);}
+@keyframes fxFall{
+  0%{transform:rotate(0) translateY(0);}
+  12%{transform:rotate(-7deg) translateY(-6px);}
+  24%{transform:rotate(6deg) translateY(2px);}
+  36%{transform:rotate(-4deg) translateY(-2px);}
+  55%{transform:rotate(78deg) translateY(26px);opacity:.85;}
+  100%{transform:rotate(84deg) translateY(34px);opacity:.55;}
+}
+.fx-smoke{font-size:34px;margin-top:-8px;animation:fxSmoke 2s ease-out both;}
+@keyframes fxSmoke{
+  0%{opacity:0;transform:translateY(10px) scale(.6);}
+  40%{opacity:.9;}
+  100%{opacity:.3;transform:translateY(-16px) scale(1.2);}
+}
+/* 必杀技：蓄力 + 光束爆发 */
+.fx-overlay.fx-skill{background:radial-gradient(circle at 50% 45%,#12314e 0%,#071019 70%);animation:fxShake .5s linear;}
+@keyframes fxShake{
+  0%,100%{transform:translate(0,0);}
+  20%{transform:translate(-6px,3px);}
+  40%{transform:translate(5px,-4px);}
+  60%{transform:translate(-4px,-2px);}
+  80%{transform:translate(4px,3px);}
+}
+.fx-charge{animation:fxCharge 1.1s ease-in both;}
+@keyframes fxCharge{
+  0%{transform:scale(1);filter:brightness(1);}
+  70%{transform:scale(.92);filter:brightness(1.5) saturate(1.4);}
+  100%{transform:scale(1.05);filter:brightness(2);}
+}
+.fx-beam{width:6px;height:6px;border-radius:50%;background:#fff;
+  box-shadow:0 0 24px 12px rgba(120,200,255,.9),0 0 60px 30px rgba(60,140,255,.5);
+  animation:fxBeam .9s cubic-bezier(.7,0,1,1) .95s both;}
+@keyframes fxBeam{
+  0%{transform:scale(1);opacity:0;}
+  30%{transform:scale(2.4);opacity:1;}
+  100%{transform:scale(26,7);opacity:.9;}
+}
+.fx-burst{font-size:30px;letter-spacing:8px;animation:fxBurst 1.2s ease-out both;}
+@keyframes fxBurst{
+  0%{opacity:0;transform:scale(.5);}
+  40%{opacity:1;transform:scale(1.15);}
+  100%{opacity:.85;transform:scale(1);}
+}
+.fx-caption{color:#fff;font-size:22px;font-weight:800;text-align:center;line-height:1.5;
+  text-shadow:0 2px 8px rgba(0,0,0,.6);max-width:86vw;}
+.fx-title{font-size:26px;}
+.fx-sprite{width:190px;height:190px;display:flex;align-items:center;justify-content:center;}
+.fx-sprite img{width:180px;height:180px;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5));}
+.fx-skip{position:fixed;bottom:22px;left:0;right:0;text-align:center;color:rgba(255,255,255,.55);
+  font-size:13px;}

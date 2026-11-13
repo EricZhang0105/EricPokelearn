@@ -183,14 +183,11 @@
     </div>
   </div>
 
-  <!-- 进化庆祝弹窗 -->
-  <div id="evolveModal" class="modal hidden">
-    <div class="modal-card evolve-card">
-      <div class="evolve-spark">✨</div>
-      <h2 id="evolveTitle">Evolved!</h2>
-      <div class="evolve-stage" id="evolveStage"></div>
-      <button class="btn-primary" id="evolveCloseBtn">Awesome!</button>
-    </div>
+  <!-- 全屏剧情动画（进化 / 被击败 / 技能），点击任意处可跳过 -->
+  <div id="fxOverlay" class="fx-overlay hidden">
+    <div class="fx-stage" id="fxStage"></div>
+    <div class="fx-caption" id="fxCaption"></div>
+    <div class="fx-skip">点击任意处跳过</div>
   </div>
 
   <!-- 屏幕键盘容器 -->

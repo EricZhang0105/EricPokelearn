@@ -40,7 +40,7 @@ const MATH = [
     desc:'Count objects and recognise numbers (MOE N2)',
     make(){
       const out=[];
-      for(let i=0;i<8;i++){
+      for(let i=0;i<10;i++){
         const n=ri(1,10), e=pick(['🍎','⭐','🐟','🚗','🌸']);
         out.push({type:'choice', prompt:`How many?`, visual:emojiGroup(n,e),
           speak:{text:`Count the ${e}. How many?`,lang:'en-US'},
@@ -53,7 +53,7 @@ const MATH = [
     desc:'Two parts make the whole: 8 + 1 = ? (MOE N2/K1)',
     make(){
       const out=[];
-      for(let i=0;i<8;i++){
+      for(let i=0;i<10;i++){
         const p1=ri(2,8), p2=ri(2,10-p1), w=p1+p2;   // 两个部分都在 2–8，整句写成 8 + 1 = ?
         out.push({type:'choice', prompt:`Add the two parts`, sub:`${p1} + ${p2} = ?`,
           speak:{text:`${p1} plus ${p2} equals what?`,lang:'en-US'},
@@ -66,7 +66,7 @@ const MATH = [
     desc:'Add by combining (MOE K1)',
     make(){
       const out=[];
-      for(let i=0;i<8;i++){
+      for(let i=0;i<10;i++){
         let a=ri(1,9), b=ri(1,9-a); const ans=a+b;
         out.push({type:'choice', prompt:`How many in all?`,
           visual:emojiGroup(a,'🍎')+`<div class="q-sub">+</div>`+emojiGroup(b,'🍎'),
@@ -80,7 +80,7 @@ const MATH = [
     desc:'Two parts make the whole: 12 + 5 = ? (MOE K1)',
     make(){
       const out=[];
-      for(let i=0;i<8;i++){
+      for(let i=0;i<10;i++){
         let p1,p2,guard=0;                            // 两部分都在 2–10，合起来 11–20
         do{ p1=ri(2,10); p2=ri(2,10); }while(p1+p2<11 && guard++<50);
         const w=p1+p2;
@@ -95,7 +95,7 @@ const MATH = [
     desc:'Make-10 strategy (MOE K1)',
     make(){
       const out=[];
-      for(let i=0;i<8;i++){
+      for(let i=0;i<10;i++){
         const a=ri(8,9), b=ri(11-a,9);          // 保证 a+b>10 且 ≤18，Make-10 才成立
         const ans=a+b, need=10-a, left=b-need;
         out.push({type:'choice', prompt:`Add with Make-10 thinking`, sub:`${a} + ${b} = ?`,
@@ -111,7 +111,7 @@ const MATH = [
     desc:'Take away and find the rest (MOE K1)',
     make(){
       const out=[];
-      for(let i=0;i<8;i++){
+      for(let i=0;i<10;i++){
         const a=ri(2,10), b=ri(1,a-1); const ans=a-b;
         out.push({type:'choice', prompt:`How many are left?`, sub:`${a} − ${b} = ?`,
           visual:blocks(a,{removed:b})+`<div class="q-sub">take away ${b} ✕</div>`,
@@ -125,7 +125,7 @@ const MATH = [
     desc:'Subtract within 20 (MOE K1/K2)',
     make(){
       const out=[];
-      for(let i=0;i<8;i++){
+      for(let i=0;i<10;i++){
         const a=ri(11,20), b=ri(1,Math.min(9,a-2)); const ans=a-b;
         out.push({type:'choice', prompt:`How many are left?`, sub:`${a} − ${b} = ?`,
           visual:blocks(a,{removed:b})+`<div class="q-sub">− ${b} take away ✕</div>`,
@@ -166,10 +166,10 @@ const MATH = [
         t=>`${t.n} has ${t.a} ${t.e} in a bag. ${t.b} of them are lost. How many ${t.v} are in the bag?`,
         t=>`${t.n} has ${t.a} ${t.e}. Mom takes ${t.b} away. How many ${t.v} left?`,
       ];
-      const people = shuffle(CAST).slice(0,8);
+      const people = shuffle(CAST).slice(0,10);
       const kinds  = shuffle([
-        ...shuffle(ADD).slice(0,4).map(f=>({op:'+',f})),
-        ...shuffle(SUB).slice(0,4).map(f=>({op:'-',f}))
+        ...shuffle(ADD).slice(0,5).map(f=>({op:'+',f})),
+        ...shuffle(SUB).slice(0,5).map(f=>({op:'-',f}))
       ]);
       return kinds.map((k,i)=>{
         const p=people[i]; let a,b;
@@ -188,7 +188,7 @@ const MATH = [
     desc:'Mix of add and subtract within 20',
     make(){
       const out=[];
-      for(let i=0;i<8;i++){
+      for(let i=0;i<10;i++){
         const op=Math.random()<0.5?'+':'-'; let a,b,ans;
         if(op==='+'){ a=ri(1,15); b=ri(1,Math.min(20-a,15)); ans=a+b; }
         else { a=ri(6,20); b=ri(1,a-1); ans=a-b; }
@@ -212,6 +212,8 @@ const READ_PASSAGES=[
     qs:[
       {q:'What color is the cat?', o:['red','blue','green'], a:'red'},
       {q:'Where does the cat sit?', o:['on a mat','on a bed','in a box'], a:'on a mat'},
+      {q:'What does Sam do?', o:['pats the cat','feeds the cat','walks the cat'], a:'pats the cat'},
+      {q:'Is the cat sad?', o:['Yes','No'], a:'No'},
       {q:'How does the cat feel?', short:true, a:'happy', accept:['happy','glad'], hint:'h _ _ _ _'}
     ]},
   { id:'rp-dog', title:"Ben's Dog", visual:'🐶',
@@ -219,21 +221,27 @@ const READ_PASSAGES=[
     qs:[
       {q:'What does Ben have?', o:['a dog','a cat','a fish'], a:'a dog'},
       {q:'Can the dog jump?', o:['Yes','No'], a:'Yes'},
-      {q:'Who loves the dog?', short:true, a:'Ben', accept:['ben'], hint:'B _ _'}
+      {q:'What can the dog do?', o:['run and jump','sleep all day','sit and cry'], a:'run and jump'},
+      {q:'Is the dog small?', o:['Yes','No'], a:'No'},
+      {q:'Ben has a big ___.', short:true, a:'dog', accept:['dog'], hint:'d _ _'}
     ]},
   { id:'rp-sun', title:'The Big Sun', visual:'☀️',
     text:'The sun is big. The sun is hot. We can see the sun in the day. We play in the sun.',
     qs:[
       {q:'Is the sun hot?', o:['Yes','No'], a:'Yes'},
       {q:'When can we see the sun?', o:['in the day','at night','in the rain'], a:'in the day'},
-      {q:'What do we do in the sun?', short:true, a:'play', accept:['play','we play'], hint:'p _ _ _'}
+      {q:'Is the sun small?', o:['Yes','No'], a:'No'},
+      {q:'What do we do in the sun?', o:['We play','We sleep','We cry'], a:'We play'},
+      {q:'The sun is big and ___.', short:true, a:'hot', accept:['hot'], hint:'h _ _'}
     ]},
   { id:'rp-park', title:'At the Park', visual:'🌳',
     text:'We go to the park. I see a red ball. Tom kicks the ball. We are happy at the park.',
     qs:[
       {q:'Where do we go?', o:['the park','the school','the shop'], a:'the park'},
       {q:'What color is the ball?', o:['red','yellow','black'], a:'red'},
-      {q:'Who kicks the ball?', short:true, a:'Tom', accept:['tom'], hint:'T _ _'}
+      {q:'What does Tom do?', o:['kicks the ball','eats the ball','sleeps on the ball'], a:'kicks the ball'},
+      {q:'Are we happy at the park?', o:['Yes','No'], a:'Yes'},
+      {q:'I see a ___ ball.', short:true, a:'red', accept:['red'], hint:'r _ _'}
     ]},
 ];
 const CVC=['cat','dog','sun','pig','cup','hat','bug','pen','top','map','fox','bus','red','box','leg','sit','hot','run'];
@@ -249,6 +257,11 @@ const BUILD=[
   {tiles:['We','go','to','school','.'],a:'We go to school .'},
   {tiles:['I','like','my','book','.'],a:'I like my book .'},
   {tiles:['The','sun','is','hot','.'],a:'The sun is hot .'},
+  {tiles:['The','dog','can','run','.'],a:'The dog can run .'},
+  {tiles:['Look','at','the','sun','.'],a:'Look at the sun .'},
+  {tiles:['She','has','a','ball','.'],a:'She has a ball .'},
+  {tiles:['We','are','happy','.'],a:'We are happy .'},
+  {tiles:['I','can','see','a','bird','.'],a:'I can see a bird .'},
 ];
 
 /* 语法：常见结构，每题一个知识点，答对后播报完整句子 */
@@ -261,40 +274,92 @@ const GRAMMAR_ITEMS=[
   {s:'She ___ reading a book.',     o:['is','are'],      a:'is',   why:'She 是单数，用 is'},
   {s:'He ___ to school every day.', o:['go','goes'],     a:'goes', why:'第三人称单数动词加 -es'},
   {s:'___ is your name?',           o:['What','Who'],    a:'What', why:'问名字用 What is your name?'},
+  {s:'The dog ___ a tail.',         o:['has','have'],    a:'has',  why:'单数主语用 has'},
+  {s:'I ___ a pencil.',             o:['has','have'],    a:'have', why:'I / you / 复数用 have'},
 ];
 
-/* 分级读物（原创可解码读物，按 Level 分级） */
+/* 分级读物（原创可解码读物，按 Level 分级；每本 10 道理解题，凑满一套 10 题） */
 const READERS=[
   { id:'r-samcat', level:1, title:'Sam and the Cat', emoji:'🐱',
     desc:'Level 1 · short decodable sentences',
     passage:`Sam has a cat. The cat is red. Sam can pat the cat. The cat is fun!`,
     visual:'🐱🔴',
-    qa:[ {q:'What pet does Sam have?',o:['a cat','a dog','a sun'],a:'a cat'},
-          {q:'Is the cat red?',o:['Yes','No'],a:'Yes'} ] },
+    qa:[
+      {q:'What pet does Sam have?',o:['a cat','a dog','a sun'],a:'a cat'},
+      {q:'Is the cat red?',o:['Yes','No'],a:'Yes'},
+      {q:'Is the cat blue?',o:['Yes','No'],a:'No'},
+      {q:'Who has a cat?',o:['Sam','Ben','Tom'],a:'Sam'},
+      {q:'What does Sam do?',o:['pats the cat','eats the cat','walks the cat'],a:'pats the cat'},
+      {q:'Is the cat fun?',o:['Yes','No'],a:'Yes'},
+      {q:'What color is the cat?',o:['red','blue','green'],a:'red'},
+      {q:'Can Sam pat the cat?',o:['Yes','No'],a:'Yes'},
+      {q:'Does Sam have a dog?',o:['Yes','No'],a:'No'},
+      {q:'The cat is ___.',short:true,a:'fun',accept:['fun'],hint:'f _ _'}
+    ] },
   { id:'r-sun', level:1, title:'The Big Sun', emoji:'☀️',
     desc:'Level 1 · sight words + CVC',
     passage:`The sun is hot. The sun is big. We like the sun. The sun is up.`,
     visual:'☀️',
-    qa:[ {q:'Is the sun hot?',o:['Yes','No'],a:'Yes'},
-          {q:'Is the sun small?',o:['Yes','No'],a:'No'} ] },
+    qa:[
+      {q:'Is the sun hot?',o:['Yes','No'],a:'Yes'},
+      {q:'Is the sun small?',o:['Yes','No'],a:'No'},
+      {q:'Is the sun big?',o:['Yes','No'],a:'Yes'},
+      {q:'Do we like the sun?',o:['Yes','No'],a:'Yes'},
+      {q:'What do we like?',o:['the sun','the rain','the cat'],a:'the sun'},
+      {q:'Is the sun cold?',o:['Yes','No'],a:'No'},
+      {q:'Where is the sun?',o:['up','down','in a box'],a:'up'},
+      {q:'The sun is hot and ___.',o:['big','small','sad'],a:'big'},
+      {q:'Is the sun up?',o:['Yes','No'],a:'Yes'},
+      {q:'We like the ___.',short:true,a:'sun',accept:['sun'],hint:'s _ _'}
+    ] },
   { id:'r-dog', level:2, title:"Ben's Dog", emoji:'🐶',
     desc:'Level 2 · simple story',
     passage:`Ben has a big dog. The dog can run. The dog can jump. Ben likes his dog.`,
     visual:'🐶',
-    qa:[ {q:'What does Ben have?',o:['a dog','a cat','a sun'],a:'a dog'},
-          {q:'Can the dog jump?',o:['Yes','No'],a:'Yes'} ] },
+    qa:[
+      {q:'What does Ben have?',o:['a dog','a cat','a sun'],a:'a dog'},
+      {q:'Can the dog jump?',o:['Yes','No'],a:'Yes'},
+      {q:'Who has a dog?',o:['Ben','Sam','Tom'],a:'Ben'},
+      {q:'Is the dog big?',o:['Yes','No'],a:'Yes'},
+      {q:'What can the dog do?',o:['run and jump','fly','swim'],a:'run and jump'},
+      {q:'Does Ben like his dog?',o:['Yes','No'],a:'Yes'},
+      {q:'Is the dog small?',o:['Yes','No'],a:'No'},
+      {q:'Who likes the dog?',o:['Ben','Tom','The cat'],a:'Ben'},
+      {q:'Can the dog run?',o:['Yes','No'],a:'Yes'},
+      {q:'Ben has a big ___.',short:true,a:'dog',accept:['dog'],hint:'d _ _'}
+    ] },
   { id:'r-rain', level:2, title:'A Rainy Day', emoji:'🌧️',
     desc:'Level 2 · everyday words',
     passage:`It is raining. Mom has an umbrella. We sit and read a book. We are happy.`,
     visual:'🌧️☂️📖',
-    qa:[ {q:'What does Mom have?',o:['an umbrella','a dog','a ball'],a:'an umbrella'},
-          {q:'Is it raining?',o:['Yes','No'],a:'Yes'} ] },
+    qa:[
+      {q:'What does Mom have?',o:['an umbrella','a dog','a ball'],a:'an umbrella'},
+      {q:'Is it raining?',o:['Yes','No'],a:'Yes'},
+      {q:'Is it sunny?',o:['Yes','No'],a:'No'},
+      {q:'Who has an umbrella?',o:['Mom','Ben','Sam'],a:'Mom'},
+      {q:'What do we do?',o:['sit and read','run and jump','swim'],a:'sit and read'},
+      {q:'What do we read?',o:['a book','a ball','a cat'],a:'a book'},
+      {q:'Are we sad?',o:['Yes','No'],a:'No'},
+      {q:'Are we happy?',o:['Yes','No'],a:'Yes'},
+      {q:'What is the weather?',o:['raining','snowing','sunny'],a:'raining'},
+      {q:'We read a ___.',short:true,a:'book',accept:['book'],hint:'b _ _ _'}
+    ] },
   { id:'r-park', level:3, title:'At the Park', emoji:'🏞️',
     desc:'Level 3 · short paragraph',
     passage:`We go to the park. I see a red ball. Tom can kick the ball. We are happy at the park.`,
     visual:'🏞️🔴⚽',
-    qa:[ {q:'Where do we go?',o:['the park','the school','the home'],a:'the park'},
-          {q:'What color is the ball?',o:['red','blue','green'],a:'red'} ] },
+    qa:[
+      {q:'Where do we go?',o:['the park','the school','the home'],a:'the park'},
+      {q:'What color is the ball?',o:['red','blue','green'],a:'red'},
+      {q:'Who can kick the ball?',o:['Tom','Ben','Mom'],a:'Tom'},
+      {q:'Is the ball blue?',o:['Yes','No'],a:'No'},
+      {q:'What do I see?',o:['a red ball','a cat','a big sun'],a:'a red ball'},
+      {q:'Are we happy?',o:['Yes','No'],a:'Yes'},
+      {q:'Where are we happy?',o:['at the park','at school','in the rain'],a:'at the park'},
+      {q:'Can Tom kick the ball?',o:['Yes','No'],a:'Yes'},
+      {q:'Do we go to the park?',o:['Yes','No'],a:'Yes'},
+      {q:'I see a ___ ball.',short:true,a:'red',accept:['red'],hint:'r _ _'}
+    ] },
 ];
 
 const ENGLISH=[
@@ -302,7 +367,7 @@ const ENGLISH=[
     desc:'See a word and read it (listen & choose)',
     make(){
       const out=[];
-      for(let i=0;i<8;i++){
+      for(let i=0;i<10;i++){
         const w=pick(SIGHT);
         const opts=shuffle([w,...shuffle(SIGHT.filter(x=>x!==w)).slice(0,2)]);
         out.push({type:'choice', prompt:`Listen, then tap the word 👂`,
@@ -316,7 +381,7 @@ const ENGLISH=[
     desc:'Hear the word and spell it',
     make(){
       const out=[];
-      shuffle(CVC).slice(0,8).forEach(w=>{
+      shuffle(CVC).slice(0,10).forEach(w=>{
         out.push({type:'type', prompt:`Listen and spell the word 🔊`,
           sub:`(Tap 🔊, then spell with the keyboard)`, speak:{text:w,lang:'en-US'},
           answer:w, explain:`Spell: ${w.split('').join('-')}.`});
@@ -352,7 +417,7 @@ const ENGLISH=[
     desc:'Tap words in order to make a sentence',
     make(){
       const out=[];
-      shuffle(BUILD).slice(0,6).forEach(b=>{
+      shuffle(BUILD).slice(0,10).forEach(b=>{
         out.push({type:'build', prompt:`Tap the words in order to build a sentence`,
           sub:`Put the words in the right order`, tiles:shuffle(b.tiles), answer:b.a,
           speak:{text:b.a.replace(/ \./g,'.'),lang:'en-US'}});
@@ -378,7 +443,7 @@ const ENGLISH=[
     desc:'Listen to the word and pick its first letter',
     make(){
       const out=[];
-      shuffle(PHON).slice(0,8).forEach(p=>{
+      shuffle(PHON).slice(0,10).forEach(p=>{
         const opts=shuffle([p.a,...shuffle('bcdfghjklmnprst'.split('').filter(x=>x!==p.a)).slice(0,2)]);
         out.push({type:'choice', prompt:`Which letter starts this word?`,
           visual:`<div class="q-visual">${p.e}</div>`, sub:`"${p.w}" — what is the first letter?`,
@@ -394,8 +459,15 @@ const ENGLISH=[
       const items=[{type:'passage', title:r.title, text:r.passage, visual:r.visual,
         speak:{text:r.passage,lang:'en-US'}}];
       r.qa.forEach(qa=>{
-        items.push({type:'choice', prompt:`Question`, sub:qa.q,
-          speak:{text:qa.q,lang:'en-US'}, options:shuffle(qa.o), answer:qa.a, explain:`Answer: ${qa.a}.`});
+        if(qa.short){
+          items.push({type:'type', short:true, prompt:'Short answer', sub:qa.q,
+            hint:qa.hint, accept:qa.accept,
+            speak:{text:qa.q,lang:'en-US'}, answer:qa.a, explain:`Answer: ${qa.a}.`});
+        }else{
+          items.push({type:'choice', prompt:`Question`, sub:qa.q,
+            speak:{text:qa.q,lang:'en-US'}, options:shuffle(qa.o), answer:qa.a,
+            explain:`Answer: ${qa.a}.`});
+        }
       });
       return items;
     }
@@ -426,9 +498,9 @@ const CHINESE=[
       const marks=['—','↗','∨','↘'];   // 平 / 扬 / 拐 / 降，图形化更好认
       const combos=[];
       // 先保证四个声调各出一题，再补足 8 题，避免整节课只考一种调
-      [1,2,3,4].forEach(t=>combos.push({g:pick(ZH_TONES), t}));
+      [1,2,3,4,1,2,3,4,1,2].forEach(t=>combos.push({g:pick(ZH_TONES), t}));
       let guard=0;
-      while(combos.length<8 && guard++<200){
+      while(combos.length<10 && guard++<300){
         const g=pick(ZH_TONES), t=ri(1,4);
         if(!combos.some(x=>x.g.base===g.base && x.t===t)) combos.push({g,t});
       }
@@ -451,7 +523,7 @@ const CHINESE=[
   { id:'c-initial', title:'Initials 声母认读', emoji:'🎧',
     desc:'听示范音 → 选声母（也可点「我来读」跟读）',
     make(){
-      return shuffle(ZH_INITIALS).slice(0,8).map(t=>({
+      return shuffle(ZH_INITIALS).slice(0,10).map(t=>({
         type:'choice', canSpeak:true, kind:'initial', target:t.p,
         prompt:'🔊 听一听，选出这个声母',
         sub:'点 🔊 可以再听一次，然后选出正确的拼音',
@@ -466,7 +538,7 @@ const CHINESE=[
   { id:'c-final', title:'Finals 韵母认读', emoji:'🎧',
     desc:'听示范音 → 选韵母（也可点「我来读」跟读）',
     make(){
-      return shuffle(ZH_FINALS).slice(0,8).map(t=>({
+      return shuffle(ZH_FINALS).slice(0,10).map(t=>({
         type:'choice', canSpeak:true, kind:'final', target:t.p,
         prompt:'🔊 听一听，选出这个韵母',
         sub:'点 🔊 可以再听一次，然后选出正确的拼音',
@@ -481,7 +553,7 @@ const CHINESE=[
   { id:'c-whole', title:'Whole Syllables 整体认读音节', emoji:'🔤',
     desc:'16 个「不用拼、直接读」的音节（听音选一选，也可点「我来读」）',
     make(){
-      return shuffle(ZH_WHOLES).slice(0,8).map(t=>({
+      return shuffle(ZH_WHOLES).slice(0,10).map(t=>({
         type:'choice', canSpeak:true, kind:'whole', target:t.p,
         prompt:'🔊 听一听，选出这个整体认读音节',
         sub:'整体认读音节不用拼，看到就能直接读出来',
@@ -496,7 +568,7 @@ const CHINESE=[
   { id:'c-blend', title:'Blending 拼读练习', emoji:'🧩',
     desc:'声母+韵母（带声调），带语音播报：听 → 跟读 → 选音节',
     make(){
-      return shuffle(ZH_BLENDS).slice(0,8).map(it=>{
+      return shuffle(ZH_BLENDS).slice(0,10).map(it=>{
         const finT = zhToneMark(it.fin, it.tone);   // 韵母带调号，拼读时看得清是第几声
         const sylT = zhToneMark(it.syl, it.tone);   // 拼出来的音节同样带调号
         const tName = zhToneName(it.tone);
@@ -515,7 +587,7 @@ const CHINESE=[
     desc:'给认识的汉字找正确的拼音',
     make(){
       const out=[];
-      shuffle(CHARS.map((c,i)=>Object.assign({},c,{i}))).slice(0,8).forEach(ch=>{
+      shuffle(CHARS.map((c,i)=>Object.assign({},c,{i}))).slice(0,10).forEach(ch=>{
         const decoys=shuffle(CHARS.filter(x=>x.c!==ch.c)).slice(0,2).map(x=>x.p);
         out.push({type:'choice', prompt:`这个字的拼音是？`,
           sub:`<span style="font-size:54px;font-weight:800">${ch.c}</span>`,

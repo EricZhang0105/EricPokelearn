@@ -1,11 +1,13 @@
 /* =========================================================
    存档层 v4：所有进度存于 localStorage
    save = {
-     schema: 4,
-     pokemon: { id: {energy, stage, branch} },  // stage 显式记录，一课最多升一阶
+     schema: 5,
+     pokemon: { id: {energy, stage, branch, deadUntil} },  // stage 显式记录；deadUntil=昏睡到哪天
      lessonDone, mistakes, attempts, settings, lastSession, currentSession
    }
-   每套题 10 点能量，每阶 100 点（10 套题进化一次）。
+   每答对一题 +2 能量、答错 −2；每阶 100 点。
+   能量扣到负数：已进化的退化一阶（负余额结转）；未进化过的直接昏倒（死亡），
+   deadUntil 记到第二天，到点自动复活（0 能量、第 1 阶）。
    旧存档（schema 3，60 点/阶）会在 load() 时自动按比例折算能量，学习统计/错题保留。
    ========================================================= */
 const SAVE_KEY = 'pokeLearnSave_v1';   // 保持原 key，做原地迁移，不丢历史数据
@@ -47,11 +49,12 @@ const Store = {
       if(typeof o.stage==='number'){
         p[pk.id]={ energy: Math.max(0,Number(o.energy)||0),
                    stage: Math.max(0,Math.min(o.stage, pk.stages.length-1)),
-                   branch: Number.isInteger(o.branch) ? o.branch : null };
+                   branch: Number.isInteger(o.branch) ? o.branch : null,
+                   deadUntil: (typeof o.deadUntil==='string' && o.deadUntil) ? o.deadUntil : null };
       }else{
         // 旧版：阶段由总能量推算，可能已经跳级 → 归零重新逐级累计
         p[pk.id]={ energy: Math.min(Math.max(0,Number(o.energy)||0), ENERGY_PER_STAGE-1),
-                   stage:0, branch:null };
+                   stage:0, branch:null, deadUntil:null };
       }
     });
     this.data.pokemon = p;
@@ -65,10 +68,14 @@ const Store = {
         }
       });
     }
-    this.data.schema = 4;
+    this.data.schema = 5;
     return this.data;
   },
-  freshMon(){ return { energy:0, stage:0, branch:null }; },
+  freshMon(){ return { energy:0, stage:0, branch:null, deadUntil:null }; },
+  tomorrowStr(){
+    const d=new Date(); d.setDate(d.getDate()+1);
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  },
   sanitizeSettings(s){
     s = s && typeof s==='object' ? s : {};
     return { autoread: s.autoread!==false, sound: s.sound!==false,
@@ -84,7 +91,8 @@ const Store = {
       p[pk.id] = (o && typeof o==='object')
         ? { energy:Math.min(ENERGY_PER_STAGE-1, Math.max(0,Number(o.energy)||0)),
             stage:Math.max(0,Math.min(Number(o.stage)||0, pk.stages.length-1)),
-            branch:Number.isInteger(o.branch)?o.branch:null }
+            branch:Number.isInteger(o.branch)?o.branch:null,
+            deadUntil:(typeof o.deadUntil==='string' && o.deadUntil) ? o.deadUntil : null }
         : this.freshMon();
     });
     // 导入的是 v3 存档（60 点/阶）→ 折算成 100 点/阶
@@ -98,7 +106,7 @@ const Store = {
       });
     }
     return {
-      schema:4, pokemon:p,
+      schema:5, pokemon:p,
       lessonDone: (d.lessonDone && typeof d.lessonDone==='object') ? d.lessonDone : {},
       mistakes: Array.isArray(d.mistakes) ? d.mistakes.filter(m=>m && m.q && m.subject) : [],
       attempts: Array.isArray(d.attempts) ? d.attempts.filter(a=>a && a.date) : [],
@@ -125,7 +133,7 @@ const Store = {
   },
   fresh(){
     const p={}; POKEMON.forEach(pk=>p[pk.id]=this.freshMon());
-    return { schema:4, pokemon:p, lessonDone:{}, mistakes:[], attempts:[], books:{},
+    return { schema:5, pokemon:p, lessonDone:{}, mistakes:[], attempts:[], books:{},
              settings:{ autoread:true, sound:true, zhread:true, mic:true },
              lastSession:null, currentSession:Date.now() };
   },
@@ -143,7 +151,13 @@ const Store = {
   /* ---------------- 宝可梦能量与进化 ---------------- */
   ensureMon(id){
     if(!this.data.pokemon[id]) this.data.pokemon[id]=this.freshMon();
-    return this.data.pokemon[id];
+    const m=this.data.pokemon[id];
+    // 昨天昏倒的宝可梦，今天到点自动复活：满血、回到第 1 阶
+    if(m.deadUntil && m.deadUntil<=todayStr()){
+      m.deadUntil=null; m.energy=0; m.stage=0; m.branch=null;
+      this.save();
+    }
+    return m;
   },
   maxStage(id){
     const pk=POKEMON.find(p=>p.id===id);
@@ -151,27 +165,42 @@ const Store = {
   },
   getEnergy(id){ return this.ensureMon(id).energy||0; },
 
-  /* 加能量。返回 {evolved, from, to, needsBranch}
-   * 关键：无论一次加多少能量，最多只升 1 阶，绝不跳级。 */
+  /* 加/扣能量（答对 +2 / 答错 −2）。
+   * 返回 {evolved, devolved, died, from, to}：
+   * - 能量攒满 100 → 进化一阶
+   * - 能量扣成负数：已进化的退化一阶（负余额结转到上一阶，如 -2 → 98/100）；
+   *                 从未进化过（第 1 阶）的直接昏倒，第二天才能再选；
+   * - 已是最终形态：免疫（能量恒为 MAX），不会退化也不会昏倒；
+   * - 已经昏倒的：本日忽略一切能量变化。 */
   addEnergy(id,amt){
     const m=this.ensureMon(id);
+    const res={evolved:false,devolved:false,died:false,from:m.stage,to:m.stage};
+    if(m.deadUntil){ this.save(); return res; }        // 昏睡中：不结算
     const max=this.maxStage(id);
-    const from=m.stage;
-    let evolved=false, needsBranch=false;
-    if(m.stage>=max){
-      m.energy=0;                     // 已满级，能量条固定为 MAX
-    }else{
-      m.energy += amt;
-      if(m.energy >= ENERGY_PER_STAGE){
-        m.energy = Math.max(0, m.energy - ENERGY_PER_STAGE);
-        m.stage  = Math.min(m.stage+1, max);   // ← 一次只 +1
+    if(m.stage>=max){ m.energy=0; this.save(); return res; }  // 最终形态：MAX，免疫
+    res.from=m.stage;
+    m.energy += amt;
+    if(m.energy >= ENERGY_PER_STAGE){
+      m.energy -= ENERGY_PER_STAGE;
+      m.stage  = Math.min(m.stage+1, max);
+      m.branch = null;
+      res.evolved = true;
+    }
+    if(m.energy < 0){
+      if(m.stage>0){                                    // 退化一阶，负余额结转
+        m.stage  = m.stage-1;
+        m.energy = ENERGY_PER_STAGE + m.energy;         // 例：-2 → 98/100
         m.branch = null;
-        evolved  = true;
-        needsBranch = isBranchStage(POKEMON.find(p=>p.id===id), m.stage);
+        res.devolved = true;
+      }else{                                            // 从未进化过 → 昏倒
+        m.energy=0;
+        m.deadUntil = this.tomorrowStr();
+        res.died = true;
       }
     }
+    res.to=m.stage;
     this.save();
-    return { evolved, from, to:m.stage, needsBranch };
+    return res;
   },
   /* 选择分支进化形态（伊布等） */
   setBranch(id,idx){
@@ -196,6 +225,7 @@ const Store = {
     return { pk, stage, branch, form:formOf(pk,stage,branch),
              intoStage, need:ENERGY_PER_STAGE, maxed,
              progress: maxed ? 1 : m.energy/ENERGY_PER_STAGE,
+             dead: !!m.deadUntil, deadUntil: m.deadUntil||null,
              isBranch:isBranchStage(pk,stage),
              curOptions, nextOptions,
              branchCount:(curOptions||nextOptions||[]).length,

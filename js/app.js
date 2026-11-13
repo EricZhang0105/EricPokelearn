@@ -197,6 +197,42 @@ function sfx(kind){
     if(kind==='good'){ tone(523,0,0.12); tone(659,0.10,0.12); tone(784,0.20,0.18); }
     else if(kind==='bad'){ tone(220,0,0.15,'triangle',0.10); tone(180,0.12,0.2,'triangle',0.10); }
     else if(kind==='evolve'){ [523,659,784,1047].forEach((f,i)=>tone(f,i*0.12,0.22)); }
+    /* 进化动画：第一段充能上行 + 第二段登场和弦 */
+    else if(kind==='evolveCharge'){
+      [392,494,587,698,880].forEach((f,i)=>tone(f,i*0.13,0.20,'sine',0.13));
+      tone(1760,0.62,0.5,'triangle',0.05);
+    }
+    else if(kind==='evolveUp'){
+      [523,659,784,1047,1319].forEach((f,i)=>tone(f,i*0.10,0.30,'sine',0.15));
+      tone(2093,0.48,0.6,'triangle',0.07);
+    }
+    /* 被击败：下行音阶 + 闷响 */
+    else if(kind==='defeat'){
+      [523,440,349,262,196].forEach((f,i)=>tone(f,i*0.16,0.26,'triangle',0.14));
+      tone(98,0.82,0.4,'sawtooth',0.10);
+    }
+    /* 必杀技：蓄力低鸣 → 高频光束 + 噪声爆发 */
+    else if(kind==='skill'){
+      const c=_actx, t=c.currentTime;
+      const o=c.createOscillator(), g=c.createGain();
+      o.type='sawtooth';
+      o.frequency.setValueAtTime(160,t);
+      o.frequency.exponentialRampToValueAtTime(1400,t+0.55);
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.14,t+0.10);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.6);
+      o.connect(g).connect(c.destination);
+      o.start(t); o.stop(t+0.65);
+      const len=Math.floor(c.sampleRate*0.45);
+      const buf=c.createBuffer(1,len,c.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);
+      const s=c.createBufferSource(); s.buffer=buf;
+      const g2=c.createGain(); g2.gain.setValueAtTime(0.12,t+0.55);
+      s.connect(g2).connect(c.destination);
+      s.start(t+0.55);
+      tone(1047,0.55,0.35,'square',0.06);
+    }
   }catch(e){}
 }
 
@@ -329,7 +365,8 @@ function openFamily(id){
   });
   h+=`<div class="fam-foot">${info.maxed
         ? '🏆 已经到最终形态了！换个伙伴继续收集吧～'
-        : `再完成 <b>${Math.ceil((info.need-info.intoStage)/ENERGY_PER_LESSON)}</b> 节课就能进化到下一阶 ⚡`}</div>`;
+        : `答对 +${ENERGY_PER_ANSWER} ⚡ / 答错 −${ENERGY_PER_ANSWER} ⚡ · 攒满 ${ENERGY_PER_STAGE} 点进化一阶<br>
+           全对一套 10 题最多 +${ENERGY_PER_ANSWER*10} ⚡，再努力 <b>${Math.ceil((info.need-info.intoStage)/(ENERGY_PER_ANSWER*10))}</b> 套全对就能进化 ⚡`}</div>`;
 
   $('#familyBody').innerHTML=h;
   bindPokeImages($('#familyBody'));
@@ -394,18 +431,26 @@ function openPokemonModal(){
     const info=Store.stageInfo(pk.id);
     const st=info.form;
     const opt=document.createElement('div');
-    opt.className='poke-opt'; opt.dataset.id=pk.id;
+    opt.className='poke-opt'+(info.dead?' dead':''); opt.dataset.id=pk.id;
     opt.dataset.search=(pk.name+' '+pk.cn+' '+st.name+' '+st.cn).toLowerCase();
     const bn = info.chainBranch>1 ? ` · ${info.chainBranch} 形态` : '';
+    const statLine = info.dead
+      ? `💤 Fainted · 复活于 ${info.deadUntil}`
+      : (info.maxed?`MAX!${bn}`:`⚡ ${Math.round(info.intoStage)}/${info.need} · Stage ${info.stage+1}/${pk.stages.length}${bn}`);
     opt.innerHTML=`<div class="face">${pokeImgTag(st,'opt-img')}</div>
       <div class="nm">${st.name}</div>
       <div class="cn">${st.cn}</div>
-      <div class="stage">${info.maxed?`MAX!${bn}`:`⚡ ${Math.round(info.intoStage)}/${info.need} · Stage ${info.stage+1}/${pk.stages.length}${bn}`}</div>`;
-    opt.onclick=()=>{
-      $$('#pokePicker .poke-opt, #branchPicker .poke-opt').forEach(o=>o.classList.remove('sel'));
-      opt.classList.add('sel');
-      $('#confirmPokemonBtn').disabled=false;
-    };
+      <div class="stage">${statLine}</div>`;
+    if(info.dead){
+      // 昨天昏倒的宝可梦今天还不能选，明早自动复活
+      opt.onclick=()=>{ sfx('bad'); };
+    }else{
+      opt.onclick=()=>{
+        $$('#pokePicker .poke-opt, #branchPicker .poke-opt').forEach(o=>o.classList.remove('sel'));
+        opt.classList.add('sel');
+        $('#confirmPokemonBtn').disabled=false;
+      };
+    }
     picker.appendChild(opt);
   });
   $('#confirmPokemonBtn').disabled=true;
@@ -443,21 +488,26 @@ $('#pokemonModal').addEventListener('click',e=>{
   if(e.target.id==='pokemonModal') closePokemonPicker();
 });
 $('#mistakeFab').onclick=()=>openMistakes();
-$('#evolveCloseBtn').onclick=()=>{ $('#evolveModal').classList.add('hidden'); showResult(); };
 $('#parentBtn').onclick=()=>show('screen-parent');
 
-/* ---------- 开始一次学习会话 ---------- */
+/* ---------- 开始一次学习会话 ----------
+ * 每套题固定 10 道：先放上一节课的错题复习（答对也会加能量），
+ * 剩下的名额用新题补满；复习题多于 10 道时只取前 10 道。 */
+const QUESTIONS_PER_SET=10;
 function beginSession(subject,lessonId){
-  // 先取上一节课错题用于复习，再开启新会话
-  const review=Store.lastSessionMistakes().map(m=>({q:m.q,ref:m,isReview:true}));
+  const review=Store.lastSessionMistakes().map(m=>({q:m.q,ref:m,isReview:true}))
+    .slice(0,QUESTIONS_PER_SET);
   Store.rotateSession();
 
   const lesson=CURRICULUM[subject].lessons.find(l=>l.id===lessonId);
-  const fresh=lesson.make().map(q=>({q,isReview:false}));
+  const fresh=lesson.make().map(q=>({q,isReview:false}))
+    .slice(0, QUESTIONS_PER_SET-review.length);
   state.questions=[...review,...fresh];
   state.idx=0; state.correct=0;
   state.total=state.questions.length;
   state.subject=subject; state.lessonId=lessonId; state.reviewDone=false;
+  state.animQueue=[];          // 本套题里发生的进化/退化/死亡动画，在题目切换时播放
+  state.delta=0;               // 本套题净能量变化，用于结果页展示
 
   updateCompanion();
   show('screen-lesson');
@@ -469,8 +519,9 @@ function updateCompanion(){
   const info=Store.stageInfo(state.selectedPokemon);
   const st=info.form;
   const badge=$('#companionBadge');
-  badge.innerHTML=`${pokeImgTag(st,'badge-img')}<span class="cname">${st.name}</span>
-    <span class="mini-energy">Lv${info.stage+1} ${info.maxed?'MAX':`⚡${Math.round(info.intoStage)}/${info.need}`}</span>`;
+  const energyTxt = info.dead ? '💤 昏睡了' : (info.maxed?'MAX':`⚡${Math.round(info.intoStage)}/${info.need}`);
+  badge.innerHTML=`${pokeImgTag(st,'badge-img'+(info.dead?' img-dead':''))}<span class="cname">${st.name}${info.dead?' 💤':''}</span>
+    <span class="mini-energy">Lv${info.stage+1} ${energyTxt}</span>`;
   bindPokeImages(badge);
 }
 
@@ -931,6 +982,19 @@ function hideKeyboard(){ $('#keyboard').classList.add('hidden'); }
 /* 答对（含复习题）时处理错题本：复习题答对即从错题本移除 */
 function onCorrect(item){
   if(item.isReview && item.ref) Store.removeMistake(item.ref);
+  awardEnergy(ENERGY_PER_ANSWER);
+}
+/* 每道题的能量结算：答对 +2 / 答错 −2。
+ * 进化/退化/死亡动画先排进队列，在切题（或课程结束）时播放，不打断答题节奏。 */
+function awardEnergy(delta){
+  const id=state.selectedPokemon; if(!id) return;
+  const res=Store.addEnergy(id,delta);
+  state.delta=(state.delta||0)+delta;
+  state.animQueue=state.animQueue||[];
+  if(res.evolved)  state.animQueue.push({type:'evolve', to:res.to});
+  if(res.devolved) state.animQueue.push({type:'devolve', from:res.from, to:res.to});
+  if(res.died)     state.animQueue.push({type:'die'});
+  if(res.evolved||res.devolved||res.died) updateCompanion();
 }
 
 /* ---------- 反馈 & 流程 ---------- */
@@ -951,6 +1015,7 @@ function showFeedback(good,explain,autoNext,onWrong,stay,delay){
 }
 
 function recordWrong(item,userAnswer,q){
+  awardEnergy(-ENERGY_PER_ANSWER);
   if(item.isReview){
     // 复习题答错：保留错题（不动）
   }else{
@@ -961,26 +1026,39 @@ function recordWrong(item,userAnswer,q){
 function nextQuestion(){
   state.idx++;
   if(state.idx>=state.total){ finishLesson(); return; }
+  // 答题过程中攒下的进化/退化/死亡动画：切题前先播完
+  if(state.animQueue && state.animQueue.length){
+    const ev=state.animQueue.shift();
+    const go=()=>renderQuestion();
+    if(ev.type==='evolve') showEvolveFx(state.selectedPokemon, ev.to, go);
+    else showDefeatFx(state.selectedPokemon, ev.type, go);
+    return;
+  }
   renderQuestion();
 }
 
-/* ---------- 结束课程 ---------- */
+/* ---------- 结束课程 ----------
+ * 流程：先放本套题里攒下的进化/退化/死亡动画（通常已在切题时播完），
+ * 全对的话播放宝可梦释放技能动画，最后进入结果页。 */
 function finishLesson(){
   const id=state.selectedPokemon;
   Store.markLesson(state.subject,state.lessonId);
-  // 一课只加一次能量，Store 保证最多升 1 阶
-  const evo=Store.addEnergy(id, ENERGY_PER_LESSON);
   const graded=state.questions.filter(x=>x.q.type!=='passage').length;
   Store.recordAttempt(state.subject, state.correct, graded);
   updateCompanion();
   flashSaved();
-  if(evo.needsBranch){
-    showBranchPicker(id, evo.to, ()=>showEvolve(id, evo.to));
-  }else if(evo.evolved){
-    showEvolve(id, evo.to);
-  }else{
-    showResult();
-  }
+  const steps=[];
+  (state.animQueue||[]).forEach(ev=>{
+    steps.push(cb=>{
+      if(ev.type==='evolve') showEvolveFx(id, ev.to, cb);
+      else showDefeatFx(id, ev.type, cb);
+    });
+  });
+  state.animQueue=[];
+  const perfect = graded>0 && state.correct===graded;
+  if(perfect) steps.push(cb=>showSkillFx(id, cb));
+  const run=()=>{ const next=steps.shift(); if(next) next(run); else showResult(); };
+  run();
 }
 
 /* 分支进化：伊布 8 种、臭臭花 2 种、奇鲁莉安 2 种 */
@@ -1018,21 +1096,71 @@ function showBranchPicker(id, stage, done){
   };
 }
 
-function showEvolve(id,stage){
+/* ---------- 全屏剧情动画（进化 / 被击败 / 技能） ----------
+ * 共用一个 #fxOverlay；点击任意处可跳过。 */
+const SFX_CLIP={ rocket:'audio/sfx/rocket_line.m4a' };   // 火箭队台词（gen_sfx.js 生成）
+let _fxDone=null;
+function fxShow(html,caption,cls,dur,onDone){
+  const ov=$('#fxOverlay'), stg=$('#fxStage'), cap=$('#fxCaption');
+  stg.className='fx-stage'; stg.innerHTML=html; cap.innerHTML=caption;
+  ov.classList.remove('hidden');
+  ov.classList.remove('fx-evo','fx-defeat','fx-skill');
+  ov.classList.add(cls);
+  bindPokeImages(stg);
+  let done=false;
+  const finish=()=>{ if(done) return; done=true; _fxDone=null; ov.onclick=null;
+    ov.classList.add('hidden'); ov.classList.remove('fx-evo','fx-defeat','fx-skill');
+    stg.innerHTML=''; if(onDone) onDone(); };
+  _fxDone=finish; ov.onclick=()=>finish();
+  setTimeout(finish,dur);
+}
+
+/* 进化：白光闪烁 → 新形态登场。分支阶（伊布等）先选形态再播动画 */
+function showEvolveFx(id, toStage, onDone){
+  const pk=POKEMON.find(p=>p.id===id);
+  const proceed=()=>{
+    const info=Store.stageInfo(id);
+    const st=info.form;
+    const prev=formOf(pk, toStage-1, null);
+    // 第一段：旧形态白光闪烁（点击可跳过 → 直接进第二段）
+    fxShow(`<div class="fx-sprite fx-flash">${pokeImgTag(prev,'fx-img')}</div>`,
+      `✨⚡ ✨⚡ ✨<br><span class="muted">什么在发光…</span>`,'fx-evo',1500,()=>{
+        // 第二段：新形态诞生
+        fxShow(`<div class="fx-sprite fx-born">${pokeImgTag(st,'fx-img')}</div><div class="fx-burst">✨✨✨</div>`,
+          `<b class="fx-title">${prev.name} → ${st.name}</b><br><span class="muted">${prev.cn} → ${st.cn}</span>`,
+          'fx-evo',2600,onDone);
+        sfx('evolveUp');
+      });
+    sfx('evolveCharge');
+  };
+  if(isBranchStage(pk, toStage) && Store.stageInfo(id).branch==null){
+    showBranchPicker(id, toStage, proceed);   // 选完形态再播进化动画
+  }else proceed();
+}
+
+/* 被击败：退化一阶 / 昏倒（死亡）→ 火箭队「我们还会回来的！」 */
+function showDefeatFx(id, type, onDone){
   const pk=POKEMON.find(p=>p.id===id);
   const info=Store.stageInfo(id);
   const st=info.form;
-  const prev=formOf(pk, stage-1, null);
-  const opts=isBranchStage(pk,stage)?branchOptions(pk,stage):[];
-  $('#evolveTitle').textContent = opts.length>1
-    ? `${pk.cn} 进化了！它有 ${opts.length} 种样子 ✨`
-    : `${pk.name} evolved!`;
-  $('#evolveStage').innerHTML=`${pokeImgTag(prev,'evo-img')} ➜ ${pokeImgTag(st,'evo-img')}
-    <br><b>${prev.name} → ${st.name}</b><br><span class="muted">${prev.cn} → ${st.cn}</span>
-    ${opts.length>1?`<br><span class="muted">现在可以在首页点 ${pk.cn} 的头像，看全部 ${opts.length} 种形态并随时换</span>`:''}`;
-  $('#evolveModal').classList.remove('hidden');
-  bindPokeImages($('#evolveStage'));
-  sfx('evolve');
+  const cap = type==='die'
+    ? `💀 <b class="fx-title">${st.name} fainted…</b><br><span class="muted">${st.cn} 昏倒了！明天再来选它，它会满血复活</span>`
+    : `💥 <b class="fx-title">${st.name} was defeated!</b><br><span class="muted">${st.cn} 被击败，退化回第 ${info.stage+1} 阶（Lv${info.stage+1}）</span>`;
+  fxShow(`<div class="fx-sprite fx-fall">${pokeImgTag(st,'fx-img')}</div><div class="fx-smoke">💨💨</div>`,
+    cap,'fx-defeat',4300,onDone);
+  sfx('defeat');
+  setTimeout(()=>playClip(SFX_CLIP.rocket), 700);   // 先听击败音，再放火箭队台词
+}
+
+/* 全对奖励：宝可梦释放技能 */
+function showSkillFx(id, onDone){
+  const info=Store.stageInfo(id);
+  const st=info.form;
+  fxShow(`<div class="fx-sprite fx-charge">${pokeImgTag(st,'fx-img')}</div>
+      <div class="fx-beam"></div><div class="fx-burst">💥💥💥</div>`,
+    `⚡ <b class="fx-title">${st.name} used a super move!</b> ⚡<br><span class="muted">10 题全对！释放必杀技！</span>`,
+    'fx-skill',2600,onDone);
+  sfx('skill');
 }
 
 function showResult(){
@@ -1043,14 +1171,18 @@ function showResult(){
   const info=Store.stageInfo(state.selectedPokemon);
   const st=info.form;
   const branchTip = info.chainBranch>1 ? ` · 可变成 ${info.chainBranch} 种形态` : '';
+  const d=state.delta||0;
+  const energyLine = info.dead
+    ? `💀 ${st.name} fainted this lesson… 明天复活，满血回归！`
+    : `${st.name} energy ⚡ ${d>=0?'+':''}${d} (答对 +${ENERGY_PER_ANSWER} / 答错 −${ENERGY_PER_ANSWER})<br>
+      ${info.maxed?`🏆 MAX! Final form reached!${branchTip}`:`Lv${info.stage+1} · Energy ${Math.round(info.intoStage)}/${info.need} — keep going!${branchTip}`}`;
   $('#progressFill').style.width='100%';
   $('#resultArea').innerHTML=`
     <h2>🎉 Lesson Complete!</h2>
     <div class="result-score">${score}/${total}</div>
     <div class="result-msg">${msg}</div>
-    <div class="result-poke">${pokeImgTag(st,'result-img')}</div>
-    <div class="result-msg">${st.name} gained ⚡${ENERGY_PER_LESSON} energy<br>
-      ${info.maxed?`🏆 MAX! Final form reached!${branchTip}`:`Stage ${info.stage+1}/${info.pk.stages.length} · Energy ${Math.round(info.intoStage)}/${info.need} — keep going!${branchTip}`}</div>
+    <div class="result-poke">${pokeImgTag(st,'result-img'+(info.dead?' result-dead':''))}</div>
+    <div class="result-msg">${energyLine}</div>
     <div class="result-actions">
       <button class="btn-primary" id="moreBtn">More questions 🔄</button>
       <button class="btn-secondary" id="againBtn">Another lesson</button>
