@@ -243,7 +243,91 @@ const READ_PASSAGES=[
       {q:'Are we happy at the park?', o:['Yes','No'], a:'Yes'},
       {q:'I see a ___ ball.', short:true, a:'red', accept:['red'], hint:'r _ _'}
     ]},
+  { id:'rp-cake', title:"Mum's Cake", visual:'🎂',
+    text:'Mum has a cake. The cake is on the table. Sam eats the cake. The cake is sweet.',
+    qs:[
+      {q:'What does Mum have?', o:['a cake','a cat','a sun'], a:'a cake'},
+      {q:'Where is the cake?', o:['on the table','in a box','under the bed'], a:'on the table'},
+      {q:'Does Sam eat the cake?', o:['Yes','No'], a:'Yes'},
+      {q:'Is the cake sweet?', o:['Yes','No'], a:'Yes'},
+      {q:'The cake is ___.', short:true, a:'sweet', accept:['sweet'], hint:'s _ _ _ _'}
+    ]},
+  { id:'rp-bird', title:'The Little Bird', visual:'🐦',
+    text:'A bird is in the tree. The bird is blue. The bird can fly. I like the bird.',
+    qs:[
+      {q:'Where is the bird?', o:['in the tree','in a box','on a mat'], a:'in the tree'},
+      {q:'What color is the bird?', o:['blue','red','green'], a:'blue'},
+      {q:'Can the bird fly?', o:['Yes','No'], a:'Yes'},
+      {q:'Do I like the bird?', o:['Yes','No'], a:'Yes'},
+      {q:'The bird can ___.', short:true, a:'fly', accept:['fly'], hint:'f _ _'}
+    ]},
+  { id:'rp-rain', title:'A Rainy Day', visual:'🌧️',
+    text:'It is raining. I have a big umbrella. I put on my boots. I jump in the water.',
+    qs:[
+      {q:'What is the weather?', o:['raining','sunny','snowy'], a:'raining'},
+      {q:'What do I have?', o:['an umbrella','a ball','a hat'], a:'an umbrella'},
+      {q:'What do I put on?', o:['boots','socks','a coat'], a:'boots'},
+      {q:'Do I jump in the water?', o:['Yes','No'], a:'Yes'},
+      {q:'I have a big ___.', short:true, a:'umbrella', accept:['umbrella'], hint:'u _ _ _ _ _ _ _'}
+    ]},
+  { id:'rp-toys', title:'My Toy Box', visual:'🧸',
+    text:'I have a toy box. In the box I see a red car and a blue ball. I play with my toys. My toys are fun.',
+    qs:[
+      {q:'What do I have?', o:['a toy box','a book','a cup'], a:'a toy box'},
+      {q:'What color is the car?', o:['red','blue','yellow'], a:'red'},
+      {q:'What is in the box?', o:['a car and a ball','a dog and a cat','a pen and a cup'], a:'a car and a ball'},
+      {q:'Are the toys fun?', o:['Yes','No'], a:'Yes'},
+      {q:'My toys are ___.', short:true, a:'fun', accept:['fun'], hint:'f _ _'}
+    ]},
 ];
+
+/* ---------- 一套阅读题怎么拼 ----------
+ * 一篇短文 = 短文卡 + 3 道选择题 + 1 道短答 = 5 个步骤，两篇正好 10 步（== 每套 10 题）。
+ * 上次读过的短文会被排到后面，点「More questions」不会再看到刚做完的那一篇。 */
+let _readRecent=[];
+function _readRecentLoad(){
+  try{ const a=JSON.parse(localStorage.getItem('pokeLearnReadRecent')||'[]');
+       return Array.isArray(a) ? a.filter(x=>typeof x==='string') : []; }
+  catch(e){ return []; }
+}
+function _readRecentSave(ids){
+  try{ localStorage.setItem('pokeLearnReadRecent', JSON.stringify(ids)); }catch(e){}
+}
+function readSet(limit){
+  limit = limit || 10;
+  if(!_readRecent.length) _readRecent=_readRecentLoad();
+  const fresh  = shuffle(READ_PASSAGES.filter(p=>!_readRecent.includes(p.id)));
+  const reused = shuffle(READ_PASSAGES.filter(p=> _readRecent.includes(p.id)));
+  const out=[], used=[];
+  for(const p of fresh.concat(reused)){
+    const block=[{type:'passage', title:p.title, text:p.text, visual:p.visual,
+      speak:{text:p.text,lang:'en-US'}}];
+    shuffle(p.qs.filter(x=>!x.short)).slice(0,3).forEach(x=>{
+      block.push({type:'choice', prompt:'Question', sub:x.q,
+        speak:{text:x.q,lang:'en-US'}, options:shuffle(x.o), answer:x.a,
+        explain:`Answer: ${x.a}.`});
+    });
+    const sh=p.qs.find(x=>x.short);
+    if(sh){
+      block.push({type:'type', short:true, prompt:'Short answer', sub:sh.q, hint:sh.hint,
+        accept:sh.accept, speak:{text:sh.q,lang:'en-US'}, answer:sh.a,
+        explain:`Answer: ${sh.a}.`});
+    }
+    if(out.length + block.length <= limit){        // 放得下：整篇（短文卡 + 题目）
+      block.forEach(q=>out.push(q));
+      used.push(p.id);
+    }else{                                          // 放不下整篇：只放题目，
+      const need=limit-out.length;                  // 渲染时会自动在这题上方带上短文原文
+      block.slice(1, 1+need).forEach(q=>{ q.needPassage=true; out.push(q); });
+    }
+    if(out.length>=limit) break;
+  }
+  if(used.length){
+    _readRecent = used.concat(_readRecent.filter(id=>!used.includes(id))).slice(0,4);
+    _readRecentSave(_readRecent);
+  }
+  return out;
+}
 const CVC=['cat','dog','sun','pig','cup','hat','bug','pen','top','map','fox','bus','red','box','leg','sit','hot','run'];
 const PHON=[
   {w:'cat',e:'🐱',a:'c'},{w:'dog',e:'🐶',a:'d'},{w:'sun',e:'☀️',a:'s'},
@@ -389,29 +473,10 @@ const ENGLISH=[
       return out;
     }},
 
-  /* 阅读理解：2 篇短文 × (读 + 2 选择 + 1 短答)，放在拼写之后 */
+  /* 阅读理解：2 篇短文 × (读 + 3 选择 + 1 短答) = 10 步，放在拼写之后 */
   { id:'e-read', title:'Reading & Understanding', emoji:'📚',
     desc:'Read a short story, then answer questions',
-    make(){
-      const out=[];
-      shuffle(READ_PASSAGES).slice(0,2).forEach(p=>{
-        out.push({type:'passage', title:p.title, text:p.text, visual:p.visual,
-          speak:{text:p.text,lang:'en-US'}});
-        p.qs.forEach(x=>{
-          if(x.short){
-            out.push({type:'type', short:true, prompt:`Short answer`,
-              sub:x.q, hint:x.hint, accept:x.accept,
-              speak:{text:x.q,lang:'en-US'}, answer:x.a,
-              explain:`Answer: ${x.a}.`});
-          }else{
-            out.push({type:'choice', prompt:`Question`, sub:x.q,
-              speak:{text:x.q,lang:'en-US'}, options:shuffle(x.o), answer:x.a,
-              explain:`Answer: ${x.a}.`});
-          }
-        });
-      });
-      return out;
-    }},
+    make(limit){ return readSet(limit || 10); }},
 
   { id:'e-build', title:'Sentence Building (Writing)', emoji:'🧱',
     desc:'Tap words in order to make a sentence',

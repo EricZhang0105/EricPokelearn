@@ -636,3 +636,24 @@ img.img-dead,img.result-dead{filter:grayscale(1) opacity(.6);}
 .fx-sprite img{width:180px;height:180px;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5));}
 .fx-skip{position:fixed;bottom:22px;left:0;right:0;text-align:center;color:rgba(255,255,255,.55);
   font-size:13px;}
+
+/* =========================================================
+   v16：首页「保存进度 / 读取存档」—— 跨版本保住进化进度
+   ========================================================= */
+.archive-bar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0 4px;}
+.btn-save,.btn-load{border:none;border-radius:999px;padding:11px 20px;font-size:15px;font-weight:800;
+  cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.14);transition:transform .12s;}
+.btn-save{background:linear-gradient(180deg,#FFB84D,#FF8A3D);color:#4A2600;}
+.btn-load{background:#fff;color:#B4600F;border:2px solid #FFC98A;}
+.btn-save:active,.btn-load:active{transform:scale(.95);}
+.btn-save.hidden,.btn-load.hidden{display:none !important;}
+.archive-info{font-size:12.5px;color:#8A8378;text-align:center;margin-bottom:10px;line-height:1.5;padding:0 12px;}
+@media(max-width:480px){
+  .btn-save,.btn-load{padding:10px 16px;font-size:14px;}
+  .archive-info{font-size:11.5px;}
+}
+
+/* 复习阅读题时附带的短文（半高，不喧宾夺主） */
+.passage-card.passage-mini{padding:10px 14px;margin-bottom:10px;}
+.passage-card.passage-mini .passage-title{font-size:15px;}
+.passage-card.passage-mini .passage-text{font-size:15px;line-height:1.5;}

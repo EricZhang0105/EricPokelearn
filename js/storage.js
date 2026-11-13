@@ -13,6 +13,16 @@
 const SAVE_KEY = 'pokeLearnSave_v1';   // 保持原 key，做原地迁移，不丢历史数据
 const OLD_ENERGY_PER_STAGE = 60;       // v3 存档的每阶能量，用于折算到 v4（100 点/阶）
 
+/* ---------- 跨版本进度存档 ----------
+ * 主存档（SAVE_KEY）会被版本升级时的 schema 迁移动到；这两份"保险"不会：
+ *   ARCHIVE_KEY    : 首页「💾 保存进度」按钮写的存档（家长/小朋友主动存）
+ *   AUTOBACKUP_KEY : 自动备份，只在进度创出新高时更新，永远保留最高进度
+ * 两份存档都用「阶段 stage + 百分比 pct」记录，不依赖每阶多少能量，
+ * 所以以后把 100 改成别的数字、或者加新宝可梦，都能按比例接回原来的进度。 */
+const ARCHIVE_KEY    = 'pokeLearnProgressArchive_v1';
+const AUTOBACKUP_KEY = 'pokeLearnProgressBackup_v1';
+const ARCHIVE_VERSION = 1;
+
 function testStorage(){
   try{
     const k='__pl_probe__';
@@ -30,7 +40,13 @@ const Store = {
   data:null, available:true, lastSaved:null,
   load(){
     this.available = testStorage();
-    try{ this.data = JSON.parse(localStorage.getItem(SAVE_KEY)) || null; }catch(e){ this.data=null; }
+    let raw=null;
+    try{ raw = localStorage.getItem(SAVE_KEY); }catch(e){ raw=null; }
+    try{ this.data = raw ? JSON.parse(raw) : null; }catch(e){ this.data=null; }
+    if(!this.data && raw){
+      // 存档损坏：先把原始字符串另存一份，别让下一次 save() 直接把它冲掉
+      try{ localStorage.setItem(SAVE_KEY+'_corrupt_'+Date.now(), raw); }catch(e){}
+    }
     if(!this.data) this.data = this.fresh();
     const prevSchema = Number(this.data.schema)||0;
     this.data.lessonDone = this.data.lessonDone || {};
@@ -46,13 +62,15 @@ const Store = {
     POKEMON.forEach(pk=>{
       const o = old[pk.id];
       if(!o || typeof o!=='object'){ p[pk.id]=this.freshMon(); return; }
-      if(typeof o.stage==='number'){
-        p[pk.id]={ energy: Math.max(0,Number(o.energy)||0),
-                   stage: Math.max(0,Math.min(o.stage, pk.stages.length-1)),
+      // stage 可能被存成字符串（旧存档/手改），先转数字再判断，别一看到不是 number 就归零
+      const stRaw = (o.stage===null || o.stage===undefined || o.stage==='') ? null : Number(o.stage);
+      if(stRaw!==null && isFinite(stRaw)){
+        p[pk.id]={ energy: Math.max(0, Math.min(ENERGY_PER_STAGE-1, Number(o.energy)||0)),
+                   stage: Math.max(0, Math.min(Math.round(stRaw), pk.stages.length-1)),
                    branch: Number.isInteger(o.branch) ? o.branch : null,
                    deadUntil: (typeof o.deadUntil==='string' && o.deadUntil) ? o.deadUntil : null };
       }else{
-        // 旧版：阶段由总能量推算，可能已经跳级 → 归零重新逐级累计
+        // 更旧的版本：阶段由总能量推算，可能已经跳级 → 归零重新逐级累计
         p[pk.id]={ energy: Math.min(Math.max(0,Number(o.energy)||0), ENERGY_PER_STAGE-1),
                    stage:0, branch:null, deadUntil:null };
       }
@@ -69,6 +87,8 @@ const Store = {
       });
     }
     this.data.schema = 5;
+    // 版本升级 / 缓存被清后主存档变空时，自动接回进度存档，不用重头再来
+    this.migrateGuard();
     return this.data;
   },
   freshMon(){ return { energy:0, stage:0, branch:null, deadUntil:null }; },
@@ -146,6 +166,121 @@ const Store = {
       this.available = false;
       if(typeof window!=='undefined' && window.__onSaved) window.__onSaved(false, null);
     }
+    // 顺手维护自动备份（进度创新高才写，且 6 秒内最多写一次，不拖慢答题）
+    this.autoArchive();
+  },
+
+  /* ---------------- 跨版本进度存档 ----------------
+   * 存的不是"当前能量"，而是每个宝可梦的 阶段 + 进度百分比 + 形态，
+   * 所以以后改每阶所需能量、加新宝可梦、改 schema，都不会把进度清零。 */
+  buildArchive(){
+    const pokemon={};
+    let stages=0, evolved=0;
+    Object.keys(this.data.pokemon||{}).forEach(id=>{
+      const m=this.data.pokemon[id]||{};
+      const stage=Math.max(0, Number(m.stage)||0);
+      pokemon[id]={ stage,
+                    pct: Math.max(0, Math.min(1, (Number(m.energy)||0)/ENERGY_PER_STAGE)),
+                    energy: Math.max(0, Number(m.energy)||0),
+                    branch: Number.isInteger(m.branch) ? m.branch : null,
+                    deadUntil: m.deadUntil || null };
+      stages+=stage; if(stage>0) evolved++;
+    });
+    return { v:ARCHIVE_VERSION, savedAt:Date.now(), perStage:ENERGY_PER_STAGE,
+             stages, evolved, pokemon,
+             lessonDone: this.data.lessonDone||{}, books: this.data.books||{} };
+  },
+  readArchive(key){
+    if(!this.available) return null;
+    try{
+      const a=JSON.parse(localStorage.getItem(key)||'null');
+      if(!a || typeof a!=='object' || !a.pokemon || typeof a.pokemon!=='object') return null;
+      return a;
+    }catch(e){ return null; }
+  },
+  writeArchive(key){
+    if(!this.available) return null;
+    const a=this.buildArchive();
+    try{ localStorage.setItem(key, JSON.stringify(a)); }catch(e){ return null; }
+    return a;
+  },
+  /* 存档"进度分数"：阶段权重远大于能量，用来判断哪份存档更靠前 */
+  scoreOf(a){
+    if(!a || !a.pokemon) return -1;
+    let s=0;
+    Object.keys(a.pokemon).forEach(id=>{
+      const m=a.pokemon[id]||{};
+      s += (Number(m.stage)||0)*1000 + (Number(m.energy)||0);
+    });
+    return s;
+  },
+  saveArchive(){ return this.writeArchive(ARCHIVE_KEY); },      // 首页按钮：手动存档
+  manualArchive(){ return this.readArchive(ARCHIVE_KEY); },
+  backupArchive(){ return this.readArchive(AUTOBACKUP_KEY); },
+  autoArchive(force){
+    if(!this.available || !this.data) return null;
+    const cur=this.scoreOf(this.buildArchive());
+    if(cur<=0) return null;                                     // 全新存档不占用备份
+    const prev=this.readArchive(AUTOBACKUP_KEY);
+    if(prev && this.scoreOf(prev) >= cur) return null;           // 没超过历史最高，保留原备份
+    const now=Date.now();
+    if(!force && now-(this._autoAt||0) < 6000) return null;
+    this._autoAt=now;
+    return this.writeArchive(AUTOBACKUP_KEY);
+  },
+  /* 把一份存档接回主存档：阶段取较高的、能量取较高的，课程/绘本记录取并集 */
+  applyArchive(a){
+    if(!a || !a.pokemon) return null;
+    const perOld=Number(a.perStage)||ENERGY_PER_STAGE;
+    let upgraded=0, evolved=0, stages=0;
+    Object.keys(a.pokemon).forEach(id=>{
+      if(!POKEMON.find(p=>p.id===id)) return;
+      const s=a.pokemon[id]||{}, max=this.maxStage(id);
+      const stage=Math.max(0, Math.min(Number(s.stage)||0, max));
+      let energy = (s.pct!==null && s.pct!==undefined)
+        ? Math.round(Number(s.pct)*ENERGY_PER_STAGE)                 // 能量体系变了也能按比例接回
+        : Math.round((Number(s.energy)||0)*ENERGY_PER_STAGE/perOld);
+      energy=Math.max(0, Math.min(ENERGY_PER_STAGE-1, energy));
+      if(stage>=max) energy=Math.min(energy, ENERGY_PER_STAGE-1);
+      const cur=this.data.pokemon[id] || this.freshMon();
+      if(stage>cur.stage || (stage===cur.stage && energy>cur.energy)){
+        this.data.pokemon[id]={ stage, energy,
+          branch: Number.isInteger(s.branch) ? s.branch : (cur.branch||null),
+          deadUntil: s.deadUntil || null };
+        upgraded++;
+      }
+      if(stage>0) evolved++;
+      stages+=Math.max(cur.stage||0, stage);
+    });
+    const ld=a.lessonDone||{};
+    Object.keys(ld).forEach(k=>{ if(ld[k]) this.data.lessonDone[k]=true; });
+    const bk=a.books||{};
+    Object.keys(bk).forEach(id=>{
+      const r=bk[id]; if(!r || typeof r!=='object') return;
+      const cur=this.data.books[id];
+      if(!cur || (r.read && !cur.read) || (r.times||0)>(cur.times||0)){
+        this.data.books[id]=this.sanitizeBooks({[id]:r})[id];
+      }
+    });
+    this.save();
+    return { upgraded, evolved, stages, savedAt:a.savedAt||null };
+  },
+  /* 启动守卫：如果主存档被版本升级/清缓存冲成空白，自动用最好的那份存档接回来 */
+  migrateGuard(){
+    if(!this.available || !this.data) return null;
+    const ld=this.data.lessonDone||{};
+    const anyLesson=Object.keys(ld).length>0;
+    const p=this.data.pokemon||{};
+    const anyMon=Object.keys(p).some(id=>((p[id].stage||0)>0 || (p[id].energy||0)>0));
+    if(anyLesson || anyMon){ this.autoArchive(); return null; }    // 进度还在，什么都不用做
+    // 主存档是空的 → 找一份有内容的存档（自动备份优先，其次手动存档）
+    const backup=this.readArchive(AUTOBACKUP_KEY);
+    const manual=this.readArchive(ARCHIVE_KEY);
+    const best=(backup && this.scoreOf(backup)>=this.scoreOf(manual)) ? backup : manual;
+    if(!best || this.scoreOf(best)<=0) return null;
+    const r=this.applyArchive(best);
+    if(r){ this.__restored=r; }
+    return r;
   },
 
   /* ---------------- 宝可梦能量与进化 ---------------- */
@@ -362,8 +497,11 @@ const Store = {
   },
   resetAll(){
     const settings=this.data.settings;
+    // 家长端「重置」是有意清空：连进度存档一起清掉，否则下次开机会被自动恢复回来
+    try{ localStorage.removeItem(ARCHIVE_KEY); localStorage.removeItem(AUTOBACKUP_KEY); }catch(e){}
     this.data = this.fresh();
     this.data.settings = settings || this.data.settings;
+    this._autoAt=0;
     this.save();
   },
   exportSave(){ return JSON.stringify(this.data, null, 2); },

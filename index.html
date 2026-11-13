@@ -35,6 +35,14 @@
         <h1>🌟 PokeLearn 🌟</h1>
         <p class="subtitle">Learn English, Chinese &amp; Math with Pokémon!</p>
         <div id="saveStatus" class="save-status"></div>
+
+        <!-- 进化进度存档：跨版本保险。以后无论升级多少个版本都能从这份存档接回 -->
+        <div class="archive-bar">
+          <button class="btn-save" id="saveArchiveBtn">💾 保存进度</button>
+          <button class="btn-load hidden" id="loadArchiveBtn">📂 读取存档</button>
+        </div>
+        <div class="archive-info" id="archiveInfo"></div>
+
         <button class="btn-secondary parent-link" id="parentBtn">👨‍👩‍👧 Parents</button>
       </div>
 

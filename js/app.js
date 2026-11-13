@@ -236,6 +236,47 @@ function sfx(kind){
   }catch(e){}
 }
 
+/* ---------- 进化进度存档（跨版本） ----------
+ * 首页「💾 保存进度」写一份独立于 schema 的存档；
+ * 以后每个版本启动时，如果主存档被升级/清缓存冲空了，会自动接回这份存档。 */
+function fmtArchiveTime(ts){
+  const d=new Date(ts||Date.now());
+  const p=n=>String(n).padStart(2,'0');
+  return `${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function updateArchiveUI(){
+  const info=$('#archiveInfo'), loadBtn=$('#loadArchiveBtn');
+  if(!info) return;
+  const a=Store.manualArchive();
+  const b=Store.backupArchive();
+  if(a){
+    info.textContent=`存档：${fmtArchiveTime(a.savedAt)} · 已进化 ${a.evolved||0} 只 / 累计 ${a.stages||0} 阶`;
+    loadBtn.classList.remove('hidden');
+  }else{
+    info.textContent = b
+      ? `还没有手动存档（自动备份：已进化 ${b.evolved||0} 只）`
+      : '点「保存进度」把现在的进化进度存下来，换版本也不怕';
+    loadBtn.classList.add('hidden');
+  }
+}
+function bindArchiveButtons(){
+  const saveBtn=$('#saveArchiveBtn'), loadBtn=$('#loadArchiveBtn');
+  if(saveBtn) saveBtn.onclick=()=>{
+    const a=Store.saveArchive();
+    if(!a){ toastMsg('⚠️ 这个页面不能保存，请从主屏图标打开'); return; }
+    updateArchiveUI(); sfx('good');
+    toastMsg(`💾 进度已存档：${a.evolved} 只宝可梦 · ${a.stages} 阶`);
+  };
+  if(loadBtn) loadBtn.onclick=()=>{
+    const a=Store.manualArchive();
+    if(!a){ toastMsg('还没有存档'); return; }
+    if(!confirm(`读取 ${fmtArchiveTime(a.savedAt)} 保存的进度？\n（已进化 ${a.evolved||0} 只 / 累计 ${a.stages||0} 阶，只会往前接，不会倒退）`)) return;
+    const r=Store.applyArchive(a);
+    updateCompanion(); renderHome();
+    toastMsg(r ? `📂 已读取存档（${r.upgraded} 只更新）` : '当前进度已经比存档更靠前了');
+  };
+}
+
 /* ---------- 存档状态提示 ---------- */
 function updateStorageUI(){
   const warn=$('#storageWarn');
@@ -290,6 +331,7 @@ function renderHome(){
     libSub.textContent = `已读 ${st.read} / ${avail.length} 本 · 每周一上新 5 本`;
   }
   updateStorageUI();
+  updateArchiveUI();
 }
 
 function renderCollection(){
@@ -489,20 +531,54 @@ $('#pokemonModal').addEventListener('click',e=>{
 });
 $('#mistakeFab').onclick=()=>openMistakes();
 $('#parentBtn').onclick=()=>show('screen-parent');
+bindArchiveButtons();
+/* 上一版启动时主存档被冲空、已从进度存档自动接回 → 告诉家长一声 */
+if(Store.__restored){
+  setTimeout(()=>toastMsg(`📂 已自动恢复进化进度（${Store.__restored.evolved} 只宝可梦）`), 900);
+  Store.__restored=null;
+}
 
 /* ---------- 开始一次学习会话 ----------
- * 每套题固定 10 道：先放上一节课的错题复习（答对也会加能量），
- * 剩下的名额用新题补满；复习题多于 10 道时只取前 10 道。 */
+ * 每套题固定 10 道：新题排前面，上一节课的错题复习垫底（答对也加能量）。
+ * 「More questions」必须真的换一批新题：生成后跟上一套对比内容签名，
+ * 撞了（题库小、随机恰好一样）就重摇，最多 8 次。 */
 const QUESTIONS_PER_SET=10;
+const _lastSetSig={};          // lessonId -> 上一套题的内容签名
+function setSignature(items){
+  return items.map(it=>{
+    const q=it.q||{};
+    if(q.type==='passage') return 'P:'+(q.title||'')+'|'+(q.text||'');
+    return [q.prompt||'', q.sub||'', q.answer||''].join('~');
+  }).join('||');
+}
+function makeFresh(lesson, lessonId, slots){
+  let best=null, bestSig='';
+  for(let i=0;i<8;i++){
+    const raw=(lesson.make ? (lesson.make(slots)||[]) : []);
+    const items=raw.slice(0, slots).map(q=>({q, isReview:false}));
+    const sig=setSignature(items);
+    best=items; bestSig=sig;
+    if(sig !== _lastSetSig[lessonId]) break;   // 和上一套不同 → 就用它
+  }
+  _lastSetSig[lessonId]=bestSig;
+  return best || [];
+}
 function beginSession(subject,lessonId){
-  const review=Store.lastSessionMistakes().map(m=>({q:m.q,ref:m,isReview:true}))
-    .slice(0,QUESTIONS_PER_SET);
+  const mistakes=Store.lastSessionMistakes();
   Store.rotateSession();
 
   const lesson=CURRICULUM[subject].lessons.find(l=>l.id===lessonId);
-  const fresh=lesson.make().map(q=>({q,isReview:false}))
-    .slice(0, QUESTIONS_PER_SET-review.length);
-  state.questions=[...review,...fresh];
+  const slots=Math.max(0, QUESTIONS_PER_SET-mistakes.length);
+  let fresh=makeFresh(lesson, lessonId, slots);
+  // 阅读这类"整篇短文"放不满剩余名额时，干脆全部用新题（复习题下次再复习）
+  if(fresh.length + mistakes.length < QUESTIONS_PER_SET){
+    fresh=makeFresh(lesson, lessonId, QUESTIONS_PER_SET);
+  }
+  // 新题在前，复习题垫底：点「More questions」第一眼看到的永远是新鲜题。
+  // 新题放不满（比如阅读要整篇放，剩余名额不够一篇）时用复习题补足到 10。
+  const pool=mistakes.map(m=>({q:m.q,ref:m,isReview:true}));
+  const review=pool.slice(0, Math.max(0, QUESTIONS_PER_SET-fresh.length));
+  state.questions=[...fresh,...review];
   state.idx=0; state.correct=0;
   state.total=state.questions.length;
   state.subject=subject; state.lessonId=lessonId; state.reviewDone=false;
@@ -543,8 +619,18 @@ function renderQuestion(){
   $('#feedback').className='feedback hidden';
 
   const area=$('#questionArea');
+  // 复习题里的阅读题（以及被截断到名额里的阅读题）：把对应短文一起显示出来，
+  // 否则只剩一道题没法回答
+  let passageRef=null;
+  if(q.type!=='passage' && q.sub && (q.needPassage || item.isReview) && typeof READ_PASSAGES!=='undefined'){
+    passageRef=READ_PASSAGES.find(p=>p.qs.some(x=>x.q===q.sub)) || null;
+  }
+  let h = passageRef
+    ? `<div class="passage-card passage-mini"><div class="passage-title">📖 ${passageRef.title}</div>
+       <div class="passage-text">${passageRef.text}</div></div>`
+    : '';
   // 阅读短文题没有 prompt 字段，别渲染出 "undefined"
-  let h = (q.type==='passage' || !q.prompt) ? '' : `<div class="q-prompt">${q.prompt}</div>`;
+  h += (q.type==='passage' || !q.prompt) ? '' : `<div class="q-prompt">${q.prompt}</div>`;
   if(q.sub && q.type!=='passage') h+=`<div class="q-sub">${q.sub}</div>`;
   if(q.visual) h+=`<div class="q-visual">${q.visual}</div>`;
 
