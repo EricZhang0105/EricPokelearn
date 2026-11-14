@@ -198,6 +198,51 @@ const READ_PASSAGES = [
       {q:'How many books can we borrow?', o:['two','three','one'], a:'two'},
       {q:'We read for one ___.', short:true, a:'hour', accept:['hour'], hint:'h _ _ _'}
     ]},
+  { id:'rp-fish', level:1, title:'My Little Fish', visual:'🐟',
+    text:'I have a little fish. It is orange and small. It swims in a round bowl. I feed it every day.',
+    qs:[
+      {q:'What color is the fish?', o:['orange','blue','black'], a:'orange'},
+      {q:'Where does the fish swim?', o:['in a bowl','in a cup','in a bag'], a:'in a bowl'},
+      {q:'When do I feed the fish?', o:['every day','every night','on Sunday'], a:'every day'},
+      {q:'What do I do every day?', o:['feed the fish','wash the bowl','sing to the fish'], a:'feed the fish'},
+      {q:'The fish is orange and ___.', short:true, a:'small', accept:['small','little'], hint:'s _ _ _ _'}
+    ]},
+  { id:'rp-duck', level:1, title:'The Little Duck', visual:'🦆',
+    text:'A little duck is by the pond. The duck is yellow. It has two small feet. It can swim well. I like the duck.',
+    qs:[
+      {q:'What color is the duck?', o:['yellow','red','brown'], a:'yellow'},
+      {q:'Where is the duck?', o:['by the pond','in a tree','on a bed'], a:'by the pond'},
+      {q:'What can the duck do?', o:['swim well','fly high','run fast'], a:'swim well'},
+      {q:'How many feet does the duck have?', o:['two','four','six'], a:'two'},
+      {q:'The little duck can ___ well.', short:true, a:'swim', accept:['swim'], hint:'s _ _ _'}
+    ]},
+  { id:'rp-carwash', level:2, title:'Washing the Car', visual:'🚗',
+    text:'On Sunday morning Dad washes the car. I help him with a big red cloth. The car is very dirty. We wash the wheels and the windows. Now the car is clean and bright. Dad says, Good job!',
+    qs:[
+      {q:'When does Dad wash the car?', o:['on Sunday morning','on Monday night','on Friday afternoon'], a:'on Sunday morning'},
+      {q:'What do I help with?', o:['a big red cloth','a small brush','a paper bag'], a:'a big red cloth'},
+      {q:'What do we wash?', o:['the wheels and windows','the seats and doors','the toys and books'], a:'the wheels and windows'},
+      {q:'How is the car at the end?', o:['clean and bright','dirty and wet','old and slow'], a:'clean and bright'},
+      {q:'Dad says, Good ___!', short:true, a:'job', accept:['job'], hint:'j _ _'}
+    ]},
+  { id:'rp-shoes', level:2, title:'My New Shoes', visual:'👟',
+    text:'Mum buys me a pair of new shoes. They are white with blue laces. I put them on by myself. They feel soft and light. I walk to school in them every day. My old shoes are too small now.',
+    qs:[
+      {q:'Who buys the shoes?', o:['Mum','Dad','Grandma'], a:'Mum'},
+      {q:'What color are the shoes?', o:['white','black','yellow'], a:'white'},
+      {q:'How do the new shoes feel?', o:['soft and light','hard and heavy','cold and wet'], a:'soft and light'},
+      {q:'Why do I need new shoes?', o:['The old ones are too small','The old ones are lost','The old ones are dirty'], a:'The old ones are too small'},
+      {q:'The new shoes have blue ___.', short:true, a:'laces', accept:['laces'], hint:'l _ _ _ _'}
+    ]},
+  { id:'rp-bicycle', level:3, title:"Grandpa's Bicycle", visual:'🚲',
+    text:'My grandpa has an old black bicycle. Every Saturday he rides it to the park. One day I asked him to take me too. He put me on the seat behind him and we went slowly. We saw a big tree with yellow flowers and two boys flying a kite. Grandpa told me a funny story. When we came home, Mum took a photo of us. Now every Saturday I wait by the door with my cap on.',
+    qs:[
+      {q:"What color is Grandpa's bicycle?", o:['black','green','white'], a:'black'},
+      {q:'When does Grandpa ride his bicycle?', o:['every Saturday','every Sunday','every morning'], a:'every Saturday'},
+      {q:'Where did they go together?', o:['to the park','to the market','to the beach'], a:'to the park'},
+      {q:'What were the two boys flying?', o:['a kite','a ball','a flag'], a:'a kite'},
+      {q:'Mum took a ___ of us.', short:true, a:'photo', accept:['photo','picture'], hint:'p _ _ _ _'}
+    ]},
 ];
 
 /* ---------------- 题目 ID + 分级信息 ---------------- */
