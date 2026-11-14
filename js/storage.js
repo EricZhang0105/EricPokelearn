@@ -388,11 +388,11 @@ const Store = {
 
   /* ---------------- 阅读理解：已答对的题不再出现 ----------------
      readDone = { 'rp-cat#1': 时间戳 }，题目用稳定 qid 标识 */
-  readDoneIds(){ return Object.keys(this.data.readDone||{}); },
+  readDoneIds(){ return (this.data && this.data.readDone) ? Object.keys(this.data.readDone) : []; },
   readDoneCount(){ return this.readDoneIds().length; },
-  isReadDone(qid){ return !!(qid && this.data.readDone && this.data.readDone[qid]); },
+  isReadDone(qid){ return !!(qid && this.data && this.data.readDone && this.data.readDone[qid]); },
   markReadDone(qid, when){
-    if(!qid) return false;
+    if(!qid || !this.data) return false;
     if(!this.data.readDone) this.data.readDone={};
     if(this.data.readDone[qid]) return false;      // 已经记过，不重复写
     this.data.readDone[qid] = when || Date.now();

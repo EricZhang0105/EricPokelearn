@@ -263,15 +263,16 @@ function readSet(limit, opts){
   const level = opts.level || readLevelFor(doneSet.size);
   if(!_readRecent.length) _readRecent=_readRecentLoad();
 
-  // 候选顺序：本级没读过 → 本级读过 → 上一级 → 再上一级（保证永远有内容）
+  // 候选顺序：先按级别把"最近没读过"的排前面（本级 → 更高级 → 更低级），
+  // 全部读过了才退回"最近读过"的（也按级别排序），保证点 More questions 尽量不重样
   const order=[level, level+1, level-1, 3, 2, 1].filter((l,i,a)=>l>=1&&l<=3&&a.indexOf(l)===i);
-  const pool=[]; const seen=new Set();
+  const freshPool=[], reusedPool=[];
   order.forEach(lv=>{
     const inLv=READ_PASSAGES.filter(p=>p.level===lv);
-    const fresh=shuffle(inLv.filter(p=>!_readRecent.includes(p.id)));
-    const old  =shuffle(inLv.filter(p=> _readRecent.includes(p.id)));
-    [...fresh,...old].forEach(p=>{ if(!seen.has(p.id)){ seen.add(p.id); pool.push(p); } });
+    shuffle(inLv.filter(p=>!_readRecent.includes(p.id))).forEach(p=>freshPool.push(p));
+    shuffle(inLv.filter(p=> _readRecent.includes(p.id))).forEach(p=>reusedPool.push(p));
   });
+  const pool=[...freshPool, ...reusedPool];
 
   const out=[], used=[];
   for(const p of pool){
@@ -331,7 +332,7 @@ function readSet(limit, opts){
   }
 
   if(used.length){
-    _readRecent = used.concat(_readRecent.filter(id=>!used.includes(id))).slice(0,6);
+    _readRecent = used.concat(_readRecent.filter(id=>!used.includes(id))).slice(0,8);
     _readRecentSave(_readRecent);
   }
   return out;
