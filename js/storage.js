@@ -1,9 +1,10 @@
 /* =========================================================
    存档层 v4：所有进度存于 localStorage
    save = {
-     schema: 5,
+     schema: 6,
      pokemon: { id: {energy, stage, branch, deadUntil} },  // stage 显式记录；deadUntil=昏睡到哪天
-     lessonDone, mistakes, attempts, settings, lastSession, currentSession
+     lessonDone, mistakes, attempts, settings, lastSession, currentSession,
+     readDone: { 'rp-cat#1': 时间戳 }   // 阅读理解里已经答对过的题，不再重复出现
    }
    每答对一题 +2 能量、答错 −2；每阶 100 点。
    能量扣到负数：已进化的退化一阶（负余额结转）；未进化过的直接昏倒（死亡），
@@ -53,6 +54,7 @@ const Store = {
     this.data.mistakes   = this.data.mistakes   || [];
     this.data.attempts   = this.data.attempts   || [];
     this.data.books      = (this.data.books && typeof this.data.books==='object') ? this.data.books : {};
+    this.data.readDone   = (this.data.readDone && typeof this.data.readDone==='object') ? this.data.readDone : {};
     this.data.settings   = this.sanitizeSettings(this.data.settings);
     this.data.currentSession = this.data.currentSession || Date.now();
 
@@ -86,7 +88,7 @@ const Store = {
         }
       });
     }
-    this.data.schema = 5;
+    this.data.schema = 6;
     // 版本升级 / 缓存被清后主存档变空时，自动接回进度存档，不用重头再来
     this.migrateGuard();
     return this.data;
@@ -126,11 +128,12 @@ const Store = {
       });
     }
     return {
-      schema:5, pokemon:p,
+      schema:6, pokemon:p,
       lessonDone: (d.lessonDone && typeof d.lessonDone==='object') ? d.lessonDone : {},
       mistakes: Array.isArray(d.mistakes) ? d.mistakes.filter(m=>m && m.q && m.subject) : [],
       attempts: Array.isArray(d.attempts) ? d.attempts.filter(a=>a && a.date) : [],
       books: this.sanitizeBooks(d.books),
+      readDone: this.sanitizeReadDone(d.readDone),
       settings: this.sanitizeSettings(d.settings),
       lastSession: d.lastSession||null,
       currentSession: d.currentSession||Date.now()
@@ -151,9 +154,18 @@ const Store = {
     });
     return out;
   },
+  sanitizeReadDone(m){
+    const out={};
+    if(!m || typeof m!=='object') return out;
+    Object.keys(m).forEach(k=>{
+      if(typeof k!=='string' || !k) return;
+      out[k]= Math.max(0, Number(m[k])||1);
+    });
+    return out;
+  },
   fresh(){
     const p={}; POKEMON.forEach(pk=>p[pk.id]=this.freshMon());
-    return { schema:5, pokemon:p, lessonDone:{}, mistakes:[], attempts:[], books:{},
+    return { schema:6, pokemon:p, lessonDone:{}, mistakes:[], attempts:[], books:{}, readDone:{},
              settings:{ autoread:true, sound:true, zhread:true, mic:true },
              lastSession:null, currentSession:Date.now() };
   },
@@ -188,7 +200,8 @@ const Store = {
     });
     return { v:ARCHIVE_VERSION, savedAt:Date.now(), perStage:ENERGY_PER_STAGE,
              stages, evolved, pokemon,
-             lessonDone: this.data.lessonDone||{}, books: this.data.books||{} };
+             lessonDone: this.data.lessonDone||{}, books: this.data.books||{},
+             readDone: this.data.readDone||{} };
   },
   readArchive(key){
     if(!this.available) return null;
@@ -212,6 +225,8 @@ const Store = {
       const m=a.pokemon[id]||{};
       s += (Number(m.stage)||0)*1000 + (Number(m.energy)||0);
     });
+    // 阅读答对的题也算进度：只读绘本/做阅读、还没进化过的孩子，进度同样不会被清掉
+    s += Object.keys(a.readDone||{}).length;
     return s;
   },
   saveArchive(){ return this.writeArchive(ARCHIVE_KEY); },      // 首页按钮：手动存档
@@ -254,6 +269,10 @@ const Store = {
     });
     const ld=a.lessonDone||{};
     Object.keys(ld).forEach(k=>{ if(ld[k]) this.data.lessonDone[k]=true; });
+    const rd=a.readDone||{};
+    Object.keys(rd).forEach(k=>{
+      if(!this.data.readDone[k]) this.data.readDone[k]=Number(rd[k])||1;
+    });
     const bk=a.books||{};
     Object.keys(bk).forEach(id=>{
       const r=bk[id]; if(!r || typeof r!=='object') return;
@@ -365,6 +384,23 @@ const Store = {
              curOptions, nextOptions,
              branchCount:(curOptions||nextOptions||[]).length,
              chainBranch:chainBranchCount(pk) };
+  },
+
+  /* ---------------- 阅读理解：已答对的题不再出现 ----------------
+     readDone = { 'rp-cat#1': 时间戳 }，题目用稳定 qid 标识 */
+  readDoneIds(){ return Object.keys(this.data.readDone||{}); },
+  readDoneCount(){ return this.readDoneIds().length; },
+  isReadDone(qid){ return !!(qid && this.data.readDone && this.data.readDone[qid]); },
+  markReadDone(qid, when){
+    if(!qid) return false;
+    if(!this.data.readDone) this.data.readDone={};
+    if(this.data.readDone[qid]) return false;      // 已经记过，不重复写
+    this.data.readDone[qid] = when || Date.now();
+    this.save();
+    return true;
+  },
+  clearReadDone(){
+    this.data.readDone={}; this.save();
   },
 
   markLesson(subject,lessonId){

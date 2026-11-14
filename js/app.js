@@ -449,9 +449,14 @@ function openSubject(subject){
     const card=document.createElement('div');
     card.className='lesson-card '+subject;
     const lvl = les.level ? `<span class="level-badge">${LEVEL_LABEL[les.level]}</span>` : '';
+    let desc=les.desc;
+    if(les.id==='e-read' && typeof readStats==='function'){
+      const rs=readStats(Store.readDoneIds());
+      desc=`已答对 ${rs.done}/${rs.total} 题 · 当前第 ${rs.level} 级（${READ_LEVEL_INFO[rs.level].label}）· 每周上新 5 篇`;
+    }
     card.innerHTML=`<div class="lc-emoji">${les.emoji}</div>
       <div class="lc-body"><div class="lc-title">${les.title} ${lvl}</div>
-      <div class="lc-desc">${les.desc}</div></div>
+      <div class="lc-desc">${desc}</div></div>
       <div class="lc-done">${done?'✅':''}</div>`;
     card.onclick=()=>startLesson(subject,les.id);
     list.appendChild(card);
@@ -551,10 +556,15 @@ function setSignature(items){
     return [q.prompt||'', q.sub||'', q.answer||''].join('~');
   }).join('||');
 }
-function makeFresh(lesson, lessonId, slots){
+/* 阅读理解的生成选项：已答对的题（不再出现）+ 当前级别（文章逐渐变长） */
+function readOpts(){
+  const doneIds = Store.readDoneIds();
+  return { doneIds, level: (typeof readLevelFor==='function' ? readLevelFor(doneIds.length) : 1) };
+}
+function makeFresh(lesson, lessonId, slots, opts){
   let best=null, bestSig='';
   for(let i=0;i<8;i++){
-    const raw=(lesson.make ? (lesson.make(slots)||[]) : []);
+    const raw=(lesson.make ? (lesson.make(slots, opts)||[]) : []);
     const items=raw.slice(0, slots).map(q=>({q, isReview:false}));
     const sig=setSignature(items);
     best=items; bestSig=sig;
@@ -568,11 +578,13 @@ function beginSession(subject,lessonId){
   Store.rotateSession();
 
   const lesson=CURRICULUM[subject].lessons.find(l=>l.id===lessonId);
+  // 阅读理解要按"已答对的题"过滤 + 按级别选文章（越读越长）
+  const opts = readOpts();
   const slots=Math.max(0, QUESTIONS_PER_SET-mistakes.length);
-  let fresh=makeFresh(lesson, lessonId, slots);
+  let fresh=makeFresh(lesson, lessonId, slots, opts);
   // 阅读这类"整篇短文"放不满剩余名额时，干脆全部用新题（复习题下次再复习）
   if(fresh.length + mistakes.length < QUESTIONS_PER_SET){
-    fresh=makeFresh(lesson, lessonId, QUESTIONS_PER_SET);
+    fresh=makeFresh(lesson, lessonId, QUESTIONS_PER_SET, opts);
   }
   // 新题在前，复习题垫底：点「More questions」第一眼看到的永远是新鲜题。
   // 新题放不满（比如阅读要整篇放，剩余名额不够一篇）时用复习题补足到 10。
@@ -1068,6 +1080,12 @@ function hideKeyboard(){ $('#keyboard').classList.add('hidden'); }
 /* 答对（含复习题）时处理错题本：复习题答对即从错题本移除 */
 function onCorrect(item){
   if(item.isReview && item.ref) Store.removeMistake(item.ref);
+  // 阅读理解：答对过的题记进存档，以后组题时跳过（不会重复出现）
+  const qid = item.q && item.q.qid;
+  if(qid && Store.markReadDone(qid) && !item.isReview && state.lessonId==='e-read'){
+    const st = readStats(Store.readDoneIds());
+    if(st.done===st.total) toastMsg('🏆 所有阅读题都答对啦！每周一还会上新 5 篇');
+  }
   awardEnergy(ENERGY_PER_ANSWER);
 }
 /* 每道题的能量结算：答对 +2 / 答错 −2。
