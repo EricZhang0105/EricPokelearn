@@ -1,14 +1,16 @@
 /* =========================================================
-   统一出题引擎 v1（v19）
+   统一出题引擎 v2（v30）
    ---------------------------------------------------------
-   1) 出现过的题不再出现：每道题算一个稳定指纹（忽略选项顺序/图形），
-      展示即记入存档 qSeen；组题时过滤。做错的题走错题本复习通道。
-   2) 题库不够自动扩容：数学参数空间随难度放大；英文/中文用变体生成器
-      造新题；阅读理解用模板生成新短文并持久化（存档里 extraPassages）。
-   3) 一点一点变难：按每课累计答对题数算 difficulty 1–5，
-      数字范围 / 词长 / 句子长度 / 短文长度逐级提升。
+   1) 出现过的题绝不再出现：所有题在组题时盖上一个稳定 qid，
+      指纹只取题目本质（题干/答案/排序后的词块），忽略随机选项、
+      词块顺序、配图用哪只宝可梦。展示即记入 qSeen，组题时过滤。
+   2) 每节课一个 ≥200 道确定性题的大题库（js/question-bank.js）；
+      库存见底时 spread 逐轮放大参数空间自动造新题，qid 保证不与历史重复。
+      阅读理解则由短文生成器现场写新短文并持久化进 extraPassages。
+   3) 一点一点变难：每答对 8 题升一级（1–5），候选题按 tier 与当前
+      难度贴近程度排序，数字范围 / 词长 / 句长 / 短文长度同步上升。
    ---------------------------------------------------------
-   本文件必须在 js/storage.js、js/read-passages.js 之后，js/app.js 之前加载。
+   加载顺序：storage.js / read-passages.js / question-bank.js 之后，app.js 之前。
    ========================================================= */
 (function(global){
 'use strict';
@@ -20,19 +22,62 @@ function hash32(s){
   return h.toString(36);
 }
 function stripTags(s){ return String(s||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim(); }
-/* 指纹只取"题干+答案+素材"，不取 options / visual / 随机干扰项，
-   否则同一个单词换一组干扰项就会被当成新题（正是小朋友看到的重复）。 */
+/* 稳定指纹（v30 重写）
+   ---------------------------------------------------------
+   旧实现的两个致命问题，正是「More questions 又出刚答过的题」的根因：
+   1) 把 (q.tiles||[]).join(' ') 原样写进指纹，而句子建构题的 tiles 是
+      每次 shuffle 的 → 同一道 "I see a dog." 每套都是不同的指纹，qSeen 完全失效。
+   2) 把宠物 id（petKey）写进指纹 → "3 + 4 = ?" 换一只宝可梦就算新题，
+      孩子看到题干一模一样，自然觉得重复。
+   现在：指纹只取题目本质（题型/题干/答案/词块排序后），随机选项、词块顺序、
+   配图用哪只宝可梦一律不参与；所有题在组题时注入稳定 qid（见 normalizeQid）。 */
+/* 题目对象是缓存复用的，指纹只算一次挂在对象上（不可枚举 → 不进存档）。
+   数学题的 visual 是几十张宝可梦图的 HTML，不缓存会拖慢每次组题。 */
+function setHidden(q,k,v){
+  try{ Object.defineProperty(q,k,{value:v,enumerable:false,configurable:true}); }
+  catch(e){ q[k]=v; }
+  return v;
+}
+function normRaw(q){
+  if(q.__nr!==undefined) return q.__nr;
+  return setHidden(q,'__nr',[q.type||'', stripTags(q.prompt), stripTags(q.sub),
+    String(q.answer||''),(q.tiles||[]).slice().sort().join(' '),
+    stripTags(q.title), stripTags(q.text),
+    stripTags(q.visual).replace(/[✕]/g,'')].join('~'));
+}
+/* 旧版指纹：仅用于兼容已经存进 qSeen 的老存档，不参与新题判定 */
+function legacyKey(q){
+  if(!q || q.type==='passage') return null;
+  if(q.__lk!==undefined) return q.__lk;
+  const raw=[q.type||'', stripTags(q.prompt), stripTags(q.sub), String(q.answer||''),
+             (q.tiles||[]).join(' '), stripTags(q.title), stripTags(q.text),
+             stripTags(q.visual).replace(/[✕]/g,'')].join('~');
+  return setHidden(q,'__lk','h'+hash32(raw + (q.petKey ? '|pet:'+q.petKey : '')));
+}
 function qKey(q){
   if(!q) return null;
   if(q.type==='passage') return null;          // 短文卡是阅读素材，不参与去重
-  if(q.qid) return String(q.qid);             // 阅读理解题：稳定 qid
-  const raw=[q.type||'', stripTags(q.prompt), stripTags(q.sub), String(q.answer||''),
-             (q.tiles||[]).join(' '), stripTags(q.title), stripTags(q.text),
-             /* 数数题的图形是题目本体：5 只皮卡丘和 5 只胖丁是两道不同的题。
-                v26 起图形换成 <img>，标签会被 stripTags 剥掉，所以另外用 petKey
-                把「哪只宝可梦」写进指纹；只在有 petKey 时追加，旧题指纹保持不变。 */
-             stripTags(q.visual).replace(/[✕]/g,'')].join('~');
-  return 'h'+hash32(raw + (q.petKey ? '|pet:'+q.petKey : ''));
+  if(q.qid) return String(q.qid);             // 阅读题 / 题库题：稳定 qid
+  return 'h'+hash32(normRaw(q));
+}
+/* 内容指纹：只认「孩子看到的题干与答案」。
+   哪怕两道题来自不同题库、qid 不同，只要内容一样也视为同一道，
+   彻底杜绝「换个 ID 又把刚做过的题端上来」。 */
+function contentKey(q){
+  if(!q) return null;
+  if(q.__ck!==undefined) return q.__ck;
+  return setHidden(q,'__ck','n:'+hash32(normRaw(q)));
+}
+/* 组题时给每道题盖上稳定 qid：题库题已经有，老题库（lesson.make）现补。
+   阅读题的 qid 关联 readDone，必须原样保留。 */
+function normalizeQid(q,lessonId){
+  if(!q || q.type==='passage') return q;
+  const cur=String(q.qid||'');
+  if(cur.indexOf('#')>0) return q;   // 阅读题 qid 关联 readDone / 短文，必须原样保留
+  /* 其余一律按「题目本质」重算：手写题库与统一题库里内容相同的题，
+     会拿到同一个 qid，只可能出现一次（这正是 More questions 不重复的关键）。 */
+  q.qid='b:'+lessonId+':'+hash32(normRaw(q));
+  return q;
 }
 
 /* ---------------- 存档里的记录 ----------------
@@ -41,7 +86,7 @@ function qKey(q){
    extraPassages : [ 自动生成的短文 ]            —— 题库真的变大且跟着存档走
    qGrown    : { lessonId: 已扩容次数 }          —— 统计用
 ------------------------------------------------ */
-const MAX_SEEN = 6000;
+const MAX_SEEN = 12000;
 function D(){
   if(typeof Store==='undefined' || !Store.data) return null;
   const d=Store.data;
@@ -53,10 +98,20 @@ function D(){
 }
 function seenKeys(){ const d=D(); return d?Object.keys(d.qSeen):[]; }
 function isSeen(key){ const d=D(); return !!(key && d && d.qSeen[key]); }
+/* 新题指纹 + 旧版指纹双查：既保证新体系精确去重，也兼容老存档 */
+function isSeenQ(q){
+  const d=D(); if(!d || !q) return false;
+  const k=qKey(q); if(k && d.qSeen[k]) return true;
+  const c=contentKey(q); if(c && d.qSeen[c]) return true;  // 同内容不同 ID 也拦住
+  const old=legacyKey(q); return !!(old && old!==k && d.qSeen[old]);
+}
 function markShown(q){
   const d=D(); if(!d) return false;
   const k=qKey(q); if(!k || d.qSeen[k]) return false;
-  d.qSeen[k]=Date.now();
+  const now=Date.now(), old=legacyKey(q), c=contentKey(q);
+  d.qSeen[k]=now;
+  if(c && !d.qSeen[c]) d.qSeen[c]=now;                     // 内容指纹
+  if(old && old!==k && !d.qSeen[old]) d.qSeen[old]=now;   // 兼容旧指纹
   const ks=Object.keys(d.qSeen);
   if(ks.length>MAX_SEEN){                    // 只留最近的，防止存档无限膨胀
     ks.sort((a,b)=>(d.qSeen[a]||0)-(d.qSeen[b]||0));
@@ -69,10 +124,11 @@ function markMastered(lessonId){
   d.qMastered[lessonId]=(Number(d.qMastered[lessonId])||0)+1;
 }
 function masteredOf(lessonId){ const d=D(); return d?(Number(d.qMastered[lessonId])||0):0; }
-/* 每答对 12 题升一级，1→5 级；阅读课额外受 READ_LEVEL 影响 */
+/* 每答对 16 题升一级，1→5 级（约 6 套题升一档，难度一点点上来）；
+   阅读课额外受 READ_LEVEL 影响 */
 function difficultyFor(lessonId){
   const m=masteredOf(lessonId);
-  return Math.max(1, Math.min(5, 1+Math.floor(m/12)));
+  return Math.max(1, Math.min(5, 1+Math.floor(m/16)));
 }
 const DIFF_LABEL={1:'入门',2:'进阶',3:'熟练',4:'挑战',5:'高手'};
 
@@ -81,10 +137,14 @@ function ri(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
 function pick(a){ return a[ri(0,a.length-1)]; }
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];} return a; }
 function numOptions(ans,min,max){
-  const s=new Set([ans]); let g=0;
-  while(s.size<4 && g++<60){ const d=ans+ri(-4,4); if(d>=min&&d<=max&&d!==ans) s.add(d); }
-  while(s.size<4){ s.add(Math.max(min,ans+(s.size-1)+1)); }
-  return shuffle([...s]).map(String);
+  const s=new Set([String(ans)]); let g=0;
+  while(s.size<4 && g++<60){ const d=Number(ans)+ri(-4,4); if(d>=min&&d<=max) s.add(String(d)); }
+  for(let k=1;k<=20&&s.size<4;k++){
+    s.add(String(Number(ans)-k)); if(s.size<4) s.add(String(Number(ans)+k));
+  }
+  let v=Number(ans)+1;
+  while(s.size<4){ s.add(String(v)); v++; }   // v 严格递增，必定收敛
+  return shuffle([...s]);
 }
 function save(){ if(typeof Store!=='undefined' && Store.data && Store.save) Store.save(); }
 
@@ -190,7 +250,7 @@ function englishExpand(lessonId, level, need){
       const tiles=[s,v,'a',o,'.'];
       out.push({type:'build',prompt:'Tap the words in order to build a sentence',
         sub:'Put the words in the right order',tiles:shuffle(tiles),answer:tiles.join(' '),
-        speak:{text:tiles.join(' ').replace(/ \./g,'.'),lang:'en-US'}});
+        speak:{text:tiles.join(' ').replace(/ \./g,'.'),lang:'en-US',forceAuto:true}});
     }else if(lessonId==='e-grammar'){
       // 参数化：主语 × 句型，一次能造出 60+ 道互不相同的语法题
       const T=[
@@ -440,13 +500,35 @@ function bootExtraPassages(){
 }
 
 /* =========================================================
-   组题：反复摇 → 过滤 seen → 不够就扩容 → 再不够按最久未见兜底
+   阅读题库：确保「没做过的题」始终 ≥200 道，用完自动写新短文进存档
+   ========================================================= */
+function freshPassageCount(doneIds){
+  if(typeof READ_PASSAGES==='undefined') return 0;
+  const done=new Set(doneIds||[]);
+  return READ_PASSAGES.reduce((n,p)=>n+(p.qs||[]).filter(x=>!done.has(x.qid)).length,0);
+}
+function ensurePassagePool(level,minFresh,doneIds){
+  if(typeof growPassages!=='function') return 0;
+  const lv=[1,2,3].filter(x=>x<=Math.max(1,Math.min(3,level)));
+  let have=freshPassageCount(doneIds), made=0, guard=0;
+  while(have<minFresh && guard++<10){
+    const need=Math.min(45,Math.ceil((minFresh-have)/5));
+    /* 混合难度生成：短句 → 小段落 → 长故事，越读越长 */
+    const useLv=lv[guard%lv.length]||1;
+    const fresh=growPassages(useLv,need);
+    if(!fresh.length) break;
+    fresh.forEach(p=>{ made++; have+=(p.qs||[]).filter(x=>!(doneIds||[]).includes(x.qid)).length; });
+  }
+  return made;
+}
+
+/* =========================================================
+   组题 v30：手写题库 + 确定性大题库 → 严格去重 → 按难度抽取 → 自动扩容
    ========================================================= */
 function expandFor(lessonId, level, need, missing, spread){
   if(lessonId.startsWith('m-')) return mathExpand(lessonId,level,need,spread);
   if(lessonId.startsWith('c-')) return chineseExpand(lessonId,level,need);
   if(lessonId==='e-read' || lessonId.startsWith('r-')){
-    // 阅读/分级读物刷完 → 现场生成新短文（越往后越长），直接把题目块交给组题流程
     const fresh=growPassages(Math.max(1,Math.min(3,level)),Math.max(1,Math.ceil((missing||5)/5)));
     const out=[];
     fresh.forEach(p=>passageBlock(p).forEach(q=>out.push(q)));
@@ -454,93 +536,130 @@ function expandFor(lessonId, level, need, missing, spread){
   }
   return englishExpand(lessonId,level,need);
 }
+/* 按难度给候选题打分：tier 越接近当前 level 越靠前，
+   超过 level+1 的题先压后（难度一点点上来，不会一进门就是超纲题）。 */
+function byDifficulty(bank,level){
+  return bank.map(q=>{
+    const t=Number(q.tier)||1, gap=t-level;
+    /* 低于当前难度的题压后（简单题做完就别再回头刷），
+       超纲两档以上的题也压后，保证「先熟练本级，再上难度」。 */
+    const score=(gap>1?100:0)+(gap<0?60+(-gap)*8:gap*10)+Math.random()*9;
+    return {q,score};
+  }).sort((a,b)=>a.score-b.score).map(x=>x.q);
+}
 function freshQuestions(lesson,lessonId,slots,opts){
   const level=difficultyFor(lessonId);
   opts=Object.assign({},opts||{},{level});
+  const isRead=lessonId==='e-read' || lessonId.indexOf('r-')===0;
   // 数学：把难度写回生成器的数字范围
-  if(typeof setMathLevel==='function' && lessonId.startsWith('m-')) setMathLevel(level);
-  // 阅读：出过（不只答对）的题也不再出现
-  if(lessonId==='e-read'){
+  if(typeof setMathLevel==='function' && lessonId.indexOf('m-')===0) setMathLevel(level);
+  // 阅读：出过（不只答对）的题也不再出现；题库常备 ≥200 道没做过的题
+  if(isRead){
     const seenQids=seenKeys().filter(k=>k.indexOf('#')>0);
-    opts.doneIds=[...new Set((opts.doneIds||[]).concat(seenQids))];
+    opts.doneIds=Array.from(new Set((opts.doneIds||[]).concat(seenQids)));
     if(typeof readLevelFor==='function'){
       opts.level=Math.max(opts.level||1, readLevelFor(opts.doneIds.length));
     }
+    ensurePassagePool(opts.level,240,opts.doneIds);
   }
-  const picked=[], local=new Set();
+
+  const picked=[], local=new Set(), localNorm=new Set();
   const take=(raw)=>{
     let n=0;
     (raw||[]).forEach(q=>{
-      if(picked.length>=slots) return;
+      if(!q || picked.length>=slots) return;
       if(q.type==='passage'){
         // 短文卡是素材：不跨套去重，但同一套里只放一次（否则一篇文章会刷屏）
         const pk='P:'+hash32(stripTags(q.title)+stripTags(q.text));
         if(local.has(pk)) return;
         local.add(pk); picked.push(q); return;
       }
-      const k=qKey(q);
-      if(!k || isSeen(k) || local.has(k)) return;
-      local.add(k); picked.push(q); n++;
+      normalizeQid(q,lessonId);
+      const k=qKey(q), nr=contentKey(q);
+      if(!k || isSeenQ(q) || local.has(k) || localNorm.has(nr)) return;
+      local.add(k); localNorm.add(nr); picked.push(q); n++;
     });
     return n;
   };
-  // 第一轮：正常题库反复摇，最多 12 次
-  for(let i=0;i<12 && picked.length<slots;i++){
-    take(lesson.make(slots,opts));
-  }
-  // 第二轮：题库见底 → 自动扩容（真的增加新题），可连续扩几轮；
-  // 每轮把 spread 加大，数学参数空间随轮次变宽，保证不会在同一批旧组合里空转。
+
+  // 第一轮：保留手写题库的精选题（摇 3 次）
+  for(let i=0;i<3 && picked.length<slots;i++) take(lesson.make(slots,opts));
+
+  // 第二轮：统一题库（每课 ≥200 道确定性题）按难度抽取；
+  // spread 逐轮放大参数空间 → 库存见底时自动造出「以前从没出过」的新题。
   let grown=0;
-  for(let round=0; round<5 && picked.length<slots; round++){
-    const batch=expandFor(lessonId,level,Math.max(40,slots*5),slots-picked.length,round);
-    if(!batch || !batch.length) continue;
-    const n=take(batch);
+  for(let round=0; round<8 && picked.length<slots; round++){
+    let bank=[];
+    if(isRead){
+      if(round>0) ensurePassagePool(opts.level,240+(round*20),opts.doneIds);
+      const done=new Set(opts.doneIds||[]);
+      const pool=(typeof READ_PASSAGES!=='undefined')?READ_PASSAGES:[];
+      pool.filter(p=>(p.qs||[]).some(x=>!done.has(x.qid)))
+        .forEach(p=>passageBlock(p).forEach(q=>bank.push(q)));
+    }else if(typeof Bank!=='undefined' && Bank.build){
+      bank=Bank.build(lessonId,level,round);
+    }
+    const n=take(byDifficulty(bank,level));
     if(n){
       grown+=n;
       const d=D(); if(d) d.qGrown[lessonId]=(Number(d.qGrown[lessonId])||0)+1;
+    }
+    // 题库文件缺失时的纯扩容兜底（老生成器）
+    if(!n && !isRead){
+      const n2=take(expandFor(lessonId,level,Math.max(60,slots*8),slots-picked.length,round+2));
+      if(n2) grown+=n2;
     }
   }
   if(grown && typeof toastMsg==='function'){
     toastMsg(`📚 题库自动上新 ${grown} 道题 · 难度 ${DIFF_LABEL[level]}`);
   }
-  // 第三轮：极端兜底。旧实现取「全局最久未见」的指纹，那些指纹多半属于别的课，
-  // 本课摇出来的题一个都不在白名单里 → 会返回 0 题（空套题）。
-  // 现在改为：从本课反复摇出候选 + 再扩一轮更大范围的新题，
-  // 按「没出过优先、其次最久未见」排序补齐，保证永远凑满一套。
+
+  // 第三轮：极端兜底 —— 只用「从未出现过」的题补齐，绝不把做过的题再端上来。
   if(picked.length<slots){
-    const d=D(), cand=[], once=new Set();
+    const cand=[], once=new Set();
     const collect=(arr)=>(arr||[]).forEach(q=>{
       if(!q || q.type==='passage') return;
-      const k=qKey(q);
-      if(!k || local.has(k) || once.has(k)) return;
-      once.add(k); cand.push({q,k,t:(d&&d.qSeen[k])||0});
+      normalizeQid(q,lessonId);
+      const k=qKey(q), nr=contentKey(q);
+      if(!k || local.has(k) || once.has(k) || localNorm.has(nr) || isSeenQ(q)) return;
+      once.add(k); cand.push({q,nr});
     });
-    for(let i=0;i<20;i++) collect(lesson.make(slots,opts));
-    if(lessonId!=='e-read' && !lessonId.startsWith('r-')){
-      collect(expandFor(lessonId,level,Math.max(80,slots*8),slots-picked.length,6));
+    for(let i=0;i<12;i++) collect(lesson.make(slots,opts));
+    if(!isRead){
+      for(let s=8;s<14;s++) collect(
+        (typeof Bank!=='undefined'&&Bank.build)?Bank.build(lessonId,level,s):expandFor(lessonId,level,120,slots,s));
+    }else{
+      ensurePassagePool(opts.level,300,opts.doneIds);
+      if(typeof READ_PASSAGES!=='undefined') READ_PASSAGES.forEach(p=>collect(passageBlock(p)));
     }
-    cand.sort((a,b)=>a.t-b.t);        // t=0 表示从未出现，最优先
     cand.forEach(x=>{
       if(picked.length>=slots) return;
-      local.add(x.k); picked.push(x.q);
+      local.add(qKey(x.q)); localNorm.add(x.nr); picked.push(x.q);
     });
   }
-  return {items:picked.slice(0,slots).map(q=>({q,isReview:false})), level, grown};
+  return {items:picked.slice(0,slots).map(q=>({q,isReview:false})), level, grown,
+          bankSize:(typeof Bank!=='undefined'&&Bank.capacity&&!isRead)
+            ?Bank.capacity(lessonId,level,0).count:freshPassageCount(opts.doneIds)};
 }
 
 /* ---------------- 统计（课程卡显示） ---------------- */
 function stats(lessonId){
   const d=D();
   const all=seenKeys();
+  const isRead=lessonId==='e-read'||lessonId.indexOf('r-')===0;
+  const bank=(typeof Bank!=='undefined'&&Bank.capacity&&!isRead)
+    ? Bank.capacity(lessonId,difficultyFor(lessonId),0).count
+    : freshPassageCount(all.filter(k=>k.indexOf('#')>0));
   return { seen:all.length, mastered:masteredOf(lessonId),
            level:difficultyFor(lessonId), label:DIFF_LABEL[difficultyFor(lessonId)],
            grown:(d&&Number(d.qGrown[lessonId]))||0,
-           extraPassages:(d&&d.extraPassages.length)||0 };
+           bank, extraPassages:(d&&d.extraPassages.length)||0 };
 }
 
-global.QEngine={ qKey,markShown,markMastered,isSeen,seenKeys,difficultyFor,
-                 difficultyLabel:DIFF_LABEL,freshQuestions,stats,
-                 growPassages,bootExtraPassages,makeStory,
+global.QEngine={ qKey,markShown,markMastered,isSeen,isSeenQ,normalizeQid,seenKeys,
+                 difficultyFor,difficultyLabel:DIFF_LABEL,freshQuestions,stats,
+                 growPassages,bootExtraPassages,makeStory,ensurePassagePool,
                  /* 供 Node 回归测试 */
-                 _internal:{hash32,mathExpand,englishExpand,chineseExpand,wordPool} };
+                 _internal:{hash32,normRaw,legacyKey,mathExpand,englishExpand,
+                            chineseExpand,wordPool,byDifficulty} };
 })(typeof window!=='undefined'?window:globalThis);

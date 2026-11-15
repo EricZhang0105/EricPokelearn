@@ -17,8 +17,22 @@ function ri(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 function pick(arr){ return arr[ri(0,arr.length-1)]; }
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];} return a; }
 function numOptions(answer,min,max){
-  const s=new Set([answer]);
-  while(s.size<4){ const d=answer+ri(-3,3); if(d>=min&&d<=max&&d!==answer&&!s.has(d)) s.add(d); }
+  const s=new Set([Number(answer)]);
+  let guard=0;
+  while(s.size<4 && guard++<80){
+    const d=Number(answer)+ri(-3,3);
+    if(d>=min&&d<=max&&d!==Number(answer)&&!s.has(d)) s.add(d);
+  }
+  /* 边界值（例如答案正好等于 max，附近凑不满 4 个不同数）必须能兜底退出，
+     旧版在这里会无限循环，导致整节课白屏卡死。先取离答案最近的数字。 */
+  for(let k=1;k<=12&&s.size<4;k++){
+    [Number(answer)-k,Number(answer)+k].forEach(d=>{
+      if(d>=min&&d<=max&&!s.has(d)&&s.size<4) s.add(d);
+    });
+  }
+  for(let d=min;d<=max&&s.size<4;d++) if(!s.has(d)) s.add(d);
+  let v=Number(answer)+1;
+  while(s.size<4){ if(!s.has(v)) s.add(v); v++; }
   return shuffle([...s]).map(String);
 }
 /* =========================================================
@@ -405,7 +419,8 @@ const ENGLISH=[
       shuffle(BUILD).slice(0,10).forEach(b=>{
         out.push({type:'build', prompt:`Tap the words in order to build a sentence`,
           sub:`Put the words in the right order`, tiles:shuffle(b.tiles), answer:b.a,
-          speak:{text:b.a.replace(/ \./g,'.'),lang:'en-US'}});
+          /* 句子建构题进题必读（不依赖「自动朗读」开关），答对后在 bindBuild 里再读完整句 */
+          speak:{text:b.a.replace(/ \./g,'.'),lang:'en-US',forceAuto:true}});
       });
       return out;
     }},

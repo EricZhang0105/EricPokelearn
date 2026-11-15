@@ -126,7 +126,7 @@ document.addEventListener('pointerdown', ()=>{
 
 /* 本地音频播放：AUDIO_MAP / CHEER_MAP 由 js/audio-map.js 提供 */
 let _audio=null, _audioToken=0;
-function playClip(url, onEnd){
+function playClip(url, onEnd, onFail){
   if(!url) return false;
   try{
     if(!_audio) _audio=new Audio();
@@ -135,7 +135,12 @@ function playClip(url, onEnd){
     _audio.src=url;
     _audio.currentTime=0;
     _audio.onended=()=>{ if(my===_audioToken && onEnd) onEnd(); };
-    _audio.play().catch(()=>{ if(onEnd) onEnd(); });
+    /* 录音文件缺失 / 被浏览器拦截时不能再静音：交给系统语音兜底 */
+    _audio.onerror=()=>{ if(my===_audioToken && onFail) onFail(); };
+    _audio.play().catch(()=>{
+      if(my!==_audioToken) return;
+      if(onFail) onFail(); else if(onEnd) onEnd();
+    });
     return true;
   }catch(e){ return false; }
 }
@@ -144,16 +149,35 @@ function clipFor(text){
   const k=String(text||'').trim().toLowerCase();
   return AUDIO_MAP[k] || null;
 }
-/* 读题：优先播放题目自带的本地录音（中文拼音），其次查英文词库，最后才用浏览器 TTS */
+/* 读题：优先播放题目自带的本地录音（中文拼音），其次查英文词库，
+   最后才用浏览器 TTS。任何一环失败都会回退到 TTS，绝不出现「没声音」。 */
 function playSpeak(s, onEnd){
   if(!s) return;
-  if(s.clip && playClip(s.clip,onEnd)) return;
+  let fellBack=false;
+  const fallback=()=>{
+    if(fellBack) return; fellBack=true;
+    speak(s.text, s.lang);
+    if(onEnd) setTimeout(onEnd, 1200);
+  };
+  if(s.clip && playClip(s.clip,onEnd,fallback)) return;
   const url=clipFor(s.text);
   const slowUrl=clipFor(s.text+'::slow');
   const target=(s.slow && slowUrl) ? slowUrl : url;
-  if(target && playClip(target,onEnd)) return;
-  speak(s.text, s.lang);
-  if(onEnd) setTimeout(onEnd, 1200);
+  if(target && playClip(target,onEnd,fallback)) return;
+  fallback();
+}
+/* ---------- 进题自动播报 ----------
+   用令牌把「上一题遗留的延迟播放」挡掉，避免串题；
+   forceAuto 的题型（语法 / 句子建构）不受设置开关影响，进题必读。 */
+let _autoSpeakToken=0;
+function autoSpeak(q,force){
+  const s=q && q.speak;
+  if(!s) return;
+  const should=force || s.forceAuto ||
+    (s.autoplay ? Store.getSetting('zhread') : Store.getSetting('autoread'));
+  if(!should) return;
+  const my=++_autoSpeakToken;
+  setTimeout(()=>{ if(my===_autoSpeakToken) playSpeak(s); }, 400);
 }
 /* 完成课程：先来一声该宝可梦的叫声，再用它的专属音色说鼓励语 */
 function pokeCry(id){
@@ -640,6 +664,7 @@ function stopSpeechInput(){
 /* ---------- 渲染题目 ---------- */
 function renderQuestion(){
   stopSpeechInput();
+  ++_autoSpeakToken;             // 作废上一题尚未触发的自动播报定时器
   hideKeyboard();               // 切到下一题先把屏幕键盘收起，非打字题不会残留
   const item=state.questions[state.idx];
   const q=item.q;
@@ -722,7 +747,7 @@ function renderQuestion(){
   if(q.type==='passage'){
     $('#passageNext').onclick=()=>nextQuestion();
     if(q.speak) $('#speakBtn').onclick=()=>playSpeak(q.speak);
-    if(q.speak) setTimeout(()=>playSpeak(q.speak), 500);
+    if(q.speak) autoSpeak(q,true);          // 短文卡进题即朗读（原行为）
   } else if(q.type==='speak'){
     $('#demoBtn').onclick=()=>playSpeak(q.speak);
   } else if(q.speak){
@@ -732,9 +757,8 @@ function renderQuestion(){
       const s=Object.assign({}, q.speak, {slow:true});
       playSpeak(s, ()=>setTimeout(()=>playSpeak(s), 400));
     };
-    // 中文拼读题独立开关（默认开）：声母→韵母→音节 自动播报
-    const shouldAuto = q.speak.forceAuto || (q.speak.autoplay ? Store.getSetting('zhread') : Store.getSetting('autoread'));
-    if(shouldAuto) setTimeout(()=>playSpeak(q.speak), 400);
+    // 中文拼读题走独立开关；语法 / 句子建构题带 forceAuto，进题必读
+    autoSpeak(q);
   }
 
   if(q.type==='choice'){
@@ -1177,7 +1201,10 @@ function onCorrect(item){
   if(!item.isReview && typeof QEngine!=='undefined') QEngine.markMastered(state.lessonId);
   // 阅读理解：答对过的题记进存档，以后组题时跳过（不会重复出现）
   const qid = item.q && item.q.qid;
-  if(qid && Store.markReadDone(qid) && !item.isReview && state.lessonId==='e-read'){
+  /* 只有阅读理解题（qid 形如 rp-xxx#1）进 readDone；v30 起所有题都有 qid，
+     若不限定会把数学/中文题混进阅读进度里。其它题统一由 QEngine.qSeen 去重。 */
+  if(qid && String(qid).indexOf('#')>0 && Store.markReadDone(qid)
+     && !item.isReview && state.lessonId==='e-read'){
     const st = readStats(Store.readDoneIds());
     if(st.done===st.total) toastMsg('🏆 所有阅读题都答对啦！每周一还会上新 5 篇');
   }
