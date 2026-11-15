@@ -2,7 +2,7 @@
   "name": "pokelearn-desktop",
   "version": "1.0.0",
   "private": true,
-  "description": "小布学习乐园 · PokeLearn 离线桌面版",
+  "description": "PokeLearn 离线桌面版",
   "main": "main.js",
   "author": "Eric Zhang",
   "scripts": {

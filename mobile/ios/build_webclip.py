@@ -86,9 +86,9 @@ def mobileconfig(label, url, ident):
 
 
 ITEMS = [
-    ('小布学习乐园', CLOUD_URL, 'com.ericzhang.pokelearn.cloud',
+    ('PokeLearn', CLOUD_URL, 'com.ericzhang.pokelearn.cloud',
      ['PokeLearn-iPhone-iPad-Cloud.mobileconfig', 'PokeLearn-iPhone-iPad-云同步版.mobileconfig']),
-    ('小布学习乐园·网页版', WEB_URL, 'com.ericzhang.pokelearn.web',
+    ('PokeLearn Web', WEB_URL, 'com.ericzhang.pokelearn.web',
      ['PokeLearn-iPhone-iPad-Web.mobileconfig', 'PokeLearn-iPhone-iPad-网页版.mobileconfig']),
 ]
 

@@ -13,7 +13,7 @@ const ROOT = app.isPackaged
   ? path.join(process.resourcesPath, 'app-static')
   : path.join(__dirname, '..');
 
-const WINDOW_TITLE = '小布学习乐园 · PokeLearn';
+const WINDOW_TITLE = 'PokeLearn';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
