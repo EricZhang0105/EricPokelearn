@@ -221,6 +221,10 @@ function wordPool(level){
   return [...new Set(w)];
 }
 function englishExpand(lessonId, level, need){
+  // v32 发音辨析：扩容直接取 PHONIC 全量题集，不再造「问首字母」旧题
+  if(lessonId==='e-phonics' && typeof PHONIC!=='undefined'){
+    return PHONIC.fullSet().slice(0,Math.max(need,50));
+  }
   // 扩容时不受当前难度限制：把所有分级词都拿出来造新题，难度由题目本身体现
   const pool=shuffle(wordPool(5)); const out=[];
   for(const w of pool){
@@ -230,12 +234,8 @@ function englishExpand(lessonId, level, need){
         sub:'(Tap 🔊, then spell with the keyboard)',speak:{text:w,lang:'en-US'},
         answer:w,explain:`Spell: ${w.split('').join('-')}.`});
     }else if(lessonId==='e-phonics'){
-      const first=w[0];
-      const decoys=shuffle('bcdfghjklmnprstw'.split('').filter(x=>x!==first)).slice(0,2);
-      out.push({type:'choice',prompt:'Which letter starts this word?',
-        sub:`"${w}" — what is the first letter?`,
-        speak:{text:w,lang:'en-US'},options:shuffle([first,...decoys]),answer:first,
-        explain:`"${w}" starts with "${first}".`});
+      // PHONIC 未加载时的兜底，也应是读音题而非「问首字母」；通常上面已提前返回
+      continue;
     }else if(lessonId==='e-sight'){
       const decoys=shuffle(pool.filter(x=>x!==w)).slice(0,2);
       out.push({type:'choice',prompt:'Listen, then tap the word 👂',

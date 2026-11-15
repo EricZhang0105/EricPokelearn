@@ -788,8 +788,10 @@ function bindChoice(q,item){
       if(correct){
         btn.classList.add('correct'); state.correct++; onCorrect(item);
         sfx('good');
-        // 语法题答对后要念完整句，留足时间再切下一题，避免语音被下一题的自动读题打断
-        showFeedback(true,q.explain,true,null,false,q.answerSpeak?3000:950);
+        // 语法题答对后要念完整句 / 发音辨析题要读解题思路，
+        // 留足时间再切下一题，避免语音或中文讲解被下一题的自动读题打断
+        showFeedback(true,q.explain,true,null,false,
+          q.feedbackDelay || (q.answerSpeak?3000:950));
       }else{
         btn.classList.add('wrong');
         sfx('bad');

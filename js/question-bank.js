@@ -294,6 +294,11 @@ function englishBank(lessonId,level,spread){
   if(lessonId==='e-build'){
     return buildSentences(spread);
   }
+  if(lessonId==='e-phonics' && typeof global.PHONIC!=='undefined'){
+    /* v32：发音辨析题（问字母发音 / 找同音词 / 听音选词），
+       每答对给出中文解题思路并朗读规则。题库由 PHONIC 全量枚举提供。 */
+    return global.PHONIC.fullSet().map(q=>tag(q,'b:e-phonics:'+q.qid,q.tier));
+  }
   if(lessonId==='e-grammar'){
     const T=grammarTemplates();
     const SS=SUBJ.concat(['You','It','My dad','The cat','Tom','The girls',

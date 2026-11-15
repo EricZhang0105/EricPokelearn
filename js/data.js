@@ -442,14 +442,16 @@ const ENGLISH=[
 
 
   { id:'e-phonics', title:'Phonics Review', emoji:'🔡',
-    desc:'Listen to the word and pick its first letter',
-    make(){
+    desc:'Listen and find the letter sound',
+    make(n,opts){
+      if(typeof PHONIC!=='undefined')
+        return PHONIC.make(n||10, (opts&&opts.level)||1, (opts&&opts.spread)||0);
+      /* 兜底：PHONIC 未加载时仍给「发音辨析」而非旧的首字母题 */
       const out=[];
       shuffle(PHON).slice(0,10).forEach(p=>{
-        const opts=shuffle([p.a,...shuffle('bcdfghjklmnprst'.split('').filter(x=>x!==p.a)).slice(0,2)]);
         out.push({type:'choice', prompt:`Which letter starts this word?`,
           visual:`<div class="q-visual">${p.e}</div>`, sub:`"${p.w}" — what is the first letter?`,
-          speak:{text:p.w,lang:'en-US'}, options:shuffle(opts), answer:p.a, explain:`"${p.w}" starts with "${p.a}".`});
+          speak:{text:p.w,lang:'en-US'}, options:shuffle([p.a,...shuffle('bcdfghjklmnprst'.split('').filter(x=>x!==p.a)).slice(0,2)]), answer:p.a, explain:`"${p.w}" starts with "${p.a}".`});
       });
       return out;
     }},
