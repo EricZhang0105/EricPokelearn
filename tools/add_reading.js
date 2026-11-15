@@ -32,15 +32,18 @@ if(!Array.isArray(list) || !list.length) fail('JSON 必须是数组且至少 1 �
 
 // ---- 读出已有 id / qid ----
 const file=fs.readFileSync(target,'utf8');
-const existIds=new Set([...file.matchAll(/\bid:'([^']+)'/g)].map(m=>m[1]));
-const existQids=new Set([...file.matchAll(/\bqid:'([^']+)'/g)].map(m=>m[1]));
+/* 兼容两种写法：旧数据 id:'rp-x-1'，周更写入的是 JSON 风格 "id": "rp-x-1"。
+   之前只认单引号，导致同周重跑时已有 id 全部漏检 → 重复追加、qid 撞车。 */
+const ID_RE=/\bid["']?\s*:\s*["']([^"']+)["']/g;
+const QID_RE=/\bqid["']?\s*:\s*["']([^"']+)["']/g;
+const existIds=new Set([...file.matchAll(ID_RE)].map(m=>m[1]));
+const existQids=new Set([...file.matchAll(QID_RE)].map(m=>m[1]));
 // 自动生成的 qid（passageId#n）也要算进去
-[...existIds].forEach(id=>{
-  const n=(file.match(new RegExp(`id:'${id}'`))||[]).length;
-  if(n) for(let i=1;i<=6;i++) existQids.add(`${id}#${i}`);
-});
-
+[...existIds].forEach(id=>{ for(let i=1;i<=6;i++) existQids.add(`${id}#${i}`); });
 const errs=[];
+// 本次批次内部也不能有重复 id
+const batchIds=new Set();
+list.forEach(p=>{ if(p.id && batchIds.has(p.id)) errs.push('批次内 id 重复：'+p.id); batchIds.add(p.id); });
 list.forEach((p,i)=>{
   const tag=p.id||('第'+(i+1)+'篇');
   if(!p.id) errs.push(tag+' 缺 id');

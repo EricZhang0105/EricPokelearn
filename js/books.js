@@ -736,7 +736,171 @@ const RAW_BOOKS = [
     ['I look in the garden.','garden|child,tree'],
     ['She is up in the tree!','garden|tree,cat'],
     ['“Come down, silly cat!”','garden|child,tree,cat']
-  ]}
+  ]},
+
+  /* ---------- 云端周更 2026w46 ---------- */
+  {
+    "id": "zh-k1-2026w46-1",
+    "lang": "zh",
+    "level": "k1",
+    "title": "小猫的礼物",
+    "titleEn": "Week 2026w46 · 1",
+    "tag": "生活 · 重复句",
+    "pages": [
+      [
+        "小猫醒来了。今天要去外面玩。",
+        "garden|ball,bird,child,cloud"
+      ],
+      [
+        "它看见了气球，还有小鸟。",
+        "garden|ball,bird,child,sun"
+      ],
+      [
+        "风轻轻吹过来，天气真好。",
+        "garden|ball,bird,child,cloud"
+      ],
+      [
+        "它和小伙伴一起走呀走。",
+        "garden|ball,bird,child,sun"
+      ],
+      [
+        "太阳快下山了，该回家啦。",
+        "garden|ball,bird,child,cloud"
+      ]
+    ]
+  },
+  {
+    "id": "en-k1-2026w46-2",
+    "lang": "en",
+    "level": "k1",
+    "title": "Jack's Big Day",
+    "titleEn": "第 2026w46 周 · 2",
+    "tag": "Sight words · CVC",
+    "pages": [
+      [
+        "Ben wakes up early. It is a bright day.",
+        "day|moon,tree,child"
+      ],
+      [
+        "Ben can see a moon and a tree.",
+        "day|moon,tree,child,sun"
+      ],
+      [
+        "The moon is big. The tree is small.",
+        "day|moon,tree,child"
+      ],
+      [
+        "Ben and a friend walk to the park.",
+        "day|moon,tree,child,sun"
+      ],
+      [
+        "They play together until the sun goes down.",
+        "day|moon,tree,child"
+      ]
+    ]
+  },
+  {
+    "id": "zh-k2-2026w46-3",
+    "lang": "zh",
+    "level": "k2",
+    "title": "小猫的小发现",
+    "titleEn": "Week 2026w46 · 3",
+    "tag": "自然 · 观察",
+    "pages": [
+      [
+        "小猫醒来了。今天要去外面玩。",
+        "garden|umbrella,sun,child,cloud"
+      ],
+      [
+        "它看见了雨伞，还有太阳。",
+        "garden|umbrella,sun,child"
+      ],
+      [
+        "风轻轻吹过来，天气真好。",
+        "garden|umbrella,sun,child,cloud"
+      ],
+      [
+        "它和小伙伴一起走呀走。",
+        "garden|umbrella,sun,child"
+      ],
+      [
+        "太阳快下山了，该回家啦。",
+        "garden|umbrella,sun,child,cloud"
+      ],
+      [
+        "“明天再来玩吧！”它开心地说。",
+        "garden|umbrella,sun,child"
+      ]
+    ]
+  },
+  {
+    "id": "en-p1-2026w46-4",
+    "lang": "en",
+    "level": "p1",
+    "title": "Ben's New Ball",
+    "titleEn": "第 2026w46 周 · 4",
+    "tag": "Short sentences",
+    "pages": [
+      [
+        "Rex wakes up early. It is a bright day.",
+        "sea|box,ball,child,tree"
+      ],
+      [
+        "Rex can see a box and a ball.",
+        "sea|box,ball,child,sun"
+      ],
+      [
+        "The box is big. The ball is small.",
+        "sea|box,ball,child,tree"
+      ],
+      [
+        "Rex and a friend walk to the park.",
+        "sea|box,ball,child,sun"
+      ],
+      [
+        "They play together until the sun goes down.",
+        "sea|box,ball,child,tree"
+      ],
+      [
+        "\"See you tomorrow!\" says Rex.",
+        "sea|box,ball,child,sun"
+      ]
+    ]
+  },
+  {
+    "id": "zh-p2-2026w46-5",
+    "lang": "zh",
+    "level": "p2",
+    "title": "小兔子的新朋友",
+    "titleEn": "Week 2026w46 · 5",
+    "tag": "友谊 · 小故事",
+    "pages": [
+      [
+        "小猫醒来了。今天要去外面玩。",
+        "night|dog,rabbit,child,cloud"
+      ],
+      [
+        "它看见了小狗，还有小兔。",
+        "night|dog,rabbit,child,sun"
+      ],
+      [
+        "风轻轻吹过来，天气真好。",
+        "night|dog,rabbit,child,cloud"
+      ],
+      [
+        "它和小伙伴一起走呀走。",
+        "night|dog,rabbit,child,sun"
+      ],
+      [
+        "太阳快下山了，该回家啦。",
+        "night|dog,rabbit,child,cloud"
+      ],
+      [
+        "“明天再来玩吧！”它开心地说。",
+        "night|dog,rabbit,child,sun"
+      ]
+    ]
+  },
 ];
 
 /* 规范化：pages 由 [text, art] 转成对象，并补上顺序号 */

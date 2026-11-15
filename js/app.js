@@ -6,6 +6,8 @@ const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
 
 Store.load();
+/* 题库自动扩容：把上次自动生成、已存进存档的新短文注册回阅读题库 */
+if(typeof QEngine!=='undefined' && QEngine.bootExtraPassages) QEngine.bootExtraPassages();
 
 const state = {
   subject:null, lessonId:null, questions:[], idx:0,
@@ -454,6 +456,11 @@ function openSubject(subject){
       const rs=readStats(Store.readDoneIds());
       desc=`已答对 ${rs.done}/${rs.total} 题 · 当前第 ${rs.level} 级（${READ_LEVEL_INFO[rs.level].label}）· 每周上新 5 篇`;
     }
+    if(typeof QEngine!=='undefined' && QEngine.stats){
+      const qs=QEngine.stats(les.id);
+      desc+=` · 难度 ${qs.level}/5 ${qs.label} · 已做 ${qs.seen} 题`;
+      if(qs.grown) desc+=` · 题库自动扩充 ${qs.grown} 次`;
+    }
     card.innerHTML=`<div class="lc-emoji">${les.emoji}</div>
       <div class="lc-body"><div class="lc-title">${les.title} ${lvl}</div>
       <div class="lc-desc">${desc}</div></div>
@@ -581,10 +588,14 @@ function beginSession(subject,lessonId){
   // 阅读理解要按"已答对的题"过滤 + 按级别选文章（越读越长）
   const opts = readOpts();
   const slots=Math.max(0, QUESTIONS_PER_SET-mistakes.length);
-  let fresh=makeFresh(lesson, lessonId, slots, opts);
+  const useEngine = (typeof QEngine!=='undefined' && QEngine.freshQuestions);
+  const build=(n)=> useEngine
+    ? QEngine.freshQuestions(lesson, lessonId, n, opts).items
+    : makeFresh(lesson, lessonId, n, opts);
+  let fresh=build(slots);
   // 阅读这类"整篇短文"放不满剩余名额时，干脆全部用新题（复习题下次再复习）
   if(fresh.length + mistakes.length < QUESTIONS_PER_SET){
-    fresh=makeFresh(lesson, lessonId, QUESTIONS_PER_SET, opts);
+    fresh=build(QUESTIONS_PER_SET);
   }
   // 新题在前，复习题垫底：点「More questions」第一眼看到的永远是新鲜题。
   // 新题放不满（比如阅读要整篇放，剩余名额不够一篇）时用复习题补足到 10。
@@ -624,6 +635,10 @@ function renderQuestion(){
   stopSpeechInput();
   const item=state.questions[state.idx];
   const q=item.q;
+  // 出现过的题记入存档，之后组题时直接跳过（做错的题仍会走错题本复习）
+  if(!item.isReview && typeof QEngine!=='undefined' && QEngine.markShown(q)){
+    Store.save();
+  }
   $('#reviewTag').classList.toggle('hidden', !item.isReview);
   const pct=Math.round((state.idx)/state.total*100);
   $('#progressFill').style.width=pct+'%';
@@ -1080,6 +1095,8 @@ function hideKeyboard(){ $('#keyboard').classList.add('hidden'); }
 /* 答对（含复习题）时处理错题本：复习题答对即从错题本移除 */
 function onCorrect(item){
   if(item.isReview && item.ref) Store.removeMistake(item.ref);
+  // 每答对一题累进一点难度（复习题不算，避免刷难度）
+  if(!item.isReview && typeof QEngine!=='undefined') QEngine.markMastered(state.lessonId);
   // 阅读理解：答对过的题记进存档，以后组题时跳过（不会重复出现）
   const qid = item.q && item.q.qid;
   if(qid && Store.markReadDone(qid) && !item.isReview && state.lessonId==='e-read'){

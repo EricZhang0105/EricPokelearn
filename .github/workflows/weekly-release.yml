@@ -1,0 +1,46 @@
+# PokeLearn 云端周更：即使 WorkBuddy / 你的电脑关机，GitHub 也会按点执行。
+# UTC 周日 23:45 = 北京时间周一 07:45（新加坡同 UTC+8）
+# 执行内容：+5 篇英文阅读短文、+5 本绘本 → 校验 → 升缓存版本 → push → Pages 自动发布
+name: PokeLearn weekly release
+
+on:
+  schedule:
+    - cron: '45 23 * * 0'
+  workflow_dispatch:      # 也可在 GitHub Actions 页面手动点「Run workflow」立即上新
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pokelearn-weekly
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate 5 passages + 5 books, validate, bump cache version
+        run: node tools/weekly_release.js
+
+      - name: Commit and push (triggers GitHub Pages deploy)
+        run: |
+          git config user.name "PokeLearn Bot"
+          git config user.email "pokelearn-bot@users.noreply.github.com"
+          git add js/read-passages.js js/books.js sw.js package.json
+          if git diff --cached --quiet; then
+            echo "本周已上新，无改动"
+          else
+            git commit -m "weekly reading + books: +5 passages / +5 books (cloud cron)"
+            git push origin main
+          fi

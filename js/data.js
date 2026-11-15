@@ -8,6 +8,11 @@
    ========================================================= */
 
 /* ---------------- 工具函数 ---------------- */
+/* 数学难度：由 js/question-engine.js 按累计答对数设置（1–5）。
+   数字上限随难度放大，题目空间随之变大 —— 这就是数学的「自动扩容」。 */
+let MATH_LEVEL = 1;
+function setMathLevel(n){ MATH_LEVEL = Math.max(1, Math.min(5, Number(n)||1)); }
+function mCap(base, step){ return base + (MATH_LEVEL-1)*step; }
 function ri(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 function pick(arr){ return arr[ri(0,arr.length-1)]; }
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];} return a; }
@@ -41,10 +46,10 @@ const MATH = [
     make(){
       const out=[];
       for(let i=0;i<10;i++){
-        const n=ri(1,10), e=pick(['🍎','⭐','🐟','🚗','🌸']);
+        const n=ri(1,mCap(10,6)), e=pick(['🍎','⭐','🐟','🚗','🌸']);
         out.push({type:'choice', prompt:`How many?`, visual:emojiGroup(n,e),
           speak:{text:`Count the ${e}. How many?`,lang:'en-US'},
-          options:numOptions(n,1,10), answer:String(n), explain:`There are ${n} ${e}.`});
+          options:numOptions(n,1,mCap(10,6)), answer:String(n), explain:`There are ${n} ${e}.`});
       }
       return out;
     }},
@@ -54,10 +59,10 @@ const MATH = [
     make(){
       const out=[];
       for(let i=0;i<10;i++){
-        const p1=ri(2,8), p2=ri(2,10-p1), w=p1+p2;   // 两个部分都在 2–8，整句写成 8 + 1 = ?
+        const p1=ri(2,mCap(8,4)), p2=ri(2,mCap(10,6)-p1), w=p1+p2;   // 两个部分都在 2–8，整句写成 8 + 1 = ?
         out.push({type:'choice', prompt:`Add the two parts`, sub:`${p1} + ${p2} = ?`,
           speak:{text:`${p1} plus ${p2} equals what?`,lang:'en-US'},
-          options:numOptions(w,2,10), answer:String(w), explain:`${p1} + ${p2} = ${w}.`});
+          options:numOptions(w,2,mCap(10,6)), answer:String(w), explain:`${p1} + ${p2} = ${w}.`});
       }
       return out;
     }},
@@ -67,11 +72,11 @@ const MATH = [
     make(){
       const out=[];
       for(let i=0;i<10;i++){
-        let a=ri(1,9), b=ri(1,9-a); const ans=a+b;
+        let a=ri(1,mCap(9,5)), b=ri(1,mCap(9,5)-a); const ans=a+b;
         out.push({type:'choice', prompt:`How many in all?`,
           visual:emojiGroup(a,'🍎')+`<div class="q-sub">+</div>`+emojiGroup(b,'🍎'),
           speak:{text:`${a} plus ${b} equals what?`,lang:'en-US'},
-          options:numOptions(ans,2,10), answer:String(ans), explain:`${a} + ${b} = ${ans}.`});
+          options:numOptions(ans,2,mCap(10,6)), answer:String(ans), explain:`${a} + ${b} = ${ans}.`});
       }
       return out;
     }},
@@ -82,11 +87,11 @@ const MATH = [
       const out=[];
       for(let i=0;i<10;i++){
         let p1,p2,guard=0;                            // 两部分都在 2–10，合起来 11–20
-        do{ p1=ri(2,10); p2=ri(2,10); }while(p1+p2<11 && guard++<50);
+        do{ p1=ri(2,mCap(10,5)); p2=ri(2,mCap(10,5)); }while(p1+p2<11 && guard++<50);
         const w=p1+p2;
         out.push({type:'choice', prompt:`Add the two parts`, sub:`${p1} + ${p2} = ?`,
           speak:{text:`${p1} plus ${p2} equals what?`,lang:'en-US'},
-          options:numOptions(w,9,20), answer:String(w), explain:`${p1} + ${p2} = ${w}.`});
+          options:numOptions(w,9,mCap(20,8)), answer:String(w), explain:`${p1} + ${p2} = ${w}.`});
       }
       return out;
     }},
@@ -112,11 +117,11 @@ const MATH = [
     make(){
       const out=[];
       for(let i=0;i<10;i++){
-        const a=ri(2,10), b=ri(1,a-1); const ans=a-b;
+        const a=ri(2,mCap(10,6)), b=ri(1,a-1); const ans=a-b;
         out.push({type:'choice', prompt:`How many are left?`, sub:`${a} − ${b} = ?`,
           visual:blocks(a,{removed:b})+`<div class="q-sub">take away ${b} ✕</div>`,
           speak:{text:`${a} minus ${b} equals what?`,lang:'en-US'},
-          options:numOptions(ans,0,9), answer:String(ans), explain:`${a} − ${b} = ${ans}.`});
+          options:numOptions(ans,0,mCap(9,6)), answer:String(ans), explain:`${a} − ${b} = ${ans}.`});
       }
       return out;
     }},
@@ -126,11 +131,11 @@ const MATH = [
     make(){
       const out=[];
       for(let i=0;i<10;i++){
-        const a=ri(11,20), b=ri(1,Math.min(9,a-2)); const ans=a-b;
+        const a=ri(11,mCap(20,8)), b=ri(1,Math.min(9,a-2)); const ans=a-b;
         out.push({type:'choice', prompt:`How many are left?`, sub:`${a} − ${b} = ?`,
           visual:blocks(a,{removed:b})+`<div class="q-sub">− ${b} take away ✕</div>`,
           speak:{text:`${a} minus ${b} equals what?`,lang:'en-US'},
-          options:numOptions(ans,1,19), answer:String(ans), explain:`${a} − ${b} = ${ans}.`});
+          options:numOptions(ans,1,mCap(19,8)), answer:String(ans), explain:`${a} − ${b} = ${ans}.`});
       }
       return out;
     }},
@@ -173,8 +178,8 @@ const MATH = [
       ]);
       return kinds.map((k,i)=>{
         const p=people[i]; let a,b;
-        if(k.op==='+'){ a=ri(2,9); b=ri(1,Math.min(8,18-a)); }
-        else          { a=ri(5,18); b=ri(1,Math.min(5,a-2)); }
+        if(k.op==='+'){ a=ri(2,mCap(9,5)); b=ri(1,Math.min(8,mCap(18,8)-a)); }
+        else          { a=ri(5,mCap(18,8)); b=ri(1,Math.min(5,a-2)); }
         const ans = k.op==='+' ? a+b : a-b;
         const q   = k.f({n:p.n,e:p.e,v:p.v,a,b});
         return {type:'choice', prompt:`Read the story`, sub:q,
@@ -190,8 +195,8 @@ const MATH = [
       const out=[];
       for(let i=0;i<10;i++){
         const op=Math.random()<0.5?'+':'-'; let a,b,ans;
-        if(op==='+'){ a=ri(1,15); b=ri(1,Math.min(20-a,15)); ans=a+b; }
-        else { a=ri(6,20); b=ri(1,a-1); ans=a-b; }
+        if(op==='+'){ a=ri(1,mCap(15,6)); b=ri(1,Math.min(mCap(20,8)-a,15)); ans=a+b; }
+        else { a=ri(6,mCap(20,8)); b=ri(1,a-1); ans=a-b; }
         out.push({type:'choice', prompt:`Solve it`, sub:`${a} ${op} ${b} = ?`,
           speak:{text:`${a} ${op==='+'?'plus':'minus'} ${b} equals what?`,lang:'en-US'},
           options:numOptions(ans,Math.max(0,ans-3),ans+3), answer:String(ans),

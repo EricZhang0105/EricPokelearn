@@ -1,10 +1,13 @@
 /* =========================================================
    存档层 v4：所有进度存于 localStorage
    save = {
-     schema: 6,
+     schema: 7,
      pokemon: { id: {energy, stage, branch, deadUntil} },  // stage 显式记录；deadUntil=昏睡到哪天
      lessonDone, mistakes, attempts, settings, lastSession, currentSession,
-     readDone: { 'rp-cat#1': 时间戳 }   // 阅读理解里已经答对过的题，不再重复出现
+     readDone: { 'rp-cat#1': 时间戳 },   // 阅读理解里已经答对过的题
+     qSeen: { 题目指纹: 时间戳 },        // 所有模块「已经出现过」的题，不再重复出
+     qMastered: { lessonId: 答对数 },    // 每课累计答对数 → 难度 1–5
+     qGrown / extraPassages              // 题库自动扩容记录与自动生成的新短文
    }
    每答对一题 +2 能量、答错 −2；每阶 100 点。
    能量扣到负数：已进化的退化一阶（负余额结转）；未进化过的直接昏倒（死亡），
@@ -55,6 +58,10 @@ const Store = {
     this.data.attempts   = this.data.attempts   || [];
     this.data.books      = (this.data.books && typeof this.data.books==='object') ? this.data.books : {};
     this.data.readDone   = (this.data.readDone && typeof this.data.readDone==='object') ? this.data.readDone : {};
+    this.data.qSeen      = (this.data.qSeen && typeof this.data.qSeen==='object') ? this.data.qSeen : {};
+    this.data.qMastered  = (this.data.qMastered && typeof this.data.qMastered==='object') ? this.data.qMastered : {};
+    this.data.qGrown     = (this.data.qGrown && typeof this.data.qGrown==='object') ? this.data.qGrown : {};
+    if(!Array.isArray(this.data.extraPassages)) this.data.extraPassages=[];
     this.data.settings   = this.sanitizeSettings(this.data.settings);
     this.data.currentSession = this.data.currentSession || Date.now();
 
@@ -88,7 +95,7 @@ const Store = {
         }
       });
     }
-    this.data.schema = 6;
+    this.data.schema = 7;
     // 版本升级 / 缓存被清后主存档变空时，自动接回进度存档，不用重头再来
     this.migrateGuard();
     return this.data;
@@ -128,12 +135,17 @@ const Store = {
       });
     }
     return {
-      schema:6, pokemon:p,
+      schema:7, pokemon:p,
       lessonDone: (d.lessonDone && typeof d.lessonDone==='object') ? d.lessonDone : {},
       mistakes: Array.isArray(d.mistakes) ? d.mistakes.filter(m=>m && m.q && m.subject) : [],
       attempts: Array.isArray(d.attempts) ? d.attempts.filter(a=>a && a.date) : [],
       books: this.sanitizeBooks(d.books),
       readDone: this.sanitizeReadDone(d.readDone),
+      qSeen: this.sanitizeReadDone(d.qSeen),
+      qMastered: this.sanitizeReadDone(d.qMastered),
+      qGrown: this.sanitizeReadDone(d.qGrown),
+      extraPassages: Array.isArray(d.extraPassages)
+        ? d.extraPassages.filter(x=>x && x.id && Array.isArray(x.qs)).slice(0,400) : [],
       settings: this.sanitizeSettings(d.settings),
       lastSession: d.lastSession||null,
       currentSession: d.currentSession||Date.now()
@@ -165,7 +177,8 @@ const Store = {
   },
   fresh(){
     const p={}; POKEMON.forEach(pk=>p[pk.id]=this.freshMon());
-    return { schema:6, pokemon:p, lessonDone:{}, mistakes:[], attempts:[], books:{}, readDone:{},
+    return { schema:7, pokemon:p, lessonDone:{}, mistakes:[], attempts:[], books:{}, readDone:{},
+             qSeen:{}, qMastered:{}, qGrown:{}, extraPassages:[],
              settings:{ autoread:true, sound:true, zhread:true, mic:true },
              lastSession:null, currentSession:Date.now() };
   },
@@ -174,6 +187,8 @@ const Store = {
       localStorage.setItem(SAVE_KEY, JSON.stringify(this.data));
       this.lastSaved = Date.now(); this.available = true;
       if(typeof window!=='undefined' && window.__onSaved) window.__onSaved(true, this.lastSaved);
+      // 云同步：登录后每次存档变动都排一次节流上传（见 js/cloud-sync.js）
+      if(typeof window!=='undefined' && window.__onCloudSave) window.__onCloudSave();
     }catch(e){
       this.available = false;
       if(typeof window!=='undefined' && window.__onSaved) window.__onSaved(false, null);
@@ -201,7 +216,9 @@ const Store = {
     return { v:ARCHIVE_VERSION, savedAt:Date.now(), perStage:ENERGY_PER_STAGE,
              stages, evolved, pokemon,
              lessonDone: this.data.lessonDone||{}, books: this.data.books||{},
-             readDone: this.data.readDone||{} };
+             readDone: this.data.readDone||{},
+             qSeen: this.data.qSeen||{}, qMastered: this.data.qMastered||{},
+             qGrown: this.data.qGrown||{}, extraPassages: this.data.extraPassages||[] };
   },
   readArchive(key){
     if(!this.available) return null;
@@ -227,6 +244,8 @@ const Store = {
     });
     // 阅读答对的题也算进度：只读绘本/做阅读、还没进化过的孩子，进度同样不会被清掉
     s += Object.keys(a.readDone||{}).length;
+    s += Object.keys(a.qSeen||{}).length;
+    s += (a.extraPassages||[]).length*2;
     return s;
   },
   saveArchive(){ return this.writeArchive(ARCHIVE_KEY); },      // 首页按钮：手动存档
@@ -272,6 +291,20 @@ const Store = {
     const rd=a.readDone||{};
     Object.keys(rd).forEach(k=>{
       if(!this.data.readDone[k]) this.data.readDone[k]=Number(rd[k])||1;
+    });
+    const mergeMap=(src,target)=>{
+      Object.keys(src||{}).forEach(k=>{ if(!target[k]) target[k]=Number(src[k])||1; });
+    };
+    mergeMap(a.qSeen,this.data.qSeen);
+    mergeMap(a.qMastered,this.data.qMastered);
+    Object.keys(a.qMastered||{}).forEach(k=>{
+      this.data.qMastered[k]=Math.max(Number(this.data.qMastered[k])||0,Number(a.qMastered[k])||0);
+    });
+    const have=new Set((this.data.extraPassages||[]).map(x=>x.id));
+    (a.extraPassages||[]).forEach(x=>{
+      if(x && x.id && !have.has(x.id) && Array.isArray(x.qs)){
+        this.data.extraPassages.push(x); have.add(x.id);
+      }
     });
     const bk=a.books||{};
     Object.keys(bk).forEach(id=>{
@@ -539,6 +572,57 @@ const Store = {
     this.data.settings = settings || this.data.settings;
     this._autoAt=0;
     this.save();
+  },
+  /* ---------------- 云端存档合并 ----------------
+   * 两台设备各做各的题时，取"进度更高"的一份打底，再把另一份的记录并集进来：
+   * 阶段/能量不倒退，答过的题、绘本、错题、课程记录都不丢。 */
+  mergeSave(remote){
+    const clean=this.sanitize(remote);
+    if(!clean) return null;
+    const local=this.data;
+    const better=this.scoreOf(clean)>=this.scoreOf(local) ? clean : local;
+    const other =better===clean ? local : clean;
+    const m=JSON.parse(JSON.stringify(better));
+    const union=(a,b)=>Object.assign({}, b||{}, a||{});
+    m.lessonDone=union(better.lessonDone,other.lessonDone);
+    m.readDone  =union(better.readDone,other.readDone);
+    m.qSeen     =union(better.qSeen,other.qSeen);
+    m.qGrown    =union(better.qGrown,other.qGrown);
+    m.qMastered =union(better.qMastered,other.qMastered);
+    Object.keys(other.qMastered||{}).forEach(k=>{
+      m.qMastered[k]=Math.max(Number(m.qMastered[k])||0,Number(other.qMastered[k])||0);
+    });
+    m.books=union(better.books,other.books);
+    Object.keys(other.books||{}).forEach(id=>{
+      const x=other.books[id], y=m.books[id];
+      if(x&&y) m.books[id]=(Number(x.times)||0)>(Number(y.times)||0)?x:y;
+    });
+    if(!Array.isArray(m.extraPassages)) m.extraPassages=[];
+    if(!Array.isArray(m.mistakes)) m.mistakes=[];
+    if(!Array.isArray(m.attempts)) m.attempts=[];
+    const seenP=new Set((m.extraPassages||[]).map(x=>x.id));
+    (other.extraPassages||[]).forEach(x=>{
+      if(x&&x.id&&!seenP.has(x.id)){ m.extraPassages.push(x); seenP.add(x.id); }
+    });
+    const seenM=new Set((m.mistakes||[]).map(x=>`${x.ts}|${x.subject}|${x.lessonId}`));
+    (other.mistakes||[]).forEach(x=>{
+      const k=`${x.ts}|${x.subject}|${x.lessonId}`;
+      if(!seenM.has(k)){ m.mistakes.push(x); seenM.add(k); }
+    });
+    const seenA=new Set((m.attempts||[]).map(x=>`${x.date}|${x.subject}|${x.correct}`));
+    (other.attempts||[]).forEach(x=>{
+      const k=`${x.date}|${x.subject}|${x.correct}`;
+      if(!seenA.has(k)){ m.attempts.push(x); seenA.add(k); }
+    });
+    // 设置、会话游标属于本机状态，保留本地，避免复习队列错乱
+    m.settings=local.settings||m.settings;
+    m.currentSession=local.currentSession;
+    m.lastSession=local.lastSession;
+    m.schema=7;
+    this.data=m; this.save();
+    return { pokemon:Object.keys(m.pokemon||{}).length,
+             qSeen:Object.keys(m.qSeen||{}).length,
+             passages:(m.extraPassages||[]).length };
   },
   exportSave(){ return JSON.stringify(this.data, null, 2); },
   importSave(text){

@@ -243,6 +243,271 @@ const READ_PASSAGES = [
       {q:'What were the two boys flying?', o:['a kite','a ball','a flag'], a:'a kite'},
       {q:'Mum took a ___ of us.', short:true, a:'photo', accept:['photo','picture'], hint:'p _ _ _ _'}
     ]},
+  {
+    "id": "rp-2026w46-1",
+    "level": 1,
+    "title": "Nina and the Dog",
+    "visual": "🐶",
+    "text": "Nina has a white dog. The dog is small and soft. Nina can play with the dog. Nina is excited.",
+    "qs": [
+      {
+        "q": "What does Nina have?",
+        "o": [
+          "a white dog",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a white dog"
+      },
+      {
+        "q": "What color is the dog?",
+        "o": [
+          "white",
+          "yellow",
+          "purple"
+        ],
+        "a": "white"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the park",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the park"
+      },
+      {
+        "q": "Is Nina excited?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "Nina has a ___ dog.",
+        "short": true,
+        "a": "white",
+        "accept": [
+          "white"
+        ],
+        "hint": "w _ _ _"
+      }
+    ]
+  },
+  {
+    "id": "rp-2026w46-2",
+    "level": 1,
+    "title": "Rex and the Cat",
+    "visual": "🐱",
+    "text": "Rex has a pink cat. The cat is small and soft. Rex can play with the cat. Rex is proud.",
+    "qs": [
+      {
+        "q": "What does Rex have?",
+        "o": [
+          "a pink cat",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a pink cat"
+      },
+      {
+        "q": "What color is the cat?",
+        "o": [
+          "pink",
+          "green",
+          "purple"
+        ],
+        "a": "pink"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the garden",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the garden"
+      },
+      {
+        "q": "Is Rex proud?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "Rex has a ___ cat.",
+        "short": true,
+        "a": "pink",
+        "accept": [
+          "pink"
+        ],
+        "hint": "p _ _ _"
+      }
+    ]
+  },
+  {
+    "id": "rp-2026w46-3",
+    "level": 2,
+    "title": "Amy and the Rabbit",
+    "visual": "🐰",
+    "text": "In the afternoon, Amy and the red rabbit go to the farm. The rabbit runs fast on the path. They see a small ball near the gate. Amy looks at it and smiles. \"What a nice day!\" says Amy.",
+    "qs": [
+      {
+        "q": "What does Amy have?",
+        "o": [
+          "a red rabbit",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a red rabbit"
+      },
+      {
+        "q": "What color is the rabbit?",
+        "o": [
+          "red",
+          "blue",
+          "purple"
+        ],
+        "a": "red"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the farm",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the farm"
+      },
+      {
+        "q": "Is Amy proud?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "Amy has a ___ rabbit.",
+        "short": true,
+        "a": "red",
+        "accept": [
+          "red"
+        ],
+        "hint": "r _ _ _"
+      }
+    ]
+  },
+  {
+    "id": "rp-2026w46-4",
+    "level": 2,
+    "title": "Lily and the Dog",
+    "visual": "🐶",
+    "text": "At the weekend, Lily and the white dog go to the school. The dog runs fast on the path. They see a small ball near the gate. Lily looks at it and smiles. \"What a nice day!\" says Lily.",
+    "qs": [
+      {
+        "q": "What does Lily have?",
+        "o": [
+          "a white dog",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a white dog"
+      },
+      {
+        "q": "What color is the dog?",
+        "o": [
+          "white",
+          "green",
+          "purple"
+        ],
+        "a": "white"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the school",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the school"
+      },
+      {
+        "q": "Is Lily happy?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "Lily has a ___ dog.",
+        "short": true,
+        "a": "white",
+        "accept": [
+          "white"
+        ],
+        "hint": "w _ _ _"
+      }
+    ]
+  },
+  {
+    "id": "rp-2026w46-5",
+    "level": 3,
+    "title": "May and the Cat",
+    "visual": "🐱",
+    "text": "On Monday, May takes the black cat to the beach. The sky is blue and the air is warm. Soon they find a little frog beside the big tree. The cat wants to play, but May wants to look at the map first. They walk a long way and stop near a little shop. May buys a cold drink and shares it with a friend. When the sun goes down, they walk home together. \"We will come back next week,\" says May.",
+    "qs": [
+      {
+        "q": "What does May have?",
+        "o": [
+          "a black cat",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a black cat"
+      },
+      {
+        "q": "What color is the cat?",
+        "o": [
+          "black",
+          "white",
+          "purple"
+        ],
+        "a": "black"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the beach",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the beach"
+      },
+      {
+        "q": "Is May happy?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "May has a ___ cat.",
+        "short": true,
+        "a": "black",
+        "accept": [
+          "black"
+        ],
+        "hint": "b _ _ _"
+      }
+    ]
+  },
 ];
 
 /* ---------------- 题目 ID + 分级信息 ---------------- */

@@ -1,0 +1,87 @@
+{
+  "name": "pokelearn-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "小布学习乐园 · PokeLearn 离线桌面版",
+  "main": "main.js",
+  "author": "Eric Zhang",
+  "scripts": {
+    "start": "electron .",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist": "electron-builder --mac --win"
+  },
+  "build": {
+    "appId": "com.ericzhang.pokelearn.desktop",
+    "productName": "PokeLearn",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../index.html",
+        "to": "app-static/index.html"
+      },
+      {
+        "from": "../js",
+        "to": "app-static/js"
+      },
+      {
+        "from": "../css",
+        "to": "app-static/css"
+      },
+      {
+        "from": "../audio",
+        "to": "app-static/audio"
+      },
+      {
+        "from": "../img",
+        "to": "app-static/img"
+      },
+      {
+        "from": "../icon-180.png",
+        "to": "app-static/icon-180.png"
+      },
+      {
+        "from": "../icon-192.png",
+        "to": "app-static/icon-192.png"
+      },
+      {
+        "from": "../icon-512.png",
+        "to": "app-static/icon-512.png"
+      },
+      {
+        "from": "../manifest.webmanifest",
+        "to": "app-static/manifest.webmanifest"
+      },
+      {
+        "from": "../sw.js",
+        "to": "app-static/sw.js"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.education",
+      "target": [
+        "dmg"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portable.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.3.2",
+    "electron-builder": "^26.18.0"
+  }
+}
