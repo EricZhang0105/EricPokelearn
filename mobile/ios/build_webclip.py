@@ -100,3 +100,7 @@ for label, url, ident, names in ITEMS:
         with open(p, 'w', encoding='utf-8') as f:
             f.write(text)
         print('生成', name, os.path.getsize(p), 'bytes')
+        if name.isascii():
+            with open(os.path.join(ROOT, name), 'w', encoding='utf-8') as f:
+                f.write(text)
+            print('同步到 Pages 根目录', name)
