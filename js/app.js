@@ -114,6 +114,13 @@ document.addEventListener('pointerdown', ()=>{
     const a=new Audio();
     a.src='data:audio/mp4;base64,';
     a.play().catch(()=>{});
+    // iOS Safari 的语音合成必须在首次用户手势里触发过一次，
+    // 否则自动读题（setTimeout 里调用）会被系统静音
+    if('speechSynthesis' in window){
+      const warm=new SpeechSynthesisUtterance(' ');
+      warm.volume=0; warm.rate=1.5;
+      speechSynthesis.speak(warm);
+    }
   }catch(e){}
 }, {once:true, passive:true});
 
@@ -726,7 +733,7 @@ function renderQuestion(){
       playSpeak(s, ()=>setTimeout(()=>playSpeak(s), 400));
     };
     // 中文拼读题独立开关（默认开）：声母→韵母→音节 自动播报
-    const shouldAuto = q.speak.autoplay ? Store.getSetting('zhread') : Store.getSetting('autoread');
+    const shouldAuto = q.speak.forceAuto || (q.speak.autoplay ? Store.getSetting('zhread') : Store.getSetting('autoread'));
     if(shouldAuto) setTimeout(()=>playSpeak(q.speak), 400);
   }
 
@@ -757,7 +764,8 @@ function bindChoice(q,item){
       if(correct){
         btn.classList.add('correct'); state.correct++; onCorrect(item);
         sfx('good');
-        showFeedback(true,q.explain,true);
+        // 语法题答对后要念完整句，留足时间再切下一题，避免语音被下一题的自动读题打断
+        showFeedback(true,q.explain,true,null,false,q.answerSpeak?3000:950);
       }else{
         btn.classList.add('wrong');
         sfx('bad');
@@ -884,7 +892,8 @@ function bindSpeak(q,item){
     state.correct++; onCorrect(item); sfx('good');
     // 即时鼓励：不等到课程结束，读对这一刻就让所选宝可梦叫一声
     setTimeout(()=>pokeCry(state.selectedPokemon), 170);
-    showFeedback(true, q.explain, true, null, false, 1500);  // 多留点时间看清欢呼提示
+    showFeedback(true, q.explain, true, null, false,
+      (item.q && item.q.answerSpeak) ? 3000 : 1500);  // 有完整句播报时多留时间
   }
   function retry(msg){
     tries++; setStatus(msg,'bad');
@@ -1173,6 +1182,9 @@ function onCorrect(item){
     if(st.done===st.total) toastMsg('🏆 所有阅读题都答对啦！每周一还会上新 5 篇');
   }
   awardEnergy(ENERGY_PER_ANSWER);
+  // 语法题等带完整句的题：答对后自动播报完整句子（晚于答对音效，避免被盖住）
+  const full = item && item.q && item.q.answerSpeak;
+  if(full) setTimeout(()=>playSpeak(full), 260);
 }
 /* 每道题的能量结算：答对 +2 / 答错 −2。
  * 进化/退化/死亡动画先排进队列，在切题（或课程结束）时播放，不打断答题节奏。 */

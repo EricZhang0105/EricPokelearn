@@ -1,9 +1,10 @@
 /* =========================================================
-   账号登录 + 跨设备进度同步（v20）
+   账号登录 + 跨设备进度同步（v28）
    ---------------------------------------------------------
    · 邮箱验证码登录/注册（Email OTP）或「使用 WorkBuddy 登录」
    · 登录后自动把本地进度上传到云端；换设备登录同一账号自动拉回
    · 两端进度按「更高的一方 + 记录并集」合并，绝不倒退
+   · 登录状态跨次打开保持：SDK 会话 + 自有 localStorage 备份双保险
    · 云端表 pokelearn_saves 有 owner_id DEFAULT auth.uid() + RLS，
      前端从不传 owner_id，一个账号只能读写自己的那一行
    ---------------------------------------------------------
@@ -16,6 +17,47 @@ const CFG = (typeof CLOUD_CONFIG!=='undefined') ? CLOUD_CONFIG : null;
 const ON_CLOUD_HOST = location.hostname.endsWith('app.workbuddy.host');
 let cloud=null, session=null, pendingOtp=null, pushTimer=null, suppressPush=false, busy=false;
 let lastSyncAt=0, lastError='';
+
+/* ---------------- 登录状态持久化 ----------------
+   SDK 默认把会话写进 localStorage，但 iPad 主屏幕 Web Clip / 隐私上下文
+   偶尔会清掉它，或刷新令牌失败时 SDK 主动 abandon() 清会话。
+   这里另存一份会话快照：打开时若 SDK 侧为空就补回去，并尝试刷新令牌，
+   这样正常关闭再打开不需要重新收验证码。 */
+const SESSION_BACKUP_KEY='pokelearn.cloud.session.v1';
+function backupSession(s){
+  try{
+    if(!s) localStorage.removeItem(SESSION_BACKUP_KEY);
+    else localStorage.setItem(SESSION_BACKUP_KEY, JSON.stringify(s));
+  }catch(e){}
+}
+function cachedSession(){
+  try{
+    const raw=localStorage.getItem(SESSION_BACKUP_KEY);
+    return raw?JSON.parse(raw):null;
+  }catch(e){ return null; }
+}
+function seedSdkSession(s){
+  try{
+    const store=cloud && cloud.auth && cloud.auth.sessions && cloud.auth.sessions.store;
+    if(!store || !s || typeof store.write!=='function') return;
+    const cur=(typeof store.read==='function')?store.read():null;
+    if(!cur) store.write(s);
+  }catch(e){}
+}
+function safeStorage(){
+  try{
+    const s=window.localStorage;
+    s.setItem('__pl_probe__','1'); s.removeItem('__pl_probe__');
+    return s;
+  }catch(e){ return null; }
+}
+async function resolveSession(){
+  const cached=cachedSession();
+  seedSdkSession(cached);                       // SDK 会话被清掉时补回
+  let r=await cloud.auth.getSession();          // 内部会自动 ensure/refresh
+  if((r.error || !r.data) && cached) r=await cloud.auth.refreshSession();
+  return (r && !r.error) ? r.data : null;
+}
 
 function $(s){ return document.querySelector(s); }
 function toast(m){ if(typeof window.toastMsg==='function') window.toastMsg(m); }
@@ -40,7 +82,8 @@ function buildUI(){
     <button class="modal-x" id="cloudCloseBtn" aria-label="关闭">✕</button>
     <h2>👤 登录 / 注册账号</h2>
     <div class="cloud-note">用一个账号登录，iPad、电脑、手机上的进化进度会自动打通。<br>
-      <b>不需要单独注册</b>：第一次用邮箱收验证码登录，账号就自动建好了。</div>
+      <b>不需要单独注册</b>：第一次用邮箱收验证码登录，账号就自动建好了。<br>
+      <b>登录状态会保留</b>：下次打开不用再收验证码。</div>
     <div id="cloudBody"></div>
   </div>`;
   document.body.appendChild(m);
@@ -93,10 +136,10 @@ function render(){
       </div>
       ${lastError?'<div class="cloud-err">'+esc(lastError)+'</div>':''}
       <div class="cloud-tip">答题后会自动上传进度；打开页面时自动拉取云端存档并合并，
-        两边都不会倒退。云端数据按账号隔离，别人看不到。</div>`);
+        两边都不会倒退。登录状态会保留在本机，下次打开无需重新登录。</div>`);
     const s=$('#cloudSyncNow'); if(s) s.onclick=()=>syncNow(true);
     const o=$('#cloudLogout'); if(o) o.onclick=async()=>{
-      await cloud.auth.signOut(); session=null; lastSyncAt=0; render(); toast('已退出登录');
+      await cloud.auth.signOut(); session=null; lastSyncAt=0; backupSession(null); render(); toast('已退出登录');
     };
     return;
   }
@@ -104,7 +147,7 @@ function render(){
       <div class="cloud-steps">
         <div><b>① 注册 / 登录是同一件事</b>：填常用邮箱，第一次登录会自动创建账号</div>
         <div>② 点「发送验证码」，去邮箱收 6 位数字（没收到可查垃圾邮件）</div>
-        <div>③ 填验证码后点「登录 / 注册」即完成</div>
+        <div>③ 填验证码后点「登录 / 注册」即完成，下次打开免登录</div>
       </div>
       <label class="cloud-label">① 邮箱 Email</label>
       <input id="cloudEmail" class="cloud-input" type="email" placeholder="you@example.com" autocomplete="email">
@@ -175,6 +218,7 @@ async function verifyCode(){
     if(r.error){ fail(r.error.message||'验证码不正确，请重试（不用重新发送）'); return; }
     pendingOtp=null; lastError='';
     session=r.data || (await cloud.auth.getSession()).data;
+    backupSession(session);
     render(); await afterLogin(true);
   }catch(e){ fail('网络异常，请重试'); }
   finally{ busy=false; }
@@ -197,8 +241,10 @@ async function workBuddyLogin(){
 async function restoreAuth(){
   const u=new URL(location.href);
   if(!u.searchParams.has('code') && !u.searchParams.has('error')){
-    const r=await cloud.auth.getSession();
-    session=r.error?null:r.data; render();
+    const s=await resolveSession();
+    session=s;
+    if(s) backupSession(s);
+    render();
     if(session) await afterLogin(false);
     return;
   }
@@ -211,19 +257,21 @@ async function restoreAuth(){
   if(r.data){
     ['code','state','provider'].forEach(k=>u.searchParams.delete(k));
     history.replaceState(null,'',`${u.pathname}${u.search}${u.hash}`);
-    session=r.data; render(); await afterLogin(true);
+    session=r.data; backupSession(session); render(); await afterLogin(true);
     openModal();
   }else{
-    const s=await cloud.auth.getSession(); session=s.error?null:s.data; render();
+    session=await resolveSession();
+    if(session) backupSession(session);
+    render();
     if(session) await afterLogin(false);
   }
 }
 
 /* ---------------- 同步 ---------------- */
 async function sessionGate(){
-  const r=await cloud.auth.getSession();
-  if(r.error || !r.data){ session=null; render(); return null; }
-  session=r.data; return session;
+  const s=await resolveSession();
+  if(!s){ session=null; render(); return null; }
+  session=s; backupSession(s); return s;
 }
 async function pull(){
   const {data,error}=await cloud.database.from('pokelearn_saves')
@@ -291,13 +339,15 @@ function startCloud(){
     cloud=WorkBuddyCloud.createWorkBuddyCloud({
       endpoint:CFG.endpoint,
       oauthRelayBaseUrl:CFG.oauthRelayBaseUrl,
-      publishableKey:CFG.publishableKey
+      publishableKey:CFG.publishableKey,
+      storage:safeStorage()
     });
   }catch(e){ lastError='云服务初始化失败'; render(); return; }
   if(cloud.auth.onAuthStateChange){
     cloud.auth.onAuthStateChange((ev,s)=>{
       session=s||null;
-      if(ev==='SIGNED_OUT'){ lastSyncAt=0; }
+      if(ev==='SIGNED_OUT'){ lastSyncAt=0; backupSession(null); }
+      else if(session) backupSession(session);
       render();
     });
   }
@@ -305,6 +355,8 @@ function startCloud(){
   restoreAuth().catch(e=>{ fail('登录状态恢复失败：'+(e.message||'网络异常')); });
 }
 function boot(){
+  // 先用本机备份乐观恢复「已登录」界面，避免每次打开都闪一下登录框
+  if(ON_CLOUD_HOST){ const c=cachedSession(); if(c) session=c; }
   buildUI();
   if(!CFG || !ON_CLOUD_HOST){ render(); return; }   // 本地版不加载云 SDK，零网络开销
   if(typeof WorkBuddyCloud!=='undefined'){ startCloud(); return; }

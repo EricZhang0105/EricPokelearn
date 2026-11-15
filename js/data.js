@@ -418,7 +418,9 @@ const ENGLISH=[
         const full=g.s.replace('___',g.a);
         return {type:'choice', prompt:`Choose the correct word`,
           sub:`<span class="gram-sent">${g.s.replace('___','<b>___</b>')}</span>`,
-          speak:{text:full,lang:'en-US'}, options:shuffle(g.o), answer:g.a,
+          speak:{text:g.s.replace('___','blank'),lang:'en-US',forceAuto:true},
+          answerSpeak:{text:full,lang:'en-US'},
+          options:shuffle(g.o), answer:g.a,
           explain:`${full} — ${g.why}`};
       });
     }},

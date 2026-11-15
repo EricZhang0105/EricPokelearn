@@ -219,7 +219,9 @@ function englishExpand(lessonId, level, need){
         const full=t.s.replace('___',t.a);
         out.push({type:'choice',prompt:'Choose the correct word',
           sub:`<span class="gram-sent">${t.s.replace('___','<b>___</b>')}</span>`,
-          speak:{text:full,lang:'en-US'},options:shuffle(t.o),answer:t.a,
+          speak:{text:t.s.replace('___','blank'),lang:'en-US',forceAuto:true},
+          answerSpeak:{text:full,lang:'en-US'},
+          options:shuffle(t.o),answer:t.a,
           explain:`${full} — ${t.why}`});
       });
     }else{
