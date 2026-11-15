@@ -8,3 +8,10 @@ Thumbs.db
 # Electron 桌面版依赖与构建产物（大二进制不进 git）
 desktop/node_modules/
 desktop/dist*/
+
+# 安卓离线版：构建时生成的 assets / 中间产物 / 启动图标 / 签名密钥
+mobile/android/assets/
+mobile/android/out/
+mobile/android/res/mipmap-xxxhdpi/
+mobile/*.apk
+mobile/*.idsig

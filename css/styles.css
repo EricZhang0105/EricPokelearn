@@ -679,3 +679,13 @@ img.img-dead,img.result-dead{filter:grayscale(1) opacity(.6);}
 .cloud-or{text-align:center;color:#B6AEA0;font-size:13px;margin:14px 0 10px;}
 .cloud-wb{width:100%;display:block;}
 @media(max-width:480px){ .cloud-card{max-width:94vw;} }
+
+/* v24：把「登录 / 注册」做成首页一眼可见的入口，而不是藏在「账号同步」里 */
+.cloud-entry{background:linear-gradient(135deg,#FFF0D8,#FFE0AE);border:2px solid #FFAB5E;
+  color:#8A4B00;font-weight:800;box-shadow:0 3px 0 rgba(214,138,53,.22);}
+.cloud-entry:hover{filter:brightness(1.04);}
+.cloud-entry.logged-in{background:linear-gradient(135deg,#E4F6E9,#CFEBD9);border-color:#7FC79A;color:#216B45;}
+.cloud-steps{background:#F8F5EE;border:2px dashed #E3D8C4;border-radius:14px;
+  padding:11px 14px;margin:4px 0 14px;font-size:13px;line-height:1.85;color:#5D574D;}
+.cloud-steps b{color:#C46A16;}
+.cloud-card code{background:#F1EADD;padding:1px 5px;border-radius:5px;font-size:12px;}

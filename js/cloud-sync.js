@@ -30,7 +30,7 @@ function buildUI(){
   const bar=$('.archive-bar');
   if(bar){
     const b=document.createElement('button');
-    b.className='btn-load'; b.id='cloudOpenBtn'; b.textContent='☁️ 账号同步';
+    b.className='btn-load cloud-entry'; b.id='cloudOpenBtn'; b.textContent='👤 登录 / 注册';
     bar.appendChild(b);
     b.onclick=openModal;
   }
@@ -38,8 +38,9 @@ function buildUI(){
   m.id='cloudModal'; m.className='modal hidden';
   m.innerHTML=`<div class="modal-card cloud-card">
     <button class="modal-x" id="cloudCloseBtn" aria-label="关闭">✕</button>
-    <h2>☁️ 账号同步</h2>
-    <div class="cloud-note">用一个账号登录，iPad、电脑、手机上的进化进度会自动打通。</div>
+    <h2>👤 登录 / 注册账号</h2>
+    <div class="cloud-note">用一个账号登录，iPad、电脑、手机上的进化进度会自动打通。<br>
+      <b>不需要单独注册</b>：第一次用邮箱收验证码登录，账号就自动建好了。</div>
     <div id="cloudBody"></div>
   </div>`;
   document.body.appendChild(m);
@@ -54,13 +55,27 @@ function render(){
   const b=$('#cloudBody');
   if(!b) return;
   const btn=$('#cloudOpenBtn');
-  if(btn) btn.textContent = session ? '☁️ 已登录' : '☁️ 账号同步';
+  if(btn){
+    btn.textContent = session ? '👤 已登录' : '👤 登录 / 注册';
+    btn.classList.toggle('logged-in', !!session);
+  }
   if(!ON_CLOUD_HOST){
-    setBody(`<div class="cloud-warn">当前是本地 / GitHub Pages 版，只能使用本机存档。<br>
-      请使用 <b>云同步版链接</b> 打开再登录，账号进度才能在多台设备之间同步。</div>
+    setBody(`<div class="cloud-warn">这里是<b>网页版 / 桌面版 / 安卓离线版</b>，只能使用本机存档，
+      没有账号登录界面。<br>登录与跨设备同步请打开<b>云同步版</b>：</div>
+      <div class="cloud-actions">
+        <button class="btn-save" id="cloudGoCloud" type="button">👉 打开云同步版去登录 / 注册</button>
+      </div>
+      <div class="cloud-steps">
+        <div>① 点上面的按钮打开云同步版（网址会变，是同一个 App）</div>
+        <div>② 输入邮箱 → 点「发送验证码」</div>
+        <div>③ 填入邮箱里的 6 位数字 → 点「登录 / 注册」</div>
+        <div>④ 在其他设备用<b>同一个邮箱</b>再登录一次，进度自动合并</div>
+      </div>
       <div class="cloud-tip">已有进度可先在「👨‍👩‍👧 Parents → Export save file」导出，
-      再在云同步版里导入一次即可接续。</div>
+      再在云同步版里导入一次即可接续。云同步版链接必须完整保留 <code>?sharecode=...</code>。</div>
       ${lastError?'<div class="cloud-err">'+esc(lastError)+'</div>':''}`);
+    const go=$('#cloudGoCloud');
+    if(go) go.onclick=()=>{ location.href=(typeof CLOUD_APP_URL!=='undefined')?CLOUD_APP_URL:CLOUD_CONFIG.endpoint; };
     return;
   }
   if(!cloud){
@@ -86,21 +101,26 @@ function render(){
     return;
   }
   setBody(`<div class="cloud-tabs">
-      <label class="cloud-label">邮箱</label>
+      <div class="cloud-steps">
+        <div><b>① 注册 / 登录是同一件事</b>：填常用邮箱，第一次登录会自动创建账号</div>
+        <div>② 点「发送验证码」，去邮箱收 6 位数字（没收到可查垃圾邮件）</div>
+        <div>③ 填验证码后点「登录 / 注册」即完成</div>
+      </div>
+      <label class="cloud-label">① 邮箱 Email</label>
       <input id="cloudEmail" class="cloud-input" type="email" placeholder="you@example.com" autocomplete="email">
       <div class="cloud-actions">
-        <button class="btn-load" id="cloudSendCode" type="button">发送验证码</button>
+        <button class="btn-load" id="cloudSendCode" type="button">② 发送验证码</button>
       </div>
-      <label class="cloud-label">验证码</label>
-      <input id="cloudCode" class="cloud-input" inputmode="numeric" placeholder="邮箱里收到的 6 位数字" autocomplete="one-time-code">
+      <label class="cloud-label">验证码（邮箱里的 6 位数字）</label>
+      <input id="cloudCode" class="cloud-input" inputmode="numeric" placeholder="例如 483921" autocomplete="one-time-code">
       <div class="cloud-actions">
-        <button class="btn-save" id="cloudVerify" type="button">登录 / 注册</button>
+        <button class="btn-save" id="cloudVerify" type="button">③ 登录 / 注册</button>
       </div>
-      <div class="cloud-or">或</div>
+      <div class="cloud-or">或者使用已有账号</div>
       <button class="btn-load cloud-wb" id="cloudWorkBuddy">使用 WorkBuddy 登录</button>
       ${lastError?'<div class="cloud-err">'+esc(lastError)+'</div>':''}
-      <div class="cloud-tip">没有账号也能直接登录：输入邮箱收验证码即可自动创建。
-        同一个账号在任何设备登录都会取回同一份进度。</div>
+      <div class="cloud-tip">同一个账号在任何设备登录都会取回同一份进度；答题后自动上传，
+        两边取并集，进度不会倒退。忘记设备也不用单独「注册」。</div>
     </div>`);
   $('#cloudSendCode').onclick=sendCode;
   $('#cloudVerify').onclick=verifyCode;

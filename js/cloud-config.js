@@ -9,3 +9,6 @@ const CLOUD_CONFIG = {
 /* 云服务的 Origin 校验要求页面就跑在这个域名下（发布后的云同步版链接）。
    GitHub Pages / 本地 / 桌面版只能使用本地存档，登录入口会给出明确提示，不静默降级。 */
 const CLOUD_HOST = 'app.workbuddy.host';
+/* 唯一可以登录 / 注册、跨设备同步进度的地址（必须带 sharecode，裸域名会被会话门拦截）。
+   GitHub Pages 版、桌面版、安卓离线版打开登录弹窗时，会给出这个一键跳转按钮。 */
+const CLOUD_APP_URL = 'https://wbapp-ig9wrpabw0v66x4kzqyd6s.app.workbuddy.host/?sharecode=BC3RN7J6A4';
