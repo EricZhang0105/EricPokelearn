@@ -7,4 +7,4 @@ Thumbs.db
 
 # Electron 桌面版依赖与构建产物（大二进制不进 git）
 desktop/node_modules/
-desktop/dist/
+desktop/dist*/
