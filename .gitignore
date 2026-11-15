@@ -15,3 +15,7 @@ mobile/android/out/
 mobile/android/res/mipmap-xxxhdpi/
 mobile/*.apk
 mobile/*.idsig
+
+# Python 构建脚本缓存
+__pycache__/
+*.pyc

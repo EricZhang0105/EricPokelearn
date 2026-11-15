@@ -633,6 +633,7 @@ function stopSpeechInput(){
 /* ---------- 渲染题目 ---------- */
 function renderQuestion(){
   stopSpeechInput();
+  hideKeyboard();               // 切到下一题先把屏幕键盘收起，非打字题不会残留
   const item=state.questions[state.idx];
   const q=item.q;
   // 出现过的题记入存档，之后组题时直接跳过（做错的题仍会走错题本复习）
@@ -686,8 +687,13 @@ function renderQuestion(){
   } else if(q.type==='type'){
     h+=`<div class="type-area">
       ${q.hint?`<div class="type-hint">💡 ${q.hint}</div>`:''}
-      <input class="type-input" id="typeInput" inputmode="text" autocomplete="off" />
-      <div><button class="check-btn" id="checkBtn">Check ✓</button></div>
+      <input class="type-input" id="typeInput" inputmode="text" autocomplete="off"
+             enterkeyhint="done" autocapitalize="off" autocorrect="off" spellcheck="false" />
+      <div class="type-actions">
+        <button class="check-btn" id="checkBtn">Check ✓</button>
+        <button class="kb-toggle" id="kbToggleBtn" type="button">⌨️ 收起键盘</button>
+      </div>
+      <div class="type-tip">按 Enter / 回车 也能提交 ⏎</div>
     </div>`;
   } else if(q.type==='build'){
     h+=`<div class="build-answer" id="buildAnswer"></div>
@@ -1003,7 +1009,30 @@ function normAnswer(s){
 function bindType(q,item){
   const input=$('#typeInput');
   buildKeyboard(input);
-  input.focus();
+  // 触屏设备不自动聚焦，避免 iPad 同时弹出「系统软键盘 + 屏幕键盘」两层
+  const coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+  const focusInput=()=>{ try{ input.focus({preventScroll:true}); }catch(e){ input.focus(); } };
+  if(!coarse) focusInput();
+
+  const submit=()=>{
+    const b=$('#checkBtn');
+    if(b && !b.disabled && input.value.trim()) b.click();
+  };
+  /* 回车 / Enter（含外接键盘与系统软键盘的 Done）提交 Check。
+     isComposing / keyCode 229 是输入法组字状态，避免拼音选字时误提交。 */
+  input.addEventListener('keydown', e=>{
+    if(e.isComposing || e.keyCode===229) return;
+    if(e.key==='Enter' || e.keyCode===13){ e.preventDefault(); submit(); }
+  });
+  /* 题目区也有一个收起 / 展开开关，键盘挡住 Check 时随时可收起 */
+  const toggle=$('#kbToggleBtn');
+  if(toggle) toggle.onclick=()=>{
+    const kb=$('#keyboard');
+    if(kb.classList.contains('hidden')){ buildKeyboard(input); if(!coarse) focusInput(); }
+    else { hideKeyboard(); input.blur(); }
+    updateKbToggle();
+  };
+
   $('#checkBtn').onclick=()=>{
     const val=input.value.trim();
     if(!val) return;
@@ -1071,8 +1100,24 @@ function bindBuild(q,item){
 }
 
 /* ---------- 屏幕键盘 ---------- */
+let kbInput=null;
 function buildKeyboard(input){
+  kbInput=input;
   const kb=$('#keyboard'); kb.innerHTML=''; kb.classList.remove('hidden');
+  document.body.classList.add('kb-open');   // 给题目区留出底部空间，Check 不会被盖住
+  /* 顶部工具条：随时收起键盘 + 回车提交；键盘展开时这两个键永远可见 */
+  const bar=document.createElement('div'); bar.className='kb-bar';
+  const done=document.createElement('button');
+  done.className='key kb-done'; done.type='button'; done.textContent='⌨️ 收起键盘';
+  done.onclick=()=>{ hideKeyboard(); if(input) input.blur(); updateKbToggle(); };
+  const enter=document.createElement('button');
+  enter.className='key kb-enter'; enter.type='button'; enter.textContent='⏎ 提交 Check';
+  enter.onclick=()=>{
+    const b=$('#checkBtn');
+    if(b && !b.disabled && input && input.value.trim()) b.click();
+  };
+  bar.appendChild(done); bar.appendChild(enter); kb.appendChild(bar);
+
   const rows=['qwertyuiop','asdfghjkl','zxcvbnm'];
   rows.forEach(r=>{
     r.split('').forEach(ch=>{
@@ -1089,8 +1134,32 @@ function buildKeyboard(input){
   cl.onclick=()=>{ input.value=''; };
   kb.appendChild(cl);
   function spacer(){ const s=document.createElement('div'); s.style.width='100%'; s.style.height='1px'; return s; }
+  updateKbToggle();
 }
-function hideKeyboard(){ $('#keyboard').classList.add('hidden'); }
+function hideKeyboard(){
+  const kb=$('#keyboard'); if(kb) kb.classList.add('hidden');
+  document.body.classList.remove('kb-open');
+  updateKbToggle();
+}
+/* 题目区的开关按钮状态：展开 / 收起 / 本题已作答则隐藏 */
+function updateKbToggle(){
+  const b=$('#kbToggleBtn'); if(!b) return;
+  const kb=$('#keyboard');
+  const open=!!(kb && !kb.classList.contains('hidden'));
+  b.classList.toggle('hidden', !!(kbInput && kbInput.disabled));
+  b.textContent = open ? '⌨️ 收起键盘' : '⌨️ 打开键盘';
+  b.setAttribute('aria-expanded', open?'true':'false');
+}
+/* 外接键盘的 Enter：焦点不在输入框（例如刚点过屏幕键盘的字母）时也能提交 */
+document.addEventListener('keydown', e=>{
+  if(e.key!=='Enter' || e.isComposing || e.keyCode===229) return;
+  const it=state.questions && state.questions[state.idx];
+  if(!it || !it.q || it.q.type!=='type') return;
+  const input=$('#typeInput');
+  if(!input || input.disabled || document.activeElement===input) return;
+  const b=$('#checkBtn');
+  if(b && !b.disabled && input.value.trim()){ e.preventDefault(); b.click(); }
+});
 
 /* 答对（含复习题）时处理错题本：复习题答对即从错题本移除 */
 function onCorrect(item){
@@ -1259,14 +1328,17 @@ function showEvolveFx(id, toStage, onDone){
   }else proceed();
 }
 
-/* 被击败：退化一阶 / 昏倒（死亡）→ 火箭队「我们还会回来的！」 */
+/* 被击败：退化一阶 / 昏倒（死亡）→ 火箭队英文原版战败台词
+   "Looks like Team Rocket's blasting off again!"（gen_sfx.js 高清英文配音） */
+const TEAM_ROCKET_LINE = "Looks like Team Rocket's blasting off again!";
 function showDefeatFx(id, type, onDone){
   const pk=POKEMON.find(p=>p.id===id);
   const info=Store.stageInfo(id);
   const st=info.form;
-  const cap = type==='die'
+  const cap = (type==='die'
     ? `💀 <b class="fx-title">${st.name} fainted…</b><br><span class="muted">${st.cn} 昏倒了！明天再来选它，它会满血复活</span>`
-    : `💥 <b class="fx-title">${st.name} was defeated!</b><br><span class="muted">${st.cn} 被击败，退化回第 ${info.stage+1} 阶（Lv${info.stage+1}）</span>`;
+    : `💥 <b class="fx-title">${st.name} was defeated!</b><br><span class="muted">${st.cn} 被击败，退化回第 ${info.stage+1} 阶（Lv${info.stage+1}）</span>`)
+    + `<br><span class="muted">🚀 "${TEAM_ROCKET_LINE}"</span>`;
   fxShow(`<div class="fx-sprite fx-fall">${pokeImgTag(st,'fx-img')}</div><div class="fx-smoke">💨💨</div>`,
     cap,'fx-defeat',4300,onDone);
   sfx('defeat');

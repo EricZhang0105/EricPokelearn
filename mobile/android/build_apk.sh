@@ -13,13 +13,13 @@ JH="$(cd "$(dirname "$JAVA_BIN")/.." && pwd)"
 SDK=$BASE/android-sdk
 BT=$SDK/build-tools/34.0.0
 AJ=$SDK/platforms/android-34/android.jar
-APK_NAME=PokeLearn-Android-v25.apk
+APK_NAME=PokeLearn-Android-v26.apk
 OUT_APK="$OUT/$APK_NAME"
 export JAVA_HOME="$JH"
 export PATH="$JH/bin:$PATH"
 export OUT_APK
 
-echo "[1/8] 重新生成 v25 静态镜像 ..."
+echo "[1/8] 重新生成 v26 静态镜像 ..."
 (cd "$ROOT" && node tools/build_cloud_bundle.js >/dev/null)
 
 echo "[2/8] 准备离线 assets ..."
@@ -38,7 +38,7 @@ echo "[4/8] 链接 APK 骨架 ..."
   -A assets \
   --java out/gen \
   --min-sdk-version 24 --target-sdk-version 34 \
-  --version-code 25 --version-name 25.0 \
+  --version-code 26 --version-name 26.0 \
   --auto-add-overlay
 
 echo "[5/8] 编译 Java / 转 dex ..."

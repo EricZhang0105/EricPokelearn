@@ -28,10 +28,11 @@ function qKey(q){
   if(q.qid) return String(q.qid);             // 阅读理解题：稳定 qid
   const raw=[q.type||'', stripTags(q.prompt), stripTags(q.sub), String(q.answer||''),
              (q.tiles||[]).join(' '), stripTags(q.title), stripTags(q.text),
-             /* 数数/方块题的图形是题目本体：同样 5 个 🍎 和 5 个 ⭐ 是两道不同的题；
-                visual 里没有随机干扰项，纳入指纹不会造成误判 */
+             /* 数数题的图形是题目本体：5 只皮卡丘和 5 只胖丁是两道不同的题。
+                v26 起图形换成 <img>，标签会被 stripTags 剥掉，所以另外用 petKey
+                把「哪只宝可梦」写进指纹；只在有 petKey 时追加，旧题指纹保持不变。 */
              stripTags(q.visual).replace(/[✕]/g,'')].join('~');
-  return 'h'+hash32(raw);
+  return 'h'+hash32(raw + (q.petKey ? '|pet:'+q.petKey : ''));
 }
 
 /* ---------------- 存档里的记录 ----------------
@@ -100,39 +101,44 @@ function mathExpand(lessonId, level, need, spread){
   const add=(o)=>out.push(o);
   while(out.length<need && guard++<need*12){
     let a,b,ans,sub,prompt,explain;
+    let pet=null, visual='', pkey='';
     if(lessonId==='m-count'){
-      const n=ri(1,cap); const e=pick(['🍎','⭐','🐟','🚗','🌸','🍌','🎈','🐣']);
+      const n=ri(1,cap); pet=mathPet();
       add({type:'choice',prompt:'How many?',
-        visual:'<div class="q-visual">'+e.repeat(n)+'</div>',
-        speak:{text:`Count the ${e}. How many?`,lang:'en-US'},
-        options:numOptions(n,1,cap),answer:String(n),explain:`There are ${n} ${e}.`});
+        visual:petGroup(n,pet), petKey:petKey(pet),
+        speak:{text:`Count the ${pet.name}. How many?`,lang:'en-US'},
+        options:numOptions(n,1,cap),answer:String(n),
+        explain:`There are ${n} ${pet.name}.`});
       continue;
     }
     if(lessonId==='m-bonds10'||lessonId==='m-bonds20'){
       a=ri(2,Math.max(3,Math.floor(cap/2))); b=ri(1,Math.max(2,cap-a)); ans=a+b;
       sub=`${a} + ${b} = ?`; prompt='Add the two parts'; explain=`${a} + ${b} = ${ans}.`;
+      pet=mathPet(); visual=petVisual(a,b,'+',pet); pkey=petKey(pet);
     }else if(lessonId==='m-sub10'||lessonId==='m-sub20'){
       a=ri(Math.max(3,Math.floor(cap/3)),cap); b=ri(1,Math.max(1,a-1)); ans=a-b;
       sub=`${a} − ${b} = ?`; prompt='How many are left?'; explain=`${a} − ${b} = ${ans}.`;
+      pet=mathPet(); visual=petVisual(a,b,'-',pet); pkey=petKey(pet);
     }else if(lessonId==='m-word'){
       const names=['Sam','Lily','Tom','May','Ben','Ann','Ken','Zoe','Mia','Tim','Ella','Leo','Jack','Sue','Max','Amy'];
-      const goods=[['🍎','apples'],['🍪','cookies'],['🚗','cars'],['🐟','fish'],['⚽','balls'],['🌸','flowers'],['📚','books'],['🎈','balloons']];
-      const n=pick(names), g=pick(goods);
+      const n=pick(names); pet=pick(MATH_PETS);
       const plus=Math.random()<0.5;
       if(plus){ a=ri(2,Math.max(3,cap-2)); b=ri(1,Math.max(1,cap-a)); ans=a+b;
-        sub=`${n} has ${a} ${g[0]}. ${n} gets ${b} more. How many ${g[1]} now?`;
+        sub=`${n} has ${a} ${pet.name}. ${n} gets ${b} more. How many ${pet.name} now?`;
       }else{ a=ri(Math.max(5,Math.floor(cap/2)),cap); b=ri(1,Math.max(1,a-2)); ans=a-b;
-        sub=`${n} has ${a} ${g[0]}. ${n} gives ${b} away. How many ${g[1]} left?`;
+        sub=`${n} has ${a} ${pet.name}. ${n} gives ${b} away. How many ${pet.name} left?`;
       }
       prompt='Read the story'; explain=`${a} ${plus?'+':'−'} ${b} = ${ans}.`;
+      visual=petVisual(a,b,plus?'+':'-',pet); pkey=petKey(pet);
     }else{
       const plus=Math.random()<0.5;
       if(plus){ a=ri(1,cap-1); b=ri(1,Math.max(1,cap-a)); ans=a+b; sub=`${a} + ${b} = ?`; }
       else{ a=ri(Math.max(4,Math.floor(cap/2)),cap); b=ri(1,Math.max(1,a-1)); ans=a-b; sub=`${a} − ${b} = ?`; }
       prompt= lessonId==='m-add20'?'Add with Make-10 thinking':'Solve it';
       explain=`${a} ${plus?'+':'−'} ${b} = ${ans}.`;
+      pet=mathPet(); visual=petVisual(a,b,plus?'+':'-',pet); pkey=petKey(pet);
     }
-    add({type:'choice',prompt,sub,
+    add({type:'choice',prompt,sub,visual,petKey:pkey,
       speak:{text:sub.replace('+','plus').replace('−','minus').replace('= ?','equals what?').replace(/\?/g,''),lang:'en-US'},
       options:numOptions(ans,0,cap*2),answer:String(ans),explain});
   }

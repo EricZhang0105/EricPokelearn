@@ -21,20 +21,53 @@ function numOptions(answer,min,max){
   while(s.size<4){ const d=answer+ri(-3,3); if(d>=min&&d<=max&&d!==answer&&!s.has(d)) s.add(d); }
   return shuffle([...s]).map(String);
 }
-/* 方块组：按数值精确渲染 n 个方块，每行最多 10 个（十进位直觉）。
-   removed = 末尾要"拿走"的个数 → 画成灰底 ✕，让孩子看见被减掉的部分。
-   注意：绝不把剩余数量也画出来，否则等于直接给答案。 */
-function blocks(n,{color='#FFB15C',removed=0}={}){
+/* =========================================================
+   数学图形：全部使用本地官方宝可梦精灵图（v26）
+   - 4 + 3 → 「4 只皮卡丘 + 3 只皮卡丘」
+   - 减法只画被减数 a 只，末尾 b 只变灰划 ✕，绝不把答案画出来
+   - petKey 会进入 QEngine 的题目指纹，换一只宝可梦算一道新题
+   ========================================================= */
+const MATH_PETS = [
+  {id:25,  name:'Pikachu',    cn:'皮卡丘'},
+  {id:1,   name:'Bulbasaur',  cn:'妙蛙种子'},
+  {id:4,   name:'Charmander', cn:'小火龙'},
+  {id:7,   name:'Squirtle',   cn:'杰尼龟'},
+  {id:39,  name:'Jigglypuff', cn:'胖丁'},
+  {id:52,  name:'Meowth',     cn:'喵喵'},
+  {id:54,  name:'Psyduck',    cn:'可达鸭'},
+  {id:133, name:'Eevee',      cn:'伊布'},
+  {id:172, name:'Pichu',      cn:'皮丘'},
+  {id:173, name:'Cleffa',     cn:'皮宝宝'},
+  {id:16,  name:'Pidgey',     cn:'波波'},
+  {id:143, name:'Snorlax',    cn:'卡比兽'}
+];
+function mathPet(){ return pick(MATH_PETS); }
+function petKey(pet){ return 'pk'+(pet && pet.id ? pet.id : 25); }
+function petGroup(n, pet, opts){
+  opts=opts||{}; pet=pet||MATH_PETS[0];
+  const removed=Number(opts.removed)||0;
+  const tint=opts.tint||'';
+  const dense = n>30 ? ' pet-dense' : (n>14 ? ' pet-mid' : '');
   let cells='';
   for(let i=0;i<n;i++){
     const gone = removed>0 && i>=n-removed;
-    cells+=`<span class="blk${gone?' blk-gone':''}" style="--blk:${color}">${gone?'✕':''}</span>`;
+    cells+='<span class="pet-cell'+(gone?' pet-gone':'')+'">'
+      +'<img class="pet-img" src="'+pokeImg(pet.id)+'" alt="'+pet.name+'" loading="lazy">'
+      +(gone?'<span class="pet-cross">✕</span>':'')
+      +'</span>';
   }
-  return `<div class="q-visual blk-grid">${cells}</div>`;
+  return '<div class="pet-grid '+tint+dense+'" data-pet="'+pet.id+'">'+cells+'</div>';
 }
-function emojiGroup(n,emoji){
-  return '<div class="q-visual">'+emoji.repeat(n)+'</div>';
+/* 一组算式对应一幅图：加法左右两组，减法一组里划掉末尾若干个 */
+function petVisual(a,b,op,pet){
+  if(op==='+') return petGroup(a,pet,{tint:'pet-part-a'})
+    +'<div class="pet-op">+</div>'+petGroup(b,pet,{tint:'pet-part-b'});
+  return petGroup(a,pet,{removed:b,tint:'pet-part-a'})
+    +'<div class="pet-op pet-minus">− '+b+' ✕</div>';
 }
+/* 兼容旧调用：万一还有代码走老函数，也一律落到宝可梦图 */
+function blocks(n,opts){ return petGroup(n,MATH_PETS[0],{removed:(opts&&opts.removed)||0}); }
+function emojiGroup(n){ return petGroup(n,MATH_PETS[0]); }
 
 /* =========================================================
    数学 · 新加坡 MOE 大纲（全英文，20以内）
@@ -46,10 +79,11 @@ const MATH = [
     make(){
       const out=[];
       for(let i=0;i<10;i++){
-        const n=ri(1,mCap(10,6)), e=pick(['🍎','⭐','🐟','🚗','🌸']);
-        out.push({type:'choice', prompt:`How many?`, visual:emojiGroup(n,e),
-          speak:{text:`Count the ${e}. How many?`,lang:'en-US'},
-          options:numOptions(n,1,mCap(10,6)), answer:String(n), explain:`There are ${n} ${e}.`});
+        const n=ri(1,mCap(10,6)), pet=mathPet();
+        out.push({type:'choice', prompt:`How many?`, visual:petGroup(n,pet), petKey:petKey(pet),
+          speak:{text:`Count the ${pet.name}. How many?`,lang:'en-US'},
+          options:numOptions(n,1,mCap(10,6)), answer:String(n),
+          explain:`There are ${n} ${pet.name}.`});
       }
       return out;
     }},
@@ -60,7 +94,9 @@ const MATH = [
       const out=[];
       for(let i=0;i<10;i++){
         const p1=ri(2,mCap(8,4)), p2=ri(2,mCap(10,6)-p1), w=p1+p2;   // 两个部分都在 2–8，整句写成 8 + 1 = ?
+        const pet=mathPet();
         out.push({type:'choice', prompt:`Add the two parts`, sub:`${p1} + ${p2} = ?`,
+          visual:petVisual(p1,p2,'+',pet), petKey:petKey(pet),
           speak:{text:`${p1} plus ${p2} equals what?`,lang:'en-US'},
           options:numOptions(w,2,mCap(10,6)), answer:String(w), explain:`${p1} + ${p2} = ${w}.`});
       }
@@ -73,8 +109,9 @@ const MATH = [
       const out=[];
       for(let i=0;i<10;i++){
         let a=ri(1,mCap(9,5)), b=ri(1,mCap(9,5)-a); const ans=a+b;
-        out.push({type:'choice', prompt:`How many in all?`,
-          visual:emojiGroup(a,'🍎')+`<div class="q-sub">+</div>`+emojiGroup(b,'🍎'),
+        const pet=mathPet();
+        out.push({type:'choice', prompt:`How many in all?`, sub:`${a} + ${b} = ?`,
+          visual:petVisual(a,b,'+',pet), petKey:petKey(pet),
           speak:{text:`${a} plus ${b} equals what?`,lang:'en-US'},
           options:numOptions(ans,2,mCap(10,6)), answer:String(ans), explain:`${a} + ${b} = ${ans}.`});
       }
@@ -88,8 +125,9 @@ const MATH = [
       for(let i=0;i<10;i++){
         let p1,p2,guard=0;                            // 两部分都在 2–10，合起来 11–20
         do{ p1=ri(2,mCap(10,5)); p2=ri(2,mCap(10,5)); }while(p1+p2<11 && guard++<50);
-        const w=p1+p2;
+        const w=p1+p2; const pet=mathPet();
         out.push({type:'choice', prompt:`Add the two parts`, sub:`${p1} + ${p2} = ?`,
+          visual:petVisual(p1,p2,'+',pet), petKey:petKey(pet),
           speak:{text:`${p1} plus ${p2} equals what?`,lang:'en-US'},
           options:numOptions(w,9,mCap(20,8)), answer:String(w), explain:`${p1} + ${p2} = ${w}.`});
       }
@@ -102,9 +140,9 @@ const MATH = [
       const out=[];
       for(let i=0;i<10;i++){
         const a=ri(8,9), b=ri(11-a,9);          // 保证 a+b>10 且 ≤18，Make-10 才成立
-        const ans=a+b, need=10-a, left=b-need;
+        const ans=a+b, need=10-a, left=b-need, pet=mathPet();
         out.push({type:'choice', prompt:`Add with Make-10 thinking`, sub:`${a} + ${b} = ?`,
-          visual:blocks(a)+`<div class="q-sub">+ ${b} more</div>`+blocks(b,{color:'#7BC6F5'}),
+          visual:petVisual(a,b,'+',pet), petKey:petKey(pet),
           speak:{text:`${a} plus ${b} equals what?`,lang:'en-US'},
           options:numOptions(ans,11,18), answer:String(ans),
           explain:`Make 10: ${a}+${need}=10, then 10+${left}=${ans}. So ${a}+${b}=${ans}.`});
@@ -117,9 +155,9 @@ const MATH = [
     make(){
       const out=[];
       for(let i=0;i<10;i++){
-        const a=ri(2,mCap(10,6)), b=ri(1,a-1); const ans=a-b;
+        const a=ri(2,mCap(10,6)), b=ri(1,a-1); const ans=a-b, pet=mathPet();
         out.push({type:'choice', prompt:`How many are left?`, sub:`${a} − ${b} = ?`,
-          visual:blocks(a,{removed:b})+`<div class="q-sub">take away ${b} ✕</div>`,
+          visual:petVisual(a,b,'-',pet), petKey:petKey(pet),
           speak:{text:`${a} minus ${b} equals what?`,lang:'en-US'},
           options:numOptions(ans,0,mCap(9,6)), answer:String(ans), explain:`${a} − ${b} = ${ans}.`});
       }
@@ -131,9 +169,9 @@ const MATH = [
     make(){
       const out=[];
       for(let i=0;i<10;i++){
-        const a=ri(11,mCap(20,8)), b=ri(1,Math.min(9,a-2)); const ans=a-b;
+        const a=ri(11,mCap(20,8)), b=ri(1,Math.min(9,a-2)); const ans=a-b, pet=mathPet();
         out.push({type:'choice', prompt:`How many are left?`, sub:`${a} − ${b} = ?`,
-          visual:blocks(a,{removed:b})+`<div class="q-sub">− ${b} take away ✕</div>`,
+          visual:petVisual(a,b,'-',pet), petKey:petKey(pet),
           speak:{text:`${a} minus ${b} equals what?`,lang:'en-US'},
           options:numOptions(ans,1,mCap(19,8)), answer:String(ans), explain:`${a} − ${b} = ${ans}.`});
       }
@@ -147,29 +185,25 @@ const MATH = [
          1) 8 个角色/物品互不相同（shuffle 后取 8 个）
          2) 加、减各 4 个句式，句式也互不相同
          3) 角色 × 句式 一一配对 → 8 道题的题干必然两两不同 */
-      const CAST=[
-        {n:'Sam', e:'🍎', v:'apples'},   {n:'Lily',e:'🍪', v:'cookies'},
-        {n:'Tom', e:'🚗', v:'cars'},     {n:'May', e:'🐟', v:'fish'},
-        {n:'Ben', e:'⚽', v:'balls'},    {n:'Ann', e:'🌸', v:'flowers'},
-        {n:'Ken', e:'📚', v:'books'},    {n:'Zoe', e:'🐰', v:'rabbits'},
-        {n:'Mia', e:'🍌', v:'bananas'},  {n:'Tim', e:'🎈', v:'balloons'},
-        {n:'Ella',e:'🐤', v:'chicks'},   {n:'Leo', e:'🚌', v:'toy buses'},
-      ];
+      /* 12 个小朋友各配一只宝可梦：题干用宝可梦名字，配图用同一只精灵。
+         宝可梦名称复数不加 s（官方用法），所以 v 直接用名字。 */
+      const NAMES=['Sam','Lily','Tom','May','Ben','Ann','Ken','Zoe','Mia','Tim','Ella','Leo'];
+      const CAST=NAMES.map((n,i)=>({n, pet:MATH_PETS[i], v:MATH_PETS[i].name}));
       const ADD=[
-        t=>`${t.n} has ${t.a} ${t.e}. ${t.n} gets ${t.b} more. How many ${t.v} now?`,
-        t=>`${t.n} has ${t.a} ${t.e}. Grandma gives ${t.b} more. How many ${t.v} does ${t.n} have?`,
-        t=>`${t.n} finds ${t.b} ${t.e}. ${t.n} already has ${t.a} ${t.e}. How many ${t.v} in all?`,
-        t=>`${t.n} has ${t.a} ${t.e}. ${t.n} buys ${t.b} more. How many ${t.v} in all?`,
-        t=>`There are ${t.a} ${t.e} on the table. Mom puts ${t.b} more there. How many ${t.v} on the table?`,
-        t=>`${t.n} has ${t.a} ${t.e} in a box. ${t.n} puts ${t.b} more in. How many ${t.v} in the box?`,
+        t=>`${t.n} has ${t.a} ${t.pet.name}. ${t.n} gets ${t.b} more. How many ${t.v} now?`,
+        t=>`${t.n} has ${t.a} ${t.pet.name}. Grandma gives ${t.b} more. How many ${t.v} does ${t.n} have?`,
+        t=>`${t.n} finds ${t.b} ${t.pet.name}. ${t.n} already has ${t.a} ${t.pet.name}. How many ${t.v} in all?`,
+        t=>`${t.n} has ${t.a} ${t.pet.name}. ${t.n} buys ${t.b} more. How many ${t.v} in all?`,
+        t=>`There are ${t.a} ${t.pet.name} on the table. Mom puts ${t.b} more there. How many ${t.v} on the table?`,
+        t=>`${t.n} has ${t.a} ${t.pet.name} in a box. ${t.n} puts ${t.b} more in. How many ${t.v} in the box?`,
       ];
       const SUB=[
-        t=>`${t.n} has ${t.a} ${t.e}. ${t.n} gives ${t.b} away. How many ${t.v} left?`,
-        t=>`${t.n} has ${t.a} ${t.e}. ${t.n} takes ${t.b} out. How many ${t.v} left?`,
-        t=>`${t.n} has ${t.a} ${t.e} on the table. ${t.b} of them fall down. How many ${t.v} are still on the table?`,
-        t=>`${t.n} has ${t.a} ${t.e}. ${t.n} gives ${t.b} to a friend. How many ${t.v} left?`,
-        t=>`${t.n} has ${t.a} ${t.e} in a bag. ${t.b} of them are lost. How many ${t.v} are in the bag?`,
-        t=>`${t.n} has ${t.a} ${t.e}. Mom takes ${t.b} away. How many ${t.v} left?`,
+        t=>`${t.n} has ${t.a} ${t.pet.name}. ${t.n} gives ${t.b} away. How many ${t.v} left?`,
+        t=>`${t.n} has ${t.a} ${t.pet.name}. ${t.n} takes ${t.b} out. How many ${t.v} left?`,
+        t=>`${t.n} has ${t.a} ${t.pet.name} on the table. ${t.b} of them fall down. How many ${t.v} are still on the table?`,
+        t=>`${t.n} has ${t.a} ${t.pet.name}. ${t.n} gives ${t.b} to a friend. How many ${t.v} left?`,
+        t=>`${t.n} has ${t.a} ${t.pet.name} in a bag. ${t.b} of them are lost. How many ${t.v} are in the bag?`,
+        t=>`${t.n} has ${t.a} ${t.pet.name}. Mom takes ${t.b} away. How many ${t.v} left?`,
       ];
       const people = shuffle(CAST).slice(0,10);
       const kinds  = shuffle([
@@ -181,8 +215,9 @@ const MATH = [
         if(k.op==='+'){ a=ri(2,mCap(9,5)); b=ri(1,Math.min(8,mCap(18,8)-a)); }
         else          { a=ri(5,mCap(18,8)); b=ri(1,Math.min(5,a-2)); }
         const ans = k.op==='+' ? a+b : a-b;
-        const q   = k.f({n:p.n,e:p.e,v:p.v,a,b});
+        const q   = k.f({n:p.n,pet:p.pet,v:p.v,a,b});
         return {type:'choice', prompt:`Read the story`, sub:q,
+          visual:petVisual(a,b,k.op,p.pet), petKey:petKey(p.pet),
           speak:{text:q,lang:'en-US'},
           options:numOptions(ans,Math.max(0,ans-3),ans+3), answer:String(ans),
           explain:`${a} ${k.op} ${b} = ${ans}.`};
@@ -197,7 +232,9 @@ const MATH = [
         const op=Math.random()<0.5?'+':'-'; let a,b,ans;
         if(op==='+'){ a=ri(1,mCap(15,6)); b=ri(1,Math.min(mCap(20,8)-a,15)); ans=a+b; }
         else { a=ri(6,mCap(20,8)); b=ri(1,a-1); ans=a-b; }
+        const pet=mathPet();
         out.push({type:'choice', prompt:`Solve it`, sub:`${a} ${op} ${b} = ?`,
+          visual:petVisual(a,b,op,pet), petKey:petKey(pet),
           speak:{text:`${a} ${op==='+'?'plus':'minus'} ${b} equals what?`,lang:'en-US'},
           options:numOptions(ans,Math.max(0,ans-3),ans+3), answer:String(ans),
           explain:`${a} ${op} ${b} = ${ans}.`});

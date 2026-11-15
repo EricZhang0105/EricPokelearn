@@ -112,6 +112,32 @@ body{
   box-shadow:inset 0 0 0 2px #fff;display:flex;align-items:center;justify-content:center;
   font-size:13px;color:#fff;font-weight:700;line-height:1;}
 .blk-gone{background:#E3D6BF;color:#9A8A6E;}
+
+/* v26：数学题里所有可数图形都换成宝可梦官方精灵图。
+   加法左右两组用不同底色，减法把末尾若干只变灰划 ✕。 */
+.pet-grid{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px;
+  padding:7px 9px;border-radius:16px;background:#FFF8EC;
+  box-shadow:inset 0 0 0 2px #F3E3C8;max-width:100%;}
+.pet-part-b{background:#EEF7FF;box-shadow:inset 0 0 0 2px #CFE6FA;}
+.pet-cell{position:relative;display:inline-flex;width:48px;height:48px;flex:0 0 auto;
+  align-items:center;justify-content:center;}
+.pet-img{width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.13));}
+.pet-gone .pet-img{filter:grayscale(1) opacity(.3);}
+.pet-cross{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:30px;font-weight:900;color:#E0453B;text-shadow:0 1px 3px #fff,0 0 3px #fff;}
+.pet-op{flex:0 0 auto;font-size:32px;font-weight:900;color:#E58A2B;line-height:1;padding:0 4px;}
+.pet-op.pet-minus{font-size:19px;color:#B26A2B;white-space:nowrap;}
+.pet-mid .pet-cell{width:38px;height:38px;}
+.pet-dense .pet-cell{width:28px;height:28px;}
+.pet-dense .pet-cross{font-size:20px;}
+@media(max-width:480px){
+  .pet-cell{width:38px;height:38px;}
+  .pet-mid .pet-cell{width:31px;height:31px;}
+  .pet-dense .pet-cell{width:24px;height:24px;}
+  .pet-grid{padding:5px 6px;gap:3px;}
+  .pet-op{font-size:26px;}
+}
 .speak-btn{display:block;margin:6px auto 14px;background:#EAF4FF;border:none;border-radius:16px;
   padding:10px 18px;font:inherit;font-size:18px;cursor:pointer;box-shadow:var(--shadow);}
 .speak-btn:active{transform:scale(.95);}
@@ -211,6 +237,25 @@ body{
 .key:active{transform:translateY(2px);box-shadow:0 1px 0 #d8c9ad;}
 .key.wide{width:13%;}
 .key.space{width:40%;}
+
+/* v26：屏幕键盘可收起 / 回车提交，且不再盖住 Check 按钮 */
+.keyboard .kb-bar{width:100%;display:flex;gap:8px;justify-content:center;margin-bottom:4px;}
+.key.kb-done,.key.kb-enter{width:auto;flex:1;max-width:220px;padding:9px 8px;
+  font-size:15px;}
+.key.kb-done{background:#FFE3BC;color:#8A4B00;box-shadow:0 3px 0 #D8B98D;}
+.key.kb-enter{background:#C7EBD2;color:#1E6B40;box-shadow:0 3px 0 #9DCBAE;}
+body.kb-open #screen-lesson{padding-bottom:250px;}   /* 键盘约 220px，留出滚动空间 */
+.type-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;margin-top:12px;}
+.type-actions .check-btn{margin-top:0;}
+.kb-toggle{background:#FFF0D8;color:#8A4B00;border:2px solid #FFC98A;border-radius:14px;
+  padding:10px 16px;font:inherit;font-size:15px;font-weight:800;cursor:pointer;
+  box-shadow:0 3px 0 #E8C79A;}
+.kb-toggle:active{transform:translateY(2px);box-shadow:none;}
+.type-tip{font-size:12.5px;color:#9A9082;margin-top:8px;}
+@media(max-width:480px){
+  body.kb-open #screen-lesson{padding-bottom:235px;}
+  .key.kb-done,.key.kb-enter{max-width:none;font-size:14px;}
+}
 
 /* 宝可梦真实图像 + emoji 兜底 */
 .poke-img{display:block;margin:0 auto;object-fit:contain;

@@ -1,20 +1,27 @@
 /* 生成特殊剧情音效音频（本地预录，离线可用）
- *   - rocket_line.m4a：火箭队台词「哼哼哼……我们还会回来的！」
- *     用 Tingting 录制，再降调 0.85 变成反派低音，退化/死亡动画时播放。
+ *   - rocket_line.m4a：火箭队战败台词（v26 起改用英文原版）
+ *     "Looks like Team Rocket's blasting off again!"
+ *     —— 英文动画里火箭队被打飞时的经典台词，对应中文「我们还会回来的」。
+ *     用清晰度最高的 Samantha 录制，44.1kHz / AAC 160k，不做降调
+ *     （旧版降调 0.82 会把 2–5kHz 辅音一起压掉，正是「含糊」的来源）。
+ *     退化 / 昏倒动画时播放（js/app.js showDefeatFx）。
+ *
+ *   ★ 如有授权的动画原声：把文件命名为 rocket_original.m4a 放进 audio/sfx/，
+ *     再跑 `node gen_sfx.js --force`，脚本会直接采用原声，不再生成 TTS。
+ *
  * 运行： node gen_sfx.js [--force]
- * 依赖： macOS say / afconvert + tools/pitch_wav.py
+ * 依赖： macOS say / afconvert
  * 产物： audio/sfx/rocket_line.m4a
  */
-const fs=require('fs'), path=require('path'), crypto=require('crypto');
+const fs=require('fs'), path=require('path');
 const {execFileSync}=require('child_process');
 
 const ROOT=__dirname;
 const OUT=path.join(ROOT,'audio','sfx');
 const TMP='/tmp/pokelearn-sfx';
-const PY='/Users/eric.zhang/.workbuddy/binaries/python/envs/default/bin/python';
-const PITCH=path.join(ROOT,'tools','pitch_wav.py');
-const SR=44100, BR=96000, RATE=150;
+const SR=44100, BR=160000, RATE=145;
 const FORCE=process.argv.includes('--force');
+const LINE="Looks like Team Rocket's blasting off again!";
 
 fs.mkdirSync(OUT,{recursive:true}); fs.mkdirSync(TMP,{recursive:true});
 
@@ -37,7 +44,7 @@ function masterWav(file){
   let a=0, b=n-1;
   while(a<n && Math.abs(buf.readInt16LE(dataOff+a*2))<thr) a++;
   while(b>a && Math.abs(buf.readInt16LE(dataOff+b*2))<thr) b--;
-  const pad=Math.round(SR*0.02);
+  const pad=Math.round(SR*0.06);          // 前后留气口，避免被截断感
   a=Math.max(0,a-pad); b=Math.min(n-1,b+pad);
   const gain=0.89*32767/peak;
   const out=Buffer.alloc((b-a+1)*2);
@@ -55,17 +62,20 @@ function masterWav(file){
 }
 
 const out=path.join(OUT,'rocket_line.m4a');
+const original=path.join(OUT,'rocket_original.m4a');
+if(fs.existsSync(original) && fs.statSync(original).size>1000){
+  fs.copyFileSync(original,out);
+  console.log('使用授权原声 rocket_original.m4a → rocket_line.m4a ('+Math.round(fs.statSync(out).size/1024)+' KB)');
+  process.exit(0);
+}
 if(!FORCE && fs.existsSync(out) && fs.statSync(out).size>1000){
   console.log('rocket_line.m4a 已存在，跳过（--force 重做）');
   process.exit(0);
 }
 const wav=path.join(TMP,'rocket.wav');
-execFileSync('/usr/bin/say',['-v','Tingting','-r',String(RATE),
-  '--file-format=WAVE','--data-format=LEI16@'+SR,'-o',wav,
-  '哼哼哼……我们还会回来的！'],{stdio:'ignore'});
+execFileSync('/usr/bin/say',['-v','Samantha','-r',String(RATE),
+  '--file-format=WAVE','--data-format=LEI16@'+SR,'-o',wav,LINE],{stdio:'ignore'});
 masterWav(wav);
-/* 降调 0.82 → 反派低音 */
-const wav2=path.join(TMP,'rocket_low.wav');
-execFileSync(PY,[PITCH,wav,wav2,'0.82']);
-execFileSync('/usr/bin/afconvert',[wav2,'-f','m4af','-d','aac','-b',String(BR),'-o',out],{stdio:'ignore'});
+execFileSync('/usr/bin/afconvert',[wav,'-f','m4af','-d','aac','-b',String(BR),'-o',out],{stdio:'ignore'});
 console.log('生成完成：'+out+' ('+Math.round(fs.statSync(out).size/1024)+' KB)');
+console.log('台词：'+LINE);
