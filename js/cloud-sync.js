@@ -108,7 +108,23 @@ function render(){
 }
 
 /* ---------------- 登录 ---------------- */
-function fail(msg){ lastError=msg; render(); }
+/* 后端偶尔会把 gRPC 原始串（%!(EXTRA string=rpc error: code = ...)）直接带回，
+   家长界面不能显示这种东西；统一翻译成看得懂的一句话。 */
+function friendly(msg){
+  let s=String(msg||'操作失败，请稍后再试');
+  s=s.replace(/%!\(EXTRA[\s\S]*$/,'').trim();     // 去掉 Go 格式化残留
+  const low=s.toLowerCase();
+  if(/verification code does not match|invalid.*code|验证码.*(不正确|错误)/.test(low))
+    return '验证码不正确，请重试（不用重新发送）';
+  if(/expired|过期|失效/.test(low)) return '验证码已过期，请重新获取';
+  if(/too many|rate|429|频繁/.test(low)) return '操作太频繁了，请稍等一分钟再试';
+  if(/origin|不允许|forbidden|403/.test(low)) return '这个网址不能登录，请使用云同步版链接打开';
+  if(/network|fetch|timeout|econn|网络/.test(low)) return '网络异常，请检查网络后重试';
+  if(/未打开|not enabled|disabled/.test(low)) return s;   // 平台开关提示本身是中文，保留
+  if(/rpc error|code = |sqlstate|stack|at object\./i.test(s)) return '服务暂时不可用，请稍后再试';
+  return s.length>90 ? s.slice(0,90)+'…' : s;
+}
+function fail(msg){ lastError=friendly(msg); render(); }
 async function sendCode(){
   if(busy) return;
   const email=String($('#cloudEmail').value||'').trim();
@@ -234,8 +250,9 @@ async function syncNow(manual){
     render();
     if(manual) toast('✅ 进度已同步');
   }catch(e){
-    fail(e.message||'同步失败，请稍后再试');
-    if(manual) toast('❌ '+(e.message||'同步失败'));
+    const msg=friendly(e.message||'同步失败，请稍后再试');
+    fail(msg);
+    if(manual) toast('❌ '+msg);
   }finally{ busy=false; }
 }
 async function afterLogin(showModal){
@@ -245,7 +262,7 @@ async function afterLogin(showModal){
 function schedulePush(){
   if(suppressPush || !ON_CLOUD_HOST || !cloud || !session) return;
   clearTimeout(pushTimer);
-  pushTimer=setTimeout(()=>{ push().catch(e=>{ lastError=e.message||'自动同步失败'; }); },5000);
+  pushTimer=setTimeout(()=>{ push().catch(e=>{ lastError=friendly(e.message||'自动同步失败'); }); },5000);
 }
 
 /* ---------------- 启动 ---------------- */
