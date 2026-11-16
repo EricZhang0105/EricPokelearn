@@ -508,6 +508,271 @@ const READ_PASSAGES = [
       }
     ]
   },
+  {
+    "id": "rp-2026w47-1",
+    "level": 1,
+    "title": "Nina and the Bird",
+    "visual": "🐦",
+    "text": "Nina has a yellow bird. The bird is small and soft. Nina can play with the bird. Nina is glad.",
+    "qs": [
+      {
+        "q": "What does Nina have?",
+        "o": [
+          "a yellow bird",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a yellow bird"
+      },
+      {
+        "q": "What color is the bird?",
+        "o": [
+          "yellow",
+          "pink",
+          "purple"
+        ],
+        "a": "yellow"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the garden",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the garden"
+      },
+      {
+        "q": "Is Nina glad?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "Nina has a ___ bird.",
+        "short": true,
+        "a": "yellow",
+        "accept": [
+          "yellow"
+        ],
+        "hint": "y _ _ _"
+      }
+    ]
+  },
+  {
+    "id": "rp-2026w47-2",
+    "level": 1,
+    "title": "Mia and the Cat",
+    "visual": "🐱",
+    "text": "Mia has a red cat. The cat is small and soft. Mia can play with the cat. Mia is proud.",
+    "qs": [
+      {
+        "q": "What does Mia have?",
+        "o": [
+          "a red cat",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a red cat"
+      },
+      {
+        "q": "What color is the cat?",
+        "o": [
+          "red",
+          "black",
+          "purple"
+        ],
+        "a": "red"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the library",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the library"
+      },
+      {
+        "q": "Is Mia proud?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "Mia has a ___ cat.",
+        "short": true,
+        "a": "red",
+        "accept": [
+          "red"
+        ],
+        "hint": "r _ _ _"
+      }
+    ]
+  },
+  {
+    "id": "rp-2026w47-3",
+    "level": 2,
+    "title": "Ivy and the Rabbit",
+    "visual": "🐰",
+    "text": "After school, Ivy and the green rabbit go to the shop. The rabbit runs fast on the path. They see a little frog near the gate. Ivy looks at it and smiles. \"What a nice day!\" says Ivy.",
+    "qs": [
+      {
+        "q": "What does Ivy have?",
+        "o": [
+          "a green rabbit",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a green rabbit"
+      },
+      {
+        "q": "What color is the rabbit?",
+        "o": [
+          "green",
+          "blue",
+          "purple"
+        ],
+        "a": "green"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the shop",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the shop"
+      },
+      {
+        "q": "Is Ivy glad?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "Ivy has a ___ rabbit.",
+        "short": true,
+        "a": "green",
+        "accept": [
+          "green"
+        ],
+        "hint": "g _ _ _"
+      }
+    ]
+  },
+  {
+    "id": "rp-2026w47-4",
+    "level": 2,
+    "title": "May and the Rabbit",
+    "visual": "🐰",
+    "text": "One morning, May and the yellow rabbit go to the park. The rabbit runs fast on the path. They see a big tree near the gate. May looks at it and smiles. \"What a nice day!\" says May.",
+    "qs": [
+      {
+        "q": "What does May have?",
+        "o": [
+          "a yellow rabbit",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a yellow rabbit"
+      },
+      {
+        "q": "What color is the rabbit?",
+        "o": [
+          "yellow",
+          "pink",
+          "purple"
+        ],
+        "a": "yellow"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the park",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the park"
+      },
+      {
+        "q": "Is May excited?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "May has a ___ rabbit.",
+        "short": true,
+        "a": "yellow",
+        "accept": [
+          "yellow"
+        ],
+        "hint": "y _ _ _"
+      }
+    ]
+  },
+  {
+    "id": "rp-2026w47-5",
+    "level": 3,
+    "title": "Tom and the Rabbit",
+    "visual": "🐰",
+    "text": "In the afternoon, Tom takes the blue rabbit to the farm. The sky is blue and the air is warm. Soon they find a yellow flower beside the big tree. The rabbit wants to play, but Tom wants to look at the map first. They walk a long way and stop near a little shop. Tom buys a cold drink and shares it with a friend. When the sun goes down, they walk home together. \"We will come back next week,\" says Tom.",
+    "qs": [
+      {
+        "q": "What does Tom have?",
+        "o": [
+          "a blue rabbit",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a blue rabbit"
+      },
+      {
+        "q": "What color is the rabbit?",
+        "o": [
+          "blue",
+          "red",
+          "purple"
+        ],
+        "a": "blue"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the farm",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the farm"
+      },
+      {
+        "q": "Is Tom happy?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "Tom has a ___ rabbit.",
+        "short": true,
+        "a": "blue",
+        "accept": [
+          "blue"
+        ],
+        "hint": "b _ _ _"
+      }
+    ]
+  },
 ];
 
 /* ---------------- 题目 ID + 分级信息 ---------------- */

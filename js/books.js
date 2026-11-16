@@ -901,6 +901,170 @@ const RAW_BOOKS = [
       ]
     ]
   },
+
+  /* ---------- 云端周更 2026w47 ---------- */
+  {
+    "id": "zh-k1-2026w47-1",
+    "lang": "zh",
+    "level": "k1",
+    "title": "小朋友的一天",
+    "titleEn": "Week 2026w47 · 1",
+    "tag": "生活 · 重复句",
+    "pages": [
+      [
+        "小猫醒来了。今天要去外面玩。",
+        "snow|cat,dog,child,cloud"
+      ],
+      [
+        "它看见了小猫，还有小狗。",
+        "snow|cat,dog,child,sun"
+      ],
+      [
+        "风轻轻吹过来，天气真好。",
+        "snow|cat,dog,child,cloud"
+      ],
+      [
+        "它和小伙伴一起走呀走。",
+        "snow|cat,dog,child,sun"
+      ],
+      [
+        "太阳快下山了，该回家啦。",
+        "snow|cat,dog,child,cloud"
+      ]
+    ]
+  },
+  {
+    "id": "en-k1-2026w47-2",
+    "lang": "en",
+    "level": "k1",
+    "title": "Nina's Big Day",
+    "titleEn": "第 2026w47 周 · 2",
+    "tag": "Sight words · CVC",
+    "pages": [
+      [
+        "Ella wakes up early. It is a bright day.",
+        "day|plant,bug,child,tree"
+      ],
+      [
+        "Ella can see a plant and a bug.",
+        "day|plant,bug,child,sun"
+      ],
+      [
+        "The plant is big. The bug is small.",
+        "day|plant,bug,child,tree"
+      ],
+      [
+        "Ella and a friend walk to the school.",
+        "day|plant,bug,child,sun"
+      ],
+      [
+        "They play together until the sun goes down.",
+        "day|plant,bug,child,tree"
+      ]
+    ]
+  },
+  {
+    "id": "zh-k2-2026w47-3",
+    "lang": "zh",
+    "level": "k2",
+    "title": "小熊的小发现",
+    "titleEn": "Week 2026w47 · 3",
+    "tag": "自然 · 观察",
+    "pages": [
+      [
+        "小猫醒来了。今天要去外面玩。",
+        "day|cloud,rabbit,child"
+      ],
+      [
+        "它看见了云朵，还有小兔。",
+        "day|cloud,rabbit,child,sun"
+      ],
+      [
+        "风轻轻吹过来，天气真好。",
+        "day|cloud,rabbit,child"
+      ],
+      [
+        "它和小伙伴一起走呀走。",
+        "day|cloud,rabbit,child,sun"
+      ],
+      [
+        "太阳快下山了，该回家啦。",
+        "day|cloud,rabbit,child"
+      ],
+      [
+        "“明天再来玩吧！”它开心地说。",
+        "day|cloud,rabbit,child,sun"
+      ]
+    ]
+  },
+  {
+    "id": "en-p1-2026w47-4",
+    "lang": "en",
+    "level": "p1",
+    "title": "Ben's Sunny Walk",
+    "titleEn": "第 2026w47 周 · 4",
+    "tag": "Short sentences",
+    "pages": [
+      [
+        "Ella wakes up early. It is a bright day.",
+        "forest|rabbit,banana,child,tree"
+      ],
+      [
+        "Ella can see a rabbit and a banana.",
+        "forest|rabbit,banana,child,sun"
+      ],
+      [
+        "The rabbit is big. The banana is small.",
+        "forest|rabbit,banana,child,tree"
+      ],
+      [
+        "Ella and a friend walk to the farm.",
+        "forest|rabbit,banana,child,sun"
+      ],
+      [
+        "They play together until the sun goes down.",
+        "forest|rabbit,banana,child,tree"
+      ],
+      [
+        "\"See you tomorrow!\" says Ella.",
+        "forest|rabbit,banana,child,sun"
+      ]
+    ]
+  },
+  {
+    "id": "zh-p2-2026w47-5",
+    "lang": "zh",
+    "level": "p2",
+    "title": "小兔子的礼物",
+    "titleEn": "Week 2026w47 · 5",
+    "tag": "友谊 · 小故事",
+    "pages": [
+      [
+        "小猫醒来了。今天要去外面玩。",
+        "rain|cloud,tree,child"
+      ],
+      [
+        "它看见了云朵，还有大树。",
+        "rain|cloud,tree,child,sun"
+      ],
+      [
+        "风轻轻吹过来，天气真好。",
+        "rain|cloud,tree,child"
+      ],
+      [
+        "它和小伙伴一起走呀走。",
+        "rain|cloud,tree,child,sun"
+      ],
+      [
+        "太阳快下山了，该回家啦。",
+        "rain|cloud,tree,child"
+      ],
+      [
+        "“明天再来玩吧！”它开心地说。",
+        "rain|cloud,tree,child,sun"
+      ]
+    ]
+  },
 ];
 
 /* 规范化：pages 由 [text, art] 转成对象，并补上顺序号 */
