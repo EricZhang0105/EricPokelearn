@@ -230,9 +230,25 @@
   <script src="js/cloud-config.js"></script>
   <script src="js/cloud-sync.js"></script>
   <script>
+    /* 自动更新：同一个链接永远跑最新版
+       · 回到前台 / 切回标签页就检查一次新版本
+       · 新版本接管后自动刷新一次（首装不刷新，避免闪烁） */
     if('serviceWorker' in navigator){
+      const hadController = !!navigator.serviceWorker.controller;
+      let reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange',()=>{
+        if(!hadController || reloading) return;
+        reloading = true;
+        location.reload();
+      });
       window.addEventListener('load',()=>{
-        navigator.serviceWorker.register('sw.js').catch(()=>{});
+        navigator.serviceWorker.register('sw.js').then(reg=>{
+          const check=()=>{ reg.update().catch(()=>{}); };
+          document.addEventListener('visibilitychange',()=>{
+            if(document.visibilityState==='visible') check();
+          });
+          window.addEventListener('focus',check);
+        }).catch(()=>{});
       });
     }
   </script>

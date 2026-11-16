@@ -1643,7 +1643,9 @@ function renderParent(){
     <div class="parent-block">
       <button class="btn-secondary" id="parentHomeBtn">← Back to Home</button>
       <button class="btn-danger" id="resetBtn">Reset all data</button>
-    </div>`;
+    </div>
+    <p class="muted" style="text-align:center;font-size:12px;margin:6px 0 18px">
+      Build ${(typeof POKELEARN_BUILD!=='undefined')?POKELEARN_BUILD:'dev'}</p>`;
 
   $('#parentHomeBtn').onclick=()=>show('screen-home');
   $('#optAutoread').onchange=e=>Store.setSetting('autoread', e.target.checked);
