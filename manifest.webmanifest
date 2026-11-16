@@ -2,7 +2,7 @@
   "name": "PokeLearn",
   "short_name": "PokeLearn",
   "description": "Fun English, Chinese & Math lessons for kids, with Pokémon evolution rewards.",
-  "start_url": ".",
+  "start_url": "./?sharecode=4KAXDGF6AB",
   "scope": ".",
   "display": "standalone",
   "orientation": "portrait",
