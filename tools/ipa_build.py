@@ -1,113 +1,144 @@
 # -*- coding: utf-8 -*-
-"""英语音标发音库生成器（美式 GA 音标，46 个音素，与全 App 同一把美式女声 en-US-JennyNeural）。
+"""英语音标发音库生成器（美式 GA，45 个音素，与全 App 同一把美式女声 en-US-JennyNeural）。
 
 为什么不用 TTS 直接读音标：
   edge-tts 的免费端点不接受 SSML <phoneme alphabet="ipa">（实测 NoAudioReceived），
   把 /ɪ/ 这样的符号交给 TTS 只会念成一段乱码。
-  所以做法是：合成一个「目标音素在最前面」的单词，再从音频里把目标段切出来。
 
-为什么是美式而不是英式（2026-11-16 改）：
-  全 App 英文一律按美音处理 —— 词库 / 短文 / 数学都是 en-US-JennyNeural，
-  音标表如果还用英式 RP，就会出现「表格印 /ɒ/、耳朵听 dahg」的错位。
-  美式（General American）的元音体系是：
-    · 没有 /ɒ/，dog / hot 用 /ɑ/
-    · /əʊ/ 换成 /oʊ/（nose）
-    · /ɜː/ 换成卷舌的 /ɝ/（her），另有非重读卷舌 /ɚ/（teacher）
-    · /ɪə/ /eə/ /ʊə/ 分别换成 /ɪr/ /ɛr/ /ʊr/（here / hair / tour）
-    · /ɑː/ 换成 /ɑr/（car）
-    · /ɔː/ 换成 /ɔ/（saw），or 组合单列 /ɔr/（for）
-  这正是美式音标表的标准写法，也让音标示范和其余英文录音是同一把嗓子。
+为什么不再「从单词里切辅音」（2026-11-16 第二次重做）：
+  上一版对辅音用的是 onset 切法 —— 取词首到元音起点后 35ms。
+  实测出来的片长：/b/ 55ms、/d/ 65ms、/m/ 55ms、/f/ 105ms 且前面还有 66ms 静音。
+  55ms 的爆破音本来就只是「一声咔」，再加上 20ms 淡出，能量几乎被抹平；
+  iPad 上听起来就是「读不出来 / 卡住的拖长音」。这不是播放器的问题，是素材本身不可听。
+  纯爆破音（/p t k b d g/）在物理上也无法单独拉长 —— 它只有一二十毫秒的冲激。
 
-切法（和中文 zh_tts_build.py 的 vowel_onset 同一套思路）：
-  - 元音：找能量最高的连续段（元音核），按短/长元音目标时长取中心或循环延长
-  - 卷舌元音（r_tail）：从元音核起点延到词尾最后一个有声点，把 r 的过渡一起带上
-  - 辅音 onset：取词首到元音起点后 35ms —— 教学上读 /b/ 本来就是「b + 极短元音起音」
-  - /ŋ/（词尾）：取元音结束到最后一个有声点（不能取到文件尾，尾部静音会把片段拉到 1s+）
+现在的做法（按音的物理性质分三类）：
+  1) 持续音（擦音 / 鼻音 / 近音 /h/）：让 TTS 直接发「sss」「mmm」「lll」这类延长写法，
+     取最长的一段，时长统一到 0.28–0.40s。这类音本来就能单独发，效果最干净。
+  2) 塞音 / 塞擦音 / 半元音（/p b t d k g tʃ dʒ w j/）：用 TTS 的「辅音 + 极短元音」
+     写法（buh / duh / guh / puh / tuh / kuh / chuh / juh / wuh / yuh），
+     截到约 0.22s。这就是课堂里念字母音的方式（「b 说 buh」），短元音只占 0.1s 左右，
+     听感是「b」而不是「buh 这个音节」。
+  3) 元音：仍然从真实单词里切元音核（能保证是自然共振峰），
+     卷舌元音用 r_tail 把 r 过渡带上。
 
-每个音素都会做淡入淡出、峰值归一，另有 tools/ipa_check.py 做声学自检。
+响度：原来按峰值归一，擦音峰值高、RMS 低 → 在 iPad 上明显比元音小声。
+现在改成按 RMS 归一到同一档（-20 dBFS），并限制峰值不超过 -1.5 dBFS。
 
 用法：
     python tools/ipa_build.py            # 只补缺失
     python tools/ipa_build.py --force    # 全部重做
 """
-import asyncio, glob, json, os, subprocess, sys, tempfile, wave
+import asyncio, glob, os, subprocess, sys, tempfile, wave
 import numpy as np
 import parselmouth
 import edge_tts
 import imageio_ffmpeg
 
-VOICE = 'en-US-JennyNeural'      # 美式女声：和其余 515 段英文录音同一把嗓子
+VOICE = 'en-US-JennyNeural'      # 美式女声：和其余 600+ 段英文录音同一把嗓子
 RATE = '-8%'                     # 与词库一致，孩子听着是同一档语速
+RATE_VOWEL = '-20%'              # 元音单独用慢速合成：真实单词里的短元音只有 0.1s，
+                                 # 慢 20% 能把它拉到 0.15–0.2s，且是自然发音不是拼接
 SR, BR = 44100, '96k'
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'audio', 'ipa')
 LISTJS = os.path.join(ROOT, 'js', 'ipa-audio-list.js')
+AUDIO_VER = 'a=3'                # 换素材必须升版本，否则 iPad 还是旧缓存
 FF = imageio_ffmpeg.get_ffmpeg_exe()
 TMP = tempfile.mkdtemp(prefix='ipa_build_')
 FORCE = '--force' in sys.argv
 
-# key, IPA, 源词, 模式
-#   vowel      元音核（单音节词，取能量最高的连续段）
-#   head_vowel 词首弱元音（about 的 /ə/，取第一个有声段）
-#   r_tail     元音 + 卷舌（car / for / here / hair / tour / her / teacher）
-#   onset      词首辅音（取词首到元音起点后 35ms）
-#   tail       词尾辅音（sing 的 /ŋ/）
+# key, IPA, TTS 文本, 模式, 目标时长
+#   sustain    持续音：取最长一段，按目标时长居中截取（可循环延长）
+#   cv         辅音 + 极短元音：从起音切到元音起点后 0.12s
+#   vowel      元音核（真实单词，能量最高段）
+#   head_vowel 词首弱元音（about 的 /ə/）
+#   r_tail     元音 + 卷舌过渡
+#   tail       词尾鼻音（sing 的 /ŋ/）
 SPEC = [
     # ---- 短元音 ----
     ('v_ih', 'ɪ', 'sit', 'vowel', 0.34),
     ('v_e', 'ɛ', 'bed', 'vowel', 0.32),
     ('v_ae', 'æ', 'cat', 'vowel', 0.36),
-    ('v_uh', 'ʌ', 'cup', 'vowel', 0.32),
+    ('v_uh', 'ʌ', 'bus', 'vowel', 0.32),
     ('v_o', 'ɑ', 'hot', 'vowel', 0.34),
     ('v_uu', 'ʊ', 'book', 'vowel', 0.30),
-    ('v_schwa', 'ə', 'about', 'head_vowel', 0.20),
+    ('v_schwa', 'ə', 'sofa', 'final_vowel', 0.26),
     # ---- 长元音 / 紧元音 ----
-    ('v_ii', 'i', 'see', 'vowel', 0.48),
-    ('v_oo', 'u', 'boot', 'vowel', 0.48),  # 不用 moon：词首 /m/ 是浊鼻音，能量接近 /u/，会被当成最长段切走；
-                                           # 用 boot 是因为 b 的圆唇起音让 /u/ 更靠后（F2 1384，与 /ʊ/ 的 1510 分得开）
-    # 没有单独的 /ɔ/：美式通用口音（含本库女声）已 cot-caught 合并，
-    # saw / dog / hot 的元音实测同为一个 /ɑ/，单列只会出现「两格同音却标不同符号」。
-    # ---- 卷舌元音（美音特有）----
-    ('v_er', 'ɝ', 'her', 'r_tail', 0.50),
+    ('v_ii', 'i', 'see', 'vowel', 0.46),
+    ('v_oo', 'u', 'boot', 'vowel', 0.46),   # 不用 moon：词首 /m/ 是浊鼻音，会被当成元音核切走
+    # 没有单独的 /ɔ/：本库女声 cot-caught 合并，saw 与 hot 实测同一个 /ɑ/
+    # ---- 卷舌元音 ----
+    ('v_er', 'ɝ', 'her', 'r_tail', 0.48),
     ('v_schwa_r', 'ɚ', 'teacher', 'r_tail', 0.34),
     # ---- 双元音 ----
-    ('v_ei', 'eɪ', 'cake', 'vowel', 0.50),
-    ('v_ai', 'aɪ', 'bike', 'vowel', 0.50),
-    ('v_oi', 'ɔɪ', 'boy', 'vowel', 0.50),
-    ('v_au', 'aʊ', 'house', 'vowel', 0.50),
-    ('v_ou', 'oʊ', 'nose', 'vowel', 0.50),
-    # ---- r 化元音 ----
-    ('v_aar', 'ɑr', 'car', 'r_tail', 0.56),
-    ('v_awr', 'ɔr', 'for', 'r_tail', 0.56),
+    ('v_ei', 'eɪ', 'cake', 'vowel', 0.48),
+    ('v_ai', 'aɪ', 'bike', 'vowel', 0.48),
+    ('v_oi', 'ɔɪ', 'boy', 'vowel', 0.48),
+    ('v_au', 'aʊ', 'house', 'vowel', 0.48),
+    ('v_ou', 'oʊ', 'nose', 'vowel', 0.48),
+    ('v_aar', 'ɑr', 'car', 'r_tail', 0.54),
+    ('v_awr', 'ɔr', 'for', 'r_tail', 0.54),
     ('v_ie', 'ɪr', 'here', 'r_tail', 0.52),
     ('v_ea', 'ɛr', 'hair', 'r_tail', 0.52),
     ('v_ue', 'ʊr', 'tour', 'r_tail', 0.52),
-    # ---- 辅音 ----
-    ('c_p', 'p', 'pen', 'onset', 0.20),
-    ('c_b', 'b', 'bag', 'onset', 0.16),
-    ('c_t', 't', 'ten', 'onset', 0.20),
-    ('c_d', 'd', 'dog', 'onset', 0.14),
-    ('c_k', 'k', 'kite', 'onset', 0.20),
-    ('c_g', 'g', 'go', 'onset', 0.14),
-    ('c_f', 'f', 'fish', 'onset', 0.22),
-    ('c_v', 'v', 'van', 'onset', 0.16),
-    ('c_th', 'θ', 'thin', 'onset', 0.22),
-    ('c_dh', 'ð', 'this', 'onset', 0.14),
-    ('c_s', 's', 'sun', 'onset', 0.24),
-    ('c_z', 'z', 'zoo', 'onset', 0.16),
-    ('c_sh', 'ʃ', 'ship', 'onset', 0.24),
-    ('c_zh', 'ʒ', 'genre', 'onset', 0.18),
-    ('c_h', 'h', 'hat', 'onset', 0.18),
-    ('c_ch', 'tʃ', 'chair', 'onset', 0.22),
-    ('c_j', 'dʒ', 'jam', 'onset', 0.16),
-    ('c_m', 'm', 'man', 'onset', 0.16),
-    ('c_n', 'n', 'net', 'onset', 0.14),
-    ('c_ng', 'ŋ', 'sing', 'tail', 0.24),
-    ('c_l', 'l', 'leg', 'onset', 0.16),
-    ('c_r', 'r', 'red', 'onset', 0.16),
-    ('c_w', 'w', 'wet', 'onset', 0.14),
-    ('c_y', 'j', 'yes', 'onset', 0.16),
+    # ---- 塞音：辅音 + 极短元音（课堂念法 buh / duh …）----
+    ('c_p', 'p', 'puh', 'cv', 0.24),
+    ('c_b', 'b', 'buh', 'cv', 0.24),
+    ('c_t', 't', 'tuh', 'cv', 0.24),
+    ('c_d', 'd', 'duh', 'cv', 0.24),
+    ('c_k', 'k', 'kuh', 'cv', 0.24),
+    ('c_g', 'g', 'guh', 'cv', 0.24),
+    # ---- 塞擦音 ----
+    ('c_ch', 'tʃ', 'chuh', 'cv', 0.28),
+    ('c_j', 'dʒ', 'juh', 'cv', 0.28),
+    # ---- 半元音 ----
+    ('c_w', 'w', 'wuh', 'cv', 0.24),
+    ('c_y', 'j', 'yuh', 'cv', 0.24),
+    # ---- 擦音：持续音（TTS 的延长写法，能真的拉出气流）----
+    ('c_f', 'f', 'ffff', 'sustain', 0.34),
+    ('c_v', 'v', 'vvv', 'sustain', 0.34),
+    ('c_th', 'θ', 'thhh', 'sustain', 0.30),
+    ('c_dh', 'ð', 'the', 'cv', 0.24),        # 「the」开头就是 /ð/，元音是弱读央元音
+    ('c_s', 's', 'sss', 'sustain', 0.38),
+    ('c_z', 'z', 'zzz', 'sustain', 0.38),
+    ('c_sh', 'ʃ', 'shhh', 'sustain', 0.38),
+    ('c_zh', 'ʒ', 'zhh', 'sustain', 0.32),
+    ('c_h', 'h', 'hhh', 'sustain', 0.30),
+    # ---- 鼻音 / 近音 ----
+    ('c_m', 'm', 'mmm', 'sustain', 0.36),
+    ('c_n', 'n', 'nnn', 'sustain', 0.36),
+    ('c_ng', 'ŋ', 'sing', 'tail', 0.32),
+    ('c_l', 'l', 'lll', 'sustain', 0.34),
+    ('c_r', 'r', 'rrr', 'sustain', 0.34),
 ]
+
+
+VOWEL_MODES = ('vowel', 'head_vowel', 'final_vowel', 'r_tail', 'tail')
+
+
+def stretch(seg, sr, target=0.20, max_rate=2.0):
+    """元音太短时用 WSOLA（ffmpeg atempo）拉长到 target，不改音高、没有接缝。
+    绝不循环拼接 —— 循环会在接缝造出 20–40ms 的周期抖动，听感就是「卡住拖长」。"""
+    dur = len(seg) / sr
+    if dur >= target:
+        return seg
+    # atempo < 1 是放慢（音频变长），> 1 是加速。要拉长到 target，倍率是 dur/target。
+    factor = max(0.5, dur / target)
+    if factor > 0.92:
+        return seg
+    a = os.path.join(TMP, '_st_in.wav')
+    b = os.path.join(TMP, '_st_out.wav')
+    save(seg, sr, a)
+    try:
+        run([FF, '-y', '-v', 'error', '-i', a, '-filter:a', f'atempo={factor:.3f}',
+             '-ac', '1', '-ar', str(sr), b])
+        y, sr2 = load(b)
+        if len(y) > len(seg):
+            return y
+    except Exception:
+        pass
+    return seg
 
 
 def run(args, **kw):
@@ -136,50 +167,119 @@ def envelope(x, sr, hop=0.01):
     return np.array([np.sqrt(np.mean(x[i:i + n] ** 2)) for i in range(0, max(1, len(x) - n), n)], dtype=np.float32)
 
 
-def voiced_spans(env, ratio=0.5, min_len=0.05, hop=0.01):
-    """能量高于峰值 ratio 的连续段（元音核比鼻音/擦音高 10dB 以上，0.5 能分开）"""
+def spans_of(env, ratio, min_len=0.04, hop=0.01, merge=0.0):
+    """能量高于峰值 ratio 的连续段。
+    擦音比元音低 10–20dB，判擦音时 ratio 要压到 0.10；
+    merge 用来把「同一段里的小凹陷」粘回去（TTS 元音内部有重音起伏）。"""
     if env.size == 0:
         return []
     thr = float(env.max()) * ratio
-    spans, st = [], None
+    out, st = [], None
     for i, v in enumerate(env):
         if v >= thr and st is None:
             st = i
         elif v < thr and st is not None:
             if (i - st) * hop >= min_len:
-                spans.append((st * hop, i * hop))
+                out.append((st, i))
             st = None
     if st is not None and (len(env) - st) * hop >= min_len:
-        spans.append((st * hop, len(env) * hop))
-    return spans
+        out.append((st, len(env)))
+    if merge > 0 and len(out) > 1:
+        merged = [list(out[0])]
+        for a, b in out[1:]:
+            if (a - merged[-1][1]) * hop <= merge:
+                merged[-1][1] = b
+            else:
+                merged.append([a, b])
+        out = [tuple(x) for x in merged]
+    return out
 
 
-def loop_to(x, sr, target, fade=0.03):
-    """不足目标时长时，用尾部与头部交叉淡化循环延长（保持音高与共振峰不变）"""
+def loop_to(x, sr, target, fade=0.025):
+    """不足目标时长时用交叉淡化循环延长（音高与共振峰不变）。只用于稳定的持续音。"""
     n = int(target * sr)
     if len(x) >= n:
         return x
-    f = max(1, int(fade * sr))
+    f = max(8, int(fade * sr))
+    if len(x) <= f:
+        return x
     out = x.copy()
-    seg = x[-f:] if len(x) > f else x
+    seg = x
     guard = 0
-    while len(out) < n and guard < 200:
+    while len(out) < n and guard < 60:
         head = out[-f:]
         tail = seg[:f]
         w = np.linspace(0, 1, f, dtype=np.float32)
-        out = np.concatenate([out[:-f], head * (1 - w) + tail * w, seg[f:]] if len(seg) > f else [out, seg])
+        mix = head * (1 - w) + tail * w
+        out = np.concatenate([out[:-f], mix, seg[f:f + f]])
         guard += 1
     return out[:n]
 
 
+def fade(x, sr, fi=0.012, fo=0.022):
+    n = len(x)
+    a, b = int(fi * sr), int(fo * sr)
+    if n > a + b + 16:
+        x[:a] *= np.linspace(0, 1, a, dtype=np.float32)
+        x[-b:] *= np.linspace(1, 0, b, dtype=np.float32)
+    elif n > 32:
+        k = max(8, n // 8)
+        x[:k] *= np.linspace(0, 1, k, dtype=np.float32)
+        x[-k:] *= np.linspace(1, 0, k, dtype=np.float32)
+    return x
+
+
 def cut(x, sr, mode, target):
     env = envelope(x, sr)
-    spans = voiced_spans(env, 0.45, 0.04)
-    if not spans:
+    if mode == 'sustain':
+        # 擦音/鼻音/近音：用低阈值抓最长段（0.10 才能把 /s/ /f/ 一起算进来）
+        sp = spans_of(env, 0.10, 0.06)
+        if not sp:
+            return None, 'no-span'
+        a, b = max(sp, key=lambda s: s[1] - s[0])
+        seg = x[a * int(0.01 * sr): b * int(0.01 * sr)].copy()
+        if len(seg) > int(target * sr):
+            mid, half = len(seg) // 2, int(target * sr) // 2
+            seg = seg[max(0, mid - half): min(len(seg), mid + half)]
+        elif len(seg) < int(0.16 * sr):
+            # 只对稳定噪音做延长，交叉淡化要够长（0.05s），
+            # 25ms 的短接缝会形成 40Hz 的周期抖动，听感就是「卡卡的」
+            seg = loop_to(seg, sr, min(target, 0.24), 0.05)
+        return seg, 'ok'
+
+    if mode == 'cv':
+        # 塞音/塞擦音/半元音：从元音起点前 0.08s 切到后 0.10s。
+        #   · 前 0.08s 装的是爆破 + 送气，**不能从 0 开始** ——
+        #     /p/ /t/ /k/ 词首有 40–70ms 的闭塞（纯静音），从 0 切等于先给孩子一段空白，
+        #     听起来就是「点了没声，然后咔一下」。
+        #   · 后 0.10s 的元音只够听出辅音的音色，留满一个音节就变成「buh 这个字」了。
+        sp = spans_of(env, 0.45, 0.03)
+        if not sp:
+            return None, 'no-vowel-onset'
+        onset = sp[0][0] * 0.01
+        a_s = max(0.0, onset - 0.09)
+        b_s = min(len(x) / sr, onset + 0.13)
+        seg = x[int(a_s * sr):int(b_s * sr)].copy()
+        # 切完再清一次首部：/p/ /k/ 前面常剩一段 40–60ms 的闭塞（纯静音），
+        # 留着就是「点了先没声」。留 5ms 让爆破不要贴边。
+        if seg.size:
+            e = envelope(seg, sr)
+            live = np.where(e > e.max() * 0.05)[0]
+            if live.size:
+                i0 = max(0, int(live[0] * 0.01 * sr) - int(0.005 * sr))
+                seg = seg[i0:]
+        if len(seg) > int(target * sr):
+            seg = seg[-int(target * sr):]     # 宁可吃掉一点前段，也要留住元音起音
+        if len(seg) < int(0.12 * sr):
+            return None, 'too-short'
+        return seg, 'ok'
+
+    # 元音核：阈值压到 0.32 并合并 50ms 内的小凹陷，
+    # 否则 TTS 一句里元音自身的重音起伏会把 /ɪ/ 切成好几段（实测只剩 0.06s）
+    sp = spans_of(env, 0.32, 0.05, merge=0.05)
+    if not sp:
         return None, 'no-voiced-span'
     if mode == 'head_vowel':
-        # /ə/ 比后面的重读元音低 10dB 以上，阈值一高就会跳过它、抓到 /aʊ/。
-        # 做法：只看词首 0.16s 这段窗口（里面只有 /ə/ 和后面 /b/ 的爆破），取最长的一段。
         w = max(1, int(0.16 / 0.01))
         envw = env[:w]
         if not envw.size:
@@ -191,80 +291,74 @@ def cut(x, sr, mode, target):
                 st = i
             elif v < thr and st is not None:
                 if (i - st) * 0.01 >= 0.03:
-                    segs.append((st * 0.01, i * 0.01))
+                    segs.append((st, i))
                 st = None
         if st is not None and (len(envw) - st) * 0.01 >= 0.03:
-            segs.append((st * 0.01, len(envw) * 0.01))
+            segs.append((st, len(envw)))
         if not segs:
             return None, 'no-head-span'
         a, b = max(segs, key=lambda s: s[1] - s[0])
-        a = max(0.0, a - 0.03)
+        a_s, b_s = max(0.0, a * 0.01 - 0.03), b * 0.01
     elif mode == 'vowel':
-        a, b = max(spans, key=lambda s: s[1] - s[0])
-        a = a + 0.015                     # 跳过起始过渡
-        b = b - 0.015                     # 跳过收尾过渡
+        a, b = max(sp, key=lambda s: s[1] - s[0])
+        a_s, b_s = a * 0.01 + 0.015, b * 0.01 - 0.015
     elif mode == 'r_tail':
-        # 卷舌元音：元音核 + 后面的 r 过渡。r 是近音，能量低于元音的一半，
-        # 用 0.45 阈值会在 r 之前断开，所以终点要用低阈值重新找；
-        # 起点取最后一个能量段（/ɚ/ 在 teacher 这种词里就是最后一个峰）。
-        sp = max(spans, key=lambda s: s[1])
-        a = max(0.0, sp[0] - 0.035)
+        s = max(sp, key=lambda s: s[1])
+        a_s = max(0.0, s[0] * 0.01 - 0.035)
         nz = np.where(env > env.max() * 0.04)[0]
-        end = (nz[-1] + 1) * 0.01 if nz.size else len(x) / sr
-        b = min(end, len(x) / sr)
-        if b - a > 0.90:                  # 别把后面的辅音一起带进来
-            b = a + 0.90
-    elif mode == 'onset':
-        a = 0.0
-        b = spans[0][0] + 0.035            # 辅音 + 元音起音 35ms（再多就听成 "puh" 了）
+        b_s = min((nz[-1] + 1) * 0.01 if nz.size else len(x) / sr, len(x) / sr)
+        if b_s - a_s > 0.90:
+            b_s = a_s + 0.90
+    elif mode == 'final_vowel':
+        # 词尾弱读元音（sofa 的 /ə/）：取最后一个元音段，整段保留
+        a, b = max(sp, key=lambda s: s[0])
+        a_s, b_s = max(0.0, a * 0.01 - 0.02), b * 0.01 + 0.02
     elif mode == 'tail':
-        # 元音结束 → 最后一个有声点。鼻音（/ŋ/）能量只有元音的一半，进不了 spans，
-        # 所以终点要用低阈值重新找；取文件尾会把尾部静音一起带进来（曾切出 1.16s）
-        vowel = max(spans, key=lambda s: s[1])
+        vowel = max(sp, key=lambda s: s[1])
         nz = np.where(env > env.max() * 0.03)[0]
-        end = (nz[-1] + 1) * 0.01 if nz.size else len(x) / sr
-        a = vowel[1] - 0.02
-        b = min(end, len(x) / sr)
+        a_s = vowel[1] * 0.01 - 0.02
+        b_s = min((nz[-1] + 1) * 0.01 if nz.size else len(x) / sr, len(x) / sr)
     else:
         return None, 'bad-mode'
 
-    i0, i1 = int(a * sr), int(b * sr)
-    i0, i1 = max(0, i0), min(len(x), i1)
-    if i1 - i0 < int(0.02 * sr):
+    i0, i1 = max(0, int(a_s * sr)), min(len(x), int(b_s * sr))
+    if i1 - i0 < int(0.03 * sr):
         return None, 'too-short-span'
     seg = x[i0:i1].copy()
-
-    if mode in ('vowel', 'head_vowel', 'r_tail'):
-        if len(seg) > int(target * sr):
-            # 长了取中心（保留稳态部分）；r_tail 保留头部，卷舌过渡在尾部不能丢
-            if mode == 'r_tail':
-                seg = seg[:int(target * sr)]
-            else:
-                mid = len(seg) // 2
-                half = int(target * sr) // 2
-                seg = seg[max(0, mid - half): min(len(seg), mid + half)]
+    if len(seg) > int(target * sr):
+        if mode == 'r_tail':
+            seg = seg[:int(target * sr)]
         else:
-            seg = loop_to(seg, sr, target)
-
-    # 淡入淡出，避免切点爆音
-    fi, fo = int(0.006 * sr), int(0.02 * sr)
-    if len(seg) > fi + fo:
-        seg[:fi] *= np.linspace(0, 1, fi, dtype=np.float32)
-        seg[-fo:] *= np.linspace(1, 0, fo, dtype=np.float32)
+            mid, half = len(seg) // 2, int(target * sr) // 2
+            seg = seg[max(0, mid - half): min(len(seg), mid + half)]
+    elif len(seg) < int(target * sr):
+        # 元音**不循环延长**：源词里的元音本来只有 0.2–0.4s，循环会在接缝处
+        # 造出 20–40ms 的周期性抖动（共振峰来回跳 100Hz），听感就是「卡住拖长」。
+        # 长度不够就让它短一点，短元音本来就该短。只有 < 0.16s 才算素材不合格。
+        if len(seg) < int(0.10 * sr):
+            return None, f'source-vowel-too-short({len(seg)/sr:.2f}s)'
     return seg, 'ok'
 
 
-def normalize(x, peak_db=-6.0, max_gain_db=18.0):
-    pk = float(np.max(np.abs(x))) if x.size else 0.0
-    if pk <= 1e-6:
+def normalize(x, rms_db=-20.0, ceil_db=-1.5, max_gain_db=24.0):
+    """按 RMS 归一到同一档响度。原来按峰值归一：擦音峰值高、RMS 低，
+    在 iPad 上明显比元音小声，听起来像「没读出来」。"""
+    rms = float(np.sqrt(np.mean(x ** 2))) if x.size else 0.0
+    if rms <= 1e-6:
         return x
-    gain = min(10 ** (peak_db / 20) / pk, 10 ** (max_gain_db / 20))
-    return np.clip(x * gain, -1, 1)
+    gain = 10 ** (rms_db / 20) / rms
+    gain = min(gain, 10 ** (max_gain_db / 20))
+    y = x * gain
+    pk = float(np.max(np.abs(y))) if y.size else 0.0
+    ceil = 10 ** (ceil_db / 20)
+    if pk > ceil:
+        y *= ceil / pk
+    return np.clip(y, -1, 1)
 
 
-async def synth(text):
+async def synth(text, rate=None):
     buf = bytearray()
-    async for ch in edge_tts.Communicate(text, VOICE, rate=RATE).stream():
+    async for ch in edge_tts.Communicate(text, VOICE, rate=rate or RATE).stream():
         if ch.get('type') == 'audio' and ch.get('data'):
             buf += ch['data']
     if len(buf) < 1000:
@@ -280,20 +374,20 @@ def encode(wav, dst):
 async def main():
     os.makedirs(OUT, exist_ok=True)
     keep = {k for k, *_ in SPEC}
-    # 换体系后旧 key（如英式 /ɑː/ 的 v_aa）要清掉，否则会被预缓存清单漏掉却留在仓库里
     for f in glob.glob(os.path.join(OUT, '*.m4a')):
         if os.path.splitext(os.path.basename(f))[0] not in keep:
             os.remove(f)
             print('  删除过期', os.path.basename(f))
     done, fail, notes = 0, [], []
-    for key, ipa, word, mode, target in SPEC:
+    for key, ipa, text, mode, target in SPEC:
         dst = os.path.join(OUT, key + '.m4a')
         if not FORCE and os.path.exists(dst) and os.path.getsize(dst) > 1200:
             continue
         try:
+            buf = None
             for attempt in range(3):
                 try:
-                    buf = await synth(word)
+                    buf = await synth(text, RATE_VOWEL if mode in VOWEL_MODES else RATE)
                     break
                 except Exception:
                     if attempt == 2:
@@ -305,42 +399,44 @@ async def main():
             wav = os.path.join(TMP, key + '_in.wav')
             run([FF, '-y', '-v', 'quiet', '-i', src, '-ac', '1', '-ar', str(SR), wav])
             x, sr = load(wav)
-            # 词首静音先削掉，onset 模式才能从真正的起音开始切
             env0 = envelope(x, sr)
             nz = np.where(env0 > env0.max() * 0.02)[0]
             if nz.size:
                 x = x[max(0, int(nz[0] * 0.01 * sr) - int(0.01 * sr)):]
             seg, why = cut(x, sr, mode, target)
             if seg is None:
-                fail.append(f'{key}({ipa}) {word}: {why}')
+                fail.append(f'{key}({ipa}) {text}: {why}')
                 continue
+            if mode in VOWEL_MODES:
+                seg = stretch(seg, sr, 0.20)
             seg = normalize(seg)
+            seg = fade(seg, sr, 0.002 if mode == 'cv' else 0.012, 0.022)
             outw = os.path.join(TMP, key + '_out.wav')
             save(seg, sr, outw)
             encode(outw, dst)
             done += 1
-            notes.append((key, ipa, word, mode, round(len(seg) / sr, 3)))
+            notes.append((key, ipa, text, mode, round(len(seg) / sr, 3)))
         except Exception as e:
-            fail.append(f'{key}({ipa}) {word}: {type(e).__name__} {str(e)[:100]}')
+            fail.append(f'{key}({ipa}) {text}: {type(e).__name__} {str(e)[:100]}')
 
-    # 预缓存清单：和中文音频同样玩法，装 PWA 时就落盘，离线也能点名
     items = [k for k, *_ in SPEC if os.path.exists(os.path.join(OUT, k + '.m4a'))]
     js = ('/* 由 tools/ipa_build.py 自动生成，勿手工编辑\n'
           f' * 英语 {len(items)} 音素发音片段（美式 GA，同一把女声 en-US-JennyNeural）。\n'
           ' * Service Worker 安装时预缓存，保证离线也能点音标听发音。 */\n'
-          'const IPA_AUDIO_VER = "a=2";\n'
+          f'const IPA_AUDIO_VER = "{AUDIO_VER}";\n'
           'const IPA_AUDIO_LIST = [\n'
-          + ',\n'.join(f'  "audio/ipa/{k}.m4a?a=2"' for k in items)
+          + ',\n'.join(f'  "audio/ipa/{k}.m4a?{AUDIO_VER}"' for k in items)
           + '\n];\n'
           'if (typeof self !== "undefined") { self.IPA_AUDIO_LIST = IPA_AUDIO_LIST; self.IPA_AUDIO_VER = IPA_AUDIO_VER; }\n')
     open(LISTJS, 'w', encoding='utf8').write(js)
 
     print(f'新生成 {done} 段，失败 {len(fail)}')
-    print(f'清单 {len(items)} 条 → js/ipa-audio-list.js')
-    for n in notes[:6]:
+    print(f'清单 {len(items)} 条 → js/ipa-audio-list.js（{AUDIO_VER}）')
+    for n in notes[:8]:
         print('  ', n)
     for f in fail[:12]:
         print('  FAIL', f)
 
 
-asyncio.run(main())
+if __name__ == '__main__':
+    asyncio.run(main())

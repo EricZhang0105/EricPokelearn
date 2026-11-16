@@ -203,11 +203,14 @@ const LETTERS=[
   ['Y y','/j/ /aɪ/','yes'],['Z z','/z/','zoo'],
 ];
 
+/* 音素音频的版本参数统一从 js/ipa-audio-list.js 取（IPA_AUDIO_VER），
+   换素材时只改 tools/ipa_build.py 里的 AUDIO_VER，页面不用跟着改。 */
+const IPAQ = (typeof IPA_AUDIO_VER !== 'undefined' && IPA_AUDIO_VER) ? IPA_AUDIO_VER : 'a=3';
 function ipaTile(it){
-  /* 点格子读音素本身（audio/ipa/<key>.m4a，美式女声单独录的 46 个音素），
+  /* 点格子读音素本身（audio/ipa/<key>.m4a，美式女声单独录的 45 个音素），
      不是读例词。例词只作为听不到录音时的兜底文本。 */
   const w=it.w[0];
-  return `<button class="rf-ipa" data-clipurl="audio/ipa/${it.k}.m4a?a=2" data-say="${w}">
+  return `<button class="rf-ipa" data-clipurl="audio/ipa/${it.k}.m4a?${IPAQ}" data-say="${w}">
     <span class="rf-ipa-sym">${it.ipa}</span>
     <span class="rf-ipa-words">${it.w.join(' · ')}</span>
     <span class="rf-ipa-rule">${it.rule}</span>
