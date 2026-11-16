@@ -119,6 +119,10 @@ function mathTipSpeak(t){ return {text:t, lang:'en-US'}; }
    Level 1 = N2/K1 起步 · Level 2 = K1 · Level 3 = K1/K2
    ========================================================= */
 const MATH = [
+  /* 汇总页（只读挂图）：ref 字段让课程列表直接打开 chart，不走「选宝可梦 → 答题」 */
+  { id:'m-facts', ref:'math-facts', title:'Facts Chart', emoji:'📊',
+    desc:'Number bonds · addition · subtraction within 10 (tap to hear)' },
+
   { id:'m-count', level:1, title:'Counting 1–10', emoji:'🔢',
     desc:'Count objects and recognise numbers (MOE N2)',
     make(){
@@ -418,6 +422,10 @@ const READERS=[
 ];
 
 const ENGLISH=[
+  /* 汇总页：全部 44 个音素按元音/辅音分开 + 字母 A–Z（点读音） */
+  { id:'e-ipa', ref:'ipa-chart', title:'Sound Chart', emoji:'🎵',
+    desc:'All 44 phonemes — vowels & consonants · tap any sound to hear it' },
+
   { id:'e-sight', title:'Sight Words', emoji:'👀',
     desc:'See a word and read it (listen & choose)',
     make(){
@@ -515,6 +523,10 @@ const CHARS=[
 ];
 
 const CHINESE=[
+  /* 汇总页：声母 / 韵母 / 整体认读音节 / 四声调 一页看全（点读音） */
+  { id:'c-map', ref:'zh-map', title:'拼音全景 Pinyin Map', emoji:'🗺️',
+    desc:'声母 · 韵母 · 整体认读音节 · 四声，点一下听读音' },
+
   { id:'c-tone', title:'Tone Practice 声调练习', emoji:'🔊',
     desc:'听声音辨声调：一声平、二声扬、三声拐、四声降',
     make(){
@@ -596,21 +608,30 @@ const CHINESE=[
         const finT = zhToneMark(it.fin, it.tone);   // 韵母带调号，拼读时看得清是第几声
         const sylT = zhToneMark(it.syl, it.tone);   // 拼出来的音节同样带调号
         const tName = zhToneName(it.tone);
+        /* 轻声（tone=0）不标调，也就没有「加声调」这一步：
+           硬塞四步会让第 1、2 步播同一段音频（等于又读两遍）。
+           轻声只走三段：韵母 → 声母 → 拼出音节。 */
+        const soft = !(it.tone>=1 && it.tone<=4);
+        const seq = soft ? [
+          {clip:zhClip('final',it.fin),   text:it.fin, gap:420},
+          {clip:zhClip('initial',it.ini), text:it.ini, gap:420},
+          {clip:zhClip('syl',it.syl),     text:sylT}
+        ] : [
+          {clip:zhClip('final',it.fin),   text:it.fin, gap:420},
+          {clip:zhToneFinClip(it.fin,it.tone), text:finT, gap:420},
+          {clip:zhClip('initial',it.ini), text:it.ini, gap:420},
+          {clip:zhClip('syl',it.syl),     text:sylT}
+        ];
         return {
           type:'choice', prompt:`拼一拼：${it.ini} + ${finT} = ?`,
-          sub:`🔊 听顺序：韵母 ${it.fin} → 加声调 ${finT}（${tName}）→ 声母 ${it.ini} → 拼出来 ${sylT}`,
+          sub: soft
+            ? `🔊 听顺序：韵母 ${it.fin} → 声母 ${it.ini} → 拼出来 ${sylT}（${tName}，不标调）`
+            : `🔊 听顺序：韵母 ${it.fin} → 加声调 ${finT}（${tName}）→ 声母 ${it.ini} → 拼出来 ${sylT}`,
           /* 四步拼读法（Eric 指定的顺序）：韵母 → 带调韵母 → 声母 → 拼出音节。
              每段只读一遍，段间留 0.4 秒让孩子跟读。
              四段全部走预录音频：带调韵母若交给设备 TTS，设备会忽略调号，
-             第四声会被读成第一声（2026-11-16 修复）。轻声（tone=0）不标调，
-             第 2 步直接复用韵母呼读音。 */
-          speak:{ lang:'zh-CN', autoplay:true, seq:[
-            {clip:zhClip('final',it.fin),  text:it.fin,  gap:420},
-            {clip:(it.tone>=1&&it.tone<=4) ? zhToneFinClip(it.fin,it.tone) : zhClip('final',it.fin),
-             text:finT, gap:420},
-            {clip:zhClip('initial',it.ini), text:it.ini, gap:420},
-            {clip:zhClip('syl',it.syl),    text:sylT}
-          ]},
+             第四声会被读成第一声（2026-11-16 修复）。 */
+          speak:{ lang:'zh-CN', autoplay:true, seq },
           options:shuffle([sylT,...zhBlendDecoysToned(it)]), answer:sylT,
           explain:`${it.ini} + ${finT} = ${sylT}（${tName}）。例如「${it.word}」的「${it.hz}」。`
         };

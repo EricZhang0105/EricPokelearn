@@ -17,9 +17,9 @@ const J=f=>path.join(ROOT,'js',f);
 
 const ctx={console}; ctx.globalThis=ctx; vm.createContext(ctx);
 let src='function ri(){return 0} function pick(a){return a[0]} function shuffle(a){return a.slice()}\n';
-for(const f of ['zh-phonics.js','pokemon.js','data.js','read-passages.js']) src+='\n'+fs.readFileSync(J(f),'utf8');
-vm.runInContext(src+'\n;globalThis.__X={SIGHT,CVC,PHON,BUILD,READ_PASSAGES,READERS,GRAMMAR_ITEMS,MATH_PETS};',ctx);
-const {SIGHT,CVC,PHON,BUILD,READ_PASSAGES,READERS,GRAMMAR_ITEMS,MATH_PETS}=ctx.__X;
+for(const f of ['zh-phonics.js','pokemon.js','ref-pages.js','data.js','read-passages.js']) src+='\n'+fs.readFileSync(J(f),'utf8');
+vm.runInContext(src+'\n;globalThis.__X={SIGHT,CVC,PHON,BUILD,READ_PASSAGES,READERS,GRAMMAR_ITEMS,MATH_PETS,REF_EN_WORDS};',ctx);
+const {SIGHT,CVC,PHON,BUILD,READ_PASSAGES,READERS,GRAMMAR_ITEMS,MATH_PETS,REF_EN_WORDS}=ctx.__X;
 
 const out=[]; const seen=new Set();
 const hash=s=>crypto.createHash('md5').update(s).digest('hex').slice(0,10);
@@ -35,6 +35,9 @@ function add(text, slow){
 }
 /* 单词（另出慢速版给拼写题） */
 [...SIGHT,...CVC,...PHON.map(p=>p.w)].forEach(w=>add(w,true));
+/* 音标全景页的例词（js/ref-pages.js）：44 个音素 + 26 个字母各一个例词，
+   不补录的话点音标只能走设备 TTS，音色会和全库不一致。 */
+(REF_EN_WORDS||[]).forEach(w=>add(w));
 /* 阅读理解 */
 READ_PASSAGES.forEach(p=>{ add(p.text); (p.qs||[]).forEach(x=>add(x.q)); });
 /* 分级读物 */

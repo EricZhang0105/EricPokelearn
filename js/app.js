@@ -61,6 +61,7 @@ function goBack(){
     return;
   }
   if(cur==='screen-reader'){ reader.book=null; show('screen-library'); return; }
+  if(cur==='screen-ref'){ if(state.subject) openSubject(state.subject); else show('screen-home'); return; }
   if(cur==='screen-result' || cur==='screen-subject'){
     if(cur==='screen-result' && state.subject) openSubject(state.subject);
     else show('screen-home');
@@ -239,10 +240,15 @@ function numWord(n){
   return null;
 }
 function mathSteps(text){
-  const m=/^(\d{1,3})\s+(plus|minus)\s+(\d{1,3})\s+equals(?:\s+what)?\s*\??$/i.exec(String(text||'').trim());
+  /* 支持三种写法：
+       7 plus 5 equals what?   数学题的提问式
+       7 plus 5 equals         只读到「等于」，留给孩子说出答案
+       7 plus 5 equals 12      汇总页的完整口诀，把结果也读出来 */
+  const m=/^(\d{1,3})\s+(plus|minus)\s+(\d{1,3})\s+equals(?:\s+(what|\d{1,3}))?\s*\??$/i.exec(String(text||'').trim());
   if(!m) return null;
-  const tail=/what/i.test(m[0]) ? 'equals what' : 'equals';
-  const parts=[numWord(m[1]), m[2].toLowerCase(), numWord(m[3]), tail];
+  const arg=String(m[4]||'').toLowerCase();
+  const parts=[numWord(m[1]), m[2].toLowerCase(), numWord(m[3]), arg==='what' ? 'equals what' : 'equals'];
+  if(arg && arg!=='what') parts.push(numWord(arg));
   const steps=[];
   for(const p of parts){
     if(!p) return null;
@@ -668,6 +674,17 @@ function openSubject(subject){
     const lvl = les.level ? `<span class="level-badge">${LEVEL_LABEL[les.level]}</span>` : '';
     const isZhSubject = subject==='chinese';
     let desc=les.desc;
+    /* 汇总页（ref 卡片）：只读挂图，不参与答题统计，也不显示难度/已做 */
+    if(les.ref){
+      card.classList.add('ref-card');
+      card.innerHTML=`<div class="lc-emoji">${les.emoji}</div>
+        <div class="lc-body"><div class="lc-title">${les.title}</div>
+        <div class="lc-desc">${desc}</div></div>
+        <div class="lc-done ref-open">📖</div>`;
+      card.onclick=()=>openRef(subject,les.ref);
+      list.appendChild(card);
+      return;
+    }
     if(les.id==='e-read' && typeof readStats==='function'){
       const rs=readStats(Store.readDoneIds());
       const lv=(READ_LEVEL_INFO[rs.level]&&(READ_LEVEL_INFO[rs.level].en||READ_LEVEL_INFO[rs.level].label))||'';
@@ -691,6 +708,44 @@ function openSubject(subject){
     list.appendChild(card);
   });
   show('screen-subject');
+}
+
+/* ---------- 汇总页（只读挂图） ----------
+ * 课程列表里的 ref 卡片点开后直接进这里，不选宝可梦、不答题、不记进度。
+ * 页面内容由 js/ref-pages.js 提供（REF_PAGES[refId].render()）。
+ * 点任意格子朗读：中文走预录 audio/zh，英文走 audio/words（同一把女声）。 */
+function openRef(subject, refId){
+  const def = (typeof REF_PAGES!=='undefined') ? REF_PAGES[refId] : null;
+  if(!def){ toastMsg('Chart not found'); return; }
+  state.subject = subject || def.subject || state.subject;
+  setTopTitle(def.title);
+  $('#refTitle').textContent = def.title;
+  $('#refHint').textContent = def.hint || '';
+  const body = $('#refBody');
+  body.className = 'ref-body ' + (state.subject || def.subject || '');
+  body.innerHTML = def.render();
+  body.dataset.lang = def.lang || 'en-US';
+  bindRefTaps(body);
+  show('screen-ref');
+  body.scrollTop = 0;
+  window.scrollTo(0,0);
+}
+/* 事件委托：所有带 data-say 的格子共用一套朗读逻辑 */
+function bindRefTaps(root){
+  if(root.dataset.bound) return;
+  root.dataset.bound='1';
+  root.addEventListener('click', ev=>{
+    const el = ev.target.closest('[data-say]');
+    if(!el) return;
+    el.classList.remove('tap'); void el.offsetWidth; el.classList.add('tap');
+    const lang = root.dataset.lang || 'en-US';
+    const text = el.dataset.say;
+    const kind = el.dataset.clip, key = el.dataset.key;
+    let clip = null;
+    if(kind && typeof zhClip==='function') clip = zhClip(kind, key);
+    if(typeof playSpeak==='function') playSpeak({ clip, text, lang });
+    else speak(text, lang);
+  });
 }
 
 /* ---------- 宝可梦选择 ---------- */

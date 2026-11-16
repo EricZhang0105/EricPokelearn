@@ -5,10 +5,12 @@
  * - 中文音频：安装时预缓存（173 段 / 3.7MB，Tingting 高清语音，含四声示范音），第一次打开就能离线听
  * 改了静态文件后请把 CACHE 里的版本号 +1，强制刷新图片缓存。
  * v41（2026-11-16 阅读题库重写）：周更模板短文（w46/w47）全部重写为不同主题与题型。
+ * v43（2026-11-16 汇总页）：新增 js/ref-pages.js（拼音全景 / 音标全景 / 10 以内口诀），
+ *   中文新增 29 段 fin2_* 韵母呼读音，英文本地词库补 81 个音标例词。
  * v40（2026-11-16 语音统一）：所有音频 URL 带 ?a=2 版本参数，旧缓存（Flo 时代发闷的
  *   录音 + 63 只宝可梦的多音色鼓励语）不会再被复用；鼓励语改为统一女声 TTS。
  */
-const CACHE = 'pokelearn-v42';
+const CACHE = 'pokelearn-v43';
 const SHELL = [
   './',
   './index.html',
@@ -16,6 +18,7 @@ const SHELL = [
   './js/pokemon.js',
   './js/zh-phonics.js',
   './js/phonics-sounds.js',
+  './js/ref-pages.js',
   './js/data.js',
   './js/question-bank.js',
   './js/question-engine.js',

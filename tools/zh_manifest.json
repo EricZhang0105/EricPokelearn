@@ -1,6 +1,6 @@
 {
  "voiceNote": "单一普通话女声，禁止变声/变调；每段只读一遍",
- "count": 259,
+ "count": 288,
  "items": [
   {
    "id": "initial_b",
@@ -1653,6 +1653,209 @@
    "key": "tang_4",
    "text": "烫。",
    "file": "tone_tang_4.m4a"
+  },
+  {
+   "id": "fin2_a",
+   "kind": "fin2",
+   "key": "a",
+   "text": "啊。",
+   "file": "fin2_a.m4a"
+  },
+  {
+   "id": "fin2_o",
+   "kind": "fin2",
+   "key": "o",
+   "text": "喔。",
+   "file": "fin2_o.m4a"
+  },
+  {
+   "id": "fin2_e",
+   "kind": "fin2",
+   "key": "e",
+   "text": "鹅。",
+   "file": "fin2_e.m4a"
+  },
+  {
+   "id": "fin2_i",
+   "kind": "fin2",
+   "key": "i",
+   "text": "衣。",
+   "file": "fin2_i.m4a"
+  },
+  {
+   "id": "fin2_u",
+   "kind": "fin2",
+   "key": "u",
+   "text": "乌。",
+   "file": "fin2_u.m4a"
+  },
+  {
+   "id": "fin2_v",
+   "kind": "fin2",
+   "key": "v",
+   "text": "迂。",
+   "file": "fin2_v.m4a"
+  },
+  {
+   "id": "fin2_ai",
+   "kind": "fin2",
+   "key": "ai",
+   "text": "哀。",
+   "file": "fin2_ai.m4a"
+  },
+  {
+   "id": "fin2_ei",
+   "kind": "fin2",
+   "key": "ei",
+   "text": "诶。",
+   "file": "fin2_ei.m4a"
+  },
+  {
+   "id": "fin2_ao",
+   "kind": "fin2",
+   "key": "ao",
+   "text": "熬。",
+   "file": "fin2_ao.m4a"
+  },
+  {
+   "id": "fin2_ou",
+   "kind": "fin2",
+   "key": "ou",
+   "text": "欧。",
+   "file": "fin2_ou.m4a"
+  },
+  {
+   "id": "fin2_ia",
+   "kind": "fin2",
+   "key": "ia",
+   "text": "呀。",
+   "file": "fin2_ia.m4a"
+  },
+  {
+   "id": "fin2_ie",
+   "kind": "fin2",
+   "key": "ie",
+   "text": "耶。",
+   "file": "fin2_ie.m4a"
+  },
+  {
+   "id": "fin2_ua",
+   "kind": "fin2",
+   "key": "ua",
+   "text": "蛙。",
+   "file": "fin2_ua.m4a"
+  },
+  {
+   "id": "fin2_uo",
+   "kind": "fin2",
+   "key": "uo",
+   "text": "窝。",
+   "file": "fin2_uo.m4a"
+  },
+  {
+   "id": "fin2_ve",
+   "kind": "fin2",
+   "key": "ve",
+   "text": "约。",
+   "file": "fin2_ve.m4a"
+  },
+  {
+   "id": "fin2_iao",
+   "kind": "fin2",
+   "key": "iao",
+   "text": "腰。",
+   "file": "fin2_iao.m4a"
+  },
+  {
+   "id": "fin2_iou",
+   "kind": "fin2",
+   "key": "iou",
+   "text": "优。",
+   "file": "fin2_iou.m4a"
+  },
+  {
+   "id": "fin2_uai",
+   "kind": "fin2",
+   "key": "uai",
+   "text": "歪。",
+   "file": "fin2_uai.m4a"
+  },
+  {
+   "id": "fin2_uei",
+   "kind": "fin2",
+   "key": "uei",
+   "text": "威。",
+   "file": "fin2_uei.m4a"
+  },
+  {
+   "id": "fin2_an",
+   "kind": "fin2",
+   "key": "an",
+   "text": "安。",
+   "file": "fin2_an.m4a"
+  },
+  {
+   "id": "fin2_en",
+   "kind": "fin2",
+   "key": "en",
+   "text": "恩。",
+   "file": "fin2_en.m4a"
+  },
+  {
+   "id": "fin2_in",
+   "kind": "fin2",
+   "key": "in",
+   "text": "因。",
+   "file": "fin2_in.m4a"
+  },
+  {
+   "id": "fin2_un",
+   "kind": "fin2",
+   "key": "un",
+   "text": "温。",
+   "file": "fin2_un.m4a"
+  },
+  {
+   "id": "fin2_vn",
+   "kind": "fin2",
+   "key": "vn",
+   "text": "晕。",
+   "file": "fin2_vn.m4a"
+  },
+  {
+   "id": "fin2_ang",
+   "kind": "fin2",
+   "key": "ang",
+   "text": "昂。",
+   "file": "fin2_ang.m4a"
+  },
+  {
+   "id": "fin2_eng",
+   "kind": "fin2",
+   "key": "eng",
+   "text": "鞥。",
+   "file": "fin2_eng.m4a"
+  },
+  {
+   "id": "fin2_ing",
+   "kind": "fin2",
+   "key": "ing",
+   "text": "英。",
+   "file": "fin2_ing.m4a"
+  },
+  {
+   "id": "fin2_ong",
+   "kind": "fin2",
+   "key": "ong",
+   "text": "翁。",
+   "file": "fin2_ong.m4a"
+  },
+  {
+   "id": "fin2_iong",
+   "kind": "fin2",
+   "key": "iong",
+   "text": "雍。",
+   "file": "fin2_iong.m4a"
   },
   {
    "id": "tonefin_a_1",

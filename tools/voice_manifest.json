@@ -1,6 +1,6 @@
 {
  "voiceNote": "单一女声，禁止变声/变调",
- "count": 534,
+ "count": 615,
  "items": [
   {
    "key": "the",
@@ -529,6 +529,516 @@
    "text": "net",
    "rate": "slow",
    "file": "w_166ccbd185.m4a"
+  },
+  {
+   "key": "bed",
+   "text": "bed",
+   "rate": "normal",
+   "file": "w_001cbc059a.m4a"
+  },
+  {
+   "key": "egg",
+   "text": "egg",
+   "rate": "normal",
+   "file": "w_0e9312087f.m4a"
+  },
+  {
+   "key": "bag",
+   "text": "bag",
+   "rate": "normal",
+   "file": "w_4a82715423.m4a"
+  },
+  {
+   "key": "good",
+   "text": "good",
+   "rate": "normal",
+   "file": "w_755f85c272.m4a"
+  },
+  {
+   "key": "about",
+   "text": "about",
+   "rate": "normal",
+   "file": "w_46b3931b99.m4a"
+  },
+  {
+   "key": "banana",
+   "text": "banana",
+   "rate": "normal",
+   "file": "w_72b302bf29.m4a"
+  },
+  {
+   "key": "sofa",
+   "text": "sofa",
+   "rate": "normal",
+   "file": "w_7a2cc8b443.m4a"
+  },
+  {
+   "key": "bee",
+   "text": "bee",
+   "rate": "normal",
+   "file": "w_9dfd70fdf1.m4a"
+  },
+  {
+   "key": "car",
+   "text": "car",
+   "rate": "normal",
+   "file": "w_e6d9650259.m4a"
+  },
+  {
+   "key": "star",
+   "text": "star",
+   "rate": "normal",
+   "file": "w_8ff953dd97.m4a"
+  },
+  {
+   "key": "far",
+   "text": "far",
+   "rate": "normal",
+   "file": "w_17d965747c.m4a"
+  },
+  {
+   "key": "for",
+   "text": "for",
+   "rate": "normal",
+   "file": "w_d55669822f.m4a"
+  },
+  {
+   "key": "horse",
+   "text": "horse",
+   "rate": "normal",
+   "file": "w_f1bdf5ed1d.m4a"
+  },
+  {
+   "key": "corn",
+   "text": "corn",
+   "rate": "normal",
+   "file": "w_c548ea990e.m4a"
+  },
+  {
+   "key": "moon",
+   "text": "moon",
+   "rate": "normal",
+   "file": "w_6d4db5ff0c.m4a"
+  },
+  {
+   "key": "food",
+   "text": "food",
+   "rate": "normal",
+   "file": "w_62506be34d.m4a"
+  },
+  {
+   "key": "zoo",
+   "text": "zoo",
+   "rate": "normal",
+   "file": "w_d2cbe65f53.m4a"
+  },
+  {
+   "key": "bird",
+   "text": "bird",
+   "rate": "normal",
+   "file": "w_abaecf8ca3.m4a"
+  },
+  {
+   "key": "girl",
+   "text": "girl",
+   "rate": "normal",
+   "file": "w_28ca53d2b7.m4a"
+  },
+  {
+   "key": "nurse",
+   "text": "nurse",
+   "rate": "normal",
+   "file": "w_0701aa317d.m4a"
+  },
+  {
+   "key": "cake",
+   "text": "cake",
+   "rate": "normal",
+   "file": "w_a1b8585122.m4a"
+  },
+  {
+   "key": "name",
+   "text": "name",
+   "rate": "normal",
+   "file": "w_b068931cc4.m4a"
+  },
+  {
+   "key": "rain",
+   "text": "rain",
+   "rate": "normal",
+   "file": "w_23678db5ef.m4a"
+  },
+  {
+   "key": "bike",
+   "text": "bike",
+   "rate": "normal",
+   "file": "w_dde2c7ad63.m4a"
+  },
+  {
+   "key": "kite",
+   "text": "kite",
+   "rate": "normal",
+   "file": "w_4781ac9273.m4a"
+  },
+  {
+   "key": "time",
+   "text": "time",
+   "rate": "normal",
+   "file": "w_07cc694b9b.m4a"
+  },
+  {
+   "key": "boy",
+   "text": "boy",
+   "rate": "normal",
+   "file": "w_1a699ad5e0.m4a"
+  },
+  {
+   "key": "toy",
+   "text": "toy",
+   "rate": "normal",
+   "file": "w_10016b6ed5.m4a"
+  },
+  {
+   "key": "coin",
+   "text": "coin",
+   "rate": "normal",
+   "file": "w_96a9519b8f.m4a"
+  },
+  {
+   "key": "house",
+   "text": "house",
+   "rate": "normal",
+   "file": "w_2ca63cddd5.m4a"
+  },
+  {
+   "key": "mouse",
+   "text": "mouse",
+   "rate": "normal",
+   "file": "w_40203abe6e.m4a"
+  },
+  {
+   "key": "cow",
+   "text": "cow",
+   "rate": "normal",
+   "file": "w_81566e986c.m4a"
+  },
+  {
+   "key": "nose",
+   "text": "nose",
+   "rate": "normal",
+   "file": "w_41d1de28e9.m4a"
+  },
+  {
+   "key": "home",
+   "text": "home",
+   "rate": "normal",
+   "file": "w_106a6c241b.m4a"
+  },
+  {
+   "key": "boat",
+   "text": "boat",
+   "rate": "normal",
+   "file": "w_dd8fc45d87.m4a"
+  },
+  {
+   "key": "here",
+   "text": "here",
+   "rate": "normal",
+   "file": "w_6c92285fa6.m4a"
+  },
+  {
+   "key": "ear",
+   "text": "ear",
+   "rate": "normal",
+   "file": "w_d8ff99616f.m4a"
+  },
+  {
+   "key": "near",
+   "text": "near",
+   "rate": "normal",
+   "file": "w_85f06cc816.m4a"
+  },
+  {
+   "key": "hair",
+   "text": "hair",
+   "rate": "normal",
+   "file": "w_2c5ca38849.m4a"
+  },
+  {
+   "key": "chair",
+   "text": "chair",
+   "rate": "normal",
+   "file": "w_a09272b534.m4a"
+  },
+  {
+   "key": "bear",
+   "text": "bear",
+   "rate": "normal",
+   "file": "w_893b56e3cf.m4a"
+  },
+  {
+   "key": "tour",
+   "text": "tour",
+   "rate": "normal",
+   "file": "w_f0a4025b3b.m4a"
+  },
+  {
+   "key": "sure",
+   "text": "sure",
+   "rate": "normal",
+   "file": "w_d5e1f5a7f2.m4a"
+  },
+  {
+   "key": "poor",
+   "text": "poor",
+   "rate": "normal",
+   "file": "w_5cffaf9375.m4a"
+  },
+  {
+   "key": "ten",
+   "text": "ten",
+   "rate": "normal",
+   "file": "w_b1b9a972cc.m4a"
+  },
+  {
+   "key": "dad",
+   "text": "dad",
+   "rate": "normal",
+   "file": "w_df3939f119.m4a"
+  },
+  {
+   "key": "key",
+   "text": "key",
+   "rate": "normal",
+   "file": "w_3c6e0b8a9c.m4a"
+  },
+  {
+   "key": "game",
+   "text": "game",
+   "rate": "normal",
+   "file": "w_c8d46d341b.m4a"
+  },
+  {
+   "key": "fish",
+   "text": "fish",
+   "rate": "normal",
+   "file": "w_83e4a96aed.m4a"
+  },
+  {
+   "key": "off",
+   "text": "off",
+   "rate": "normal",
+   "file": "w_3262d48df5.m4a"
+  },
+  {
+   "key": "van",
+   "text": "van",
+   "rate": "normal",
+   "file": "w_957d2fa52c.m4a"
+  },
+  {
+   "key": "very",
+   "text": "very",
+   "rate": "normal",
+   "file": "w_f016441d00.m4a"
+  },
+  {
+   "key": "five",
+   "text": "five",
+   "rate": "normal",
+   "file": "w_30056e1cab.m4a"
+  },
+  {
+   "key": "three",
+   "text": "three",
+   "rate": "normal",
+   "file": "w_35d6d33467.m4a"
+  },
+  {
+   "key": "think",
+   "text": "think",
+   "rate": "normal",
+   "file": "w_54c84b40e9.m4a"
+  },
+  {
+   "key": "bath",
+   "text": "bath",
+   "rate": "normal",
+   "file": "w_d01befa8b1.m4a"
+  },
+  {
+   "key": "this",
+   "text": "this",
+   "rate": "normal",
+   "file": "w_9e925e9341.m4a"
+  },
+  {
+   "key": "that",
+   "text": "that",
+   "rate": "normal",
+   "file": "w_21582c6c30.m4a"
+  },
+  {
+   "key": "mother",
+   "text": "mother",
+   "rate": "normal",
+   "file": "w_6ee6a213cb.m4a"
+  },
+  {
+   "key": "zip",
+   "text": "zip",
+   "rate": "normal",
+   "file": "w_adcdbd79a8.m4a"
+  },
+  {
+   "key": "ship",
+   "text": "ship",
+   "rate": "normal",
+   "file": "w_2a3f1166b0.m4a"
+  },
+  {
+   "key": "shop",
+   "text": "shop",
+   "rate": "normal",
+   "file": "w_fb54f3c599.m4a"
+  },
+  {
+   "key": "measure",
+   "text": "measure",
+   "rate": "normal",
+   "file": "w_2925f77709.m4a"
+  },
+  {
+   "key": "vision",
+   "text": "vision",
+   "rate": "normal",
+   "file": "w_f42087059b.m4a"
+  },
+  {
+   "key": "usual",
+   "text": "usual",
+   "rate": "normal",
+   "file": "w_0ec341f6f5.m4a"
+  },
+  {
+   "key": "hello",
+   "text": "hello",
+   "rate": "normal",
+   "file": "w_5d41402abc.m4a"
+  },
+  {
+   "key": "cheese",
+   "text": "cheese",
+   "rate": "normal",
+   "file": "w_fea0f1f6fe.m4a"
+  },
+  {
+   "key": "lunch",
+   "text": "lunch",
+   "rate": "normal",
+   "file": "w_bba63abce2.m4a"
+  },
+  {
+   "key": "jam",
+   "text": "jam",
+   "rate": "normal",
+   "file": "w_5275cb415e.m4a"
+  },
+  {
+   "key": "jump",
+   "text": "jump",
+   "rate": "normal",
+   "file": "w_ba535ef5a9.m4a"
+  },
+  {
+   "key": "bridge",
+   "text": "bridge",
+   "rate": "normal",
+   "file": "w_98ac6b4b08.m4a"
+  },
+  {
+   "key": "man",
+   "text": "man",
+   "rate": "normal",
+   "file": "w_39c63ddb96.m4a"
+  },
+  {
+   "key": "mum",
+   "text": "mum",
+   "rate": "normal",
+   "file": "w_63cd0b85fb.m4a"
+  },
+  {
+   "key": "nine",
+   "text": "nine",
+   "rate": "normal",
+   "file": "w_c785e1ed29.m4a"
+  },
+  {
+   "key": "sing",
+   "text": "sing",
+   "rate": "normal",
+   "file": "w_db853ec3ec.m4a"
+  },
+  {
+   "key": "long",
+   "text": "long",
+   "rate": "normal",
+   "file": "w_0f52640382.m4a"
+  },
+  {
+   "key": "ring",
+   "text": "ring",
+   "rate": "normal",
+   "file": "w_1a5df958e0.m4a"
+  },
+  {
+   "key": "lion",
+   "text": "lion",
+   "rate": "normal",
+   "file": "w_6b42d00c4c.m4a"
+  },
+  {
+   "key": "wet",
+   "text": "wet",
+   "rate": "normal",
+   "file": "w_9ff49c6a11.m4a"
+  },
+  {
+   "key": "water",
+   "text": "water",
+   "rate": "normal",
+   "file": "w_9460370bb0.m4a"
+  },
+  {
+   "key": "white",
+   "text": "white",
+   "rate": "normal",
+   "file": "w_d508fe45ce.m4a"
+  },
+  {
+   "key": "yes",
+   "text": "yes",
+   "rate": "normal",
+   "file": "w_a6105c0a61.m4a"
+  },
+  {
+   "key": "yellow",
+   "text": "yellow",
+   "rate": "normal",
+   "file": "w_d487dd0b55.m4a"
+  },
+  {
+   "key": "apple",
+   "text": "apple",
+   "rate": "normal",
+   "file": "w_1f3870be27.m4a"
+  },
+  {
+   "key": "queen",
+   "text": "queen",
+   "rate": "normal",
+   "file": "w_72545f3f86.m4a"
   },
   {
    "key": "sam has a red cat. the cat sits on a mat. sam pats the cat. the cat is happy.",
@@ -2169,22 +2679,10 @@
    "file": "w_b8a9f715db.m4a"
   },
   {
-   "key": "three",
-   "text": "three",
-   "rate": "normal",
-   "file": "w_35d6d33467.m4a"
-  },
-  {
    "key": "four",
    "text": "four",
    "rate": "normal",
    "file": "w_8cbad96ace.m4a"
-  },
-  {
-   "key": "five",
-   "text": "five",
-   "rate": "normal",
-   "file": "w_30056e1cab.m4a"
   },
   {
    "key": "six",
@@ -2203,18 +2701,6 @@
    "text": "eight",
    "rate": "normal",
    "file": "w_24d27c169c.m4a"
-  },
-  {
-   "key": "nine",
-   "text": "nine",
-   "rate": "normal",
-   "file": "w_c785e1ed29.m4a"
-  },
-  {
-   "key": "ten",
-   "text": "ten",
-   "rate": "normal",
-   "file": "w_b1b9a972cc.m4a"
   },
   {
    "key": "eleven",
