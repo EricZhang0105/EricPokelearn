@@ -1,0 +1,1888 @@
+{
+ "voiceNote": "单一普通话女声，禁止变声/变调；每段只读一遍",
+ "count": 259,
+ "items": [
+  {
+   "id": "initial_b",
+   "kind": "initial",
+   "key": "b",
+   "text": "玻。",
+   "file": "initial_b.m4a"
+  },
+  {
+   "id": "initial_p",
+   "kind": "initial",
+   "key": "p",
+   "text": "坡。",
+   "file": "initial_p.m4a"
+  },
+  {
+   "id": "initial_m",
+   "kind": "initial",
+   "key": "m",
+   "text": "摸。",
+   "file": "initial_m.m4a"
+  },
+  {
+   "id": "initial_f",
+   "kind": "initial",
+   "key": "f",
+   "text": "佛。",
+   "file": "initial_f.m4a"
+  },
+  {
+   "id": "initial_d",
+   "kind": "initial",
+   "key": "d",
+   "text": "得。",
+   "file": "initial_d.m4a"
+  },
+  {
+   "id": "initial_t",
+   "kind": "initial",
+   "key": "t",
+   "text": "特。",
+   "file": "initial_t.m4a"
+  },
+  {
+   "id": "initial_n",
+   "kind": "initial",
+   "key": "n",
+   "text": "讷。",
+   "file": "initial_n.m4a"
+  },
+  {
+   "id": "initial_l",
+   "kind": "initial",
+   "key": "l",
+   "text": "勒。",
+   "file": "initial_l.m4a"
+  },
+  {
+   "id": "initial_g",
+   "kind": "initial",
+   "key": "g",
+   "text": "哥。",
+   "file": "initial_g.m4a"
+  },
+  {
+   "id": "initial_k",
+   "kind": "initial",
+   "key": "k",
+   "text": "科。",
+   "file": "initial_k.m4a"
+  },
+  {
+   "id": "initial_h",
+   "kind": "initial",
+   "key": "h",
+   "text": "喝。",
+   "file": "initial_h.m4a"
+  },
+  {
+   "id": "initial_j",
+   "kind": "initial",
+   "key": "j",
+   "text": "基。",
+   "file": "initial_j.m4a"
+  },
+  {
+   "id": "initial_q",
+   "kind": "initial",
+   "key": "q",
+   "text": "欺。",
+   "file": "initial_q.m4a"
+  },
+  {
+   "id": "initial_x",
+   "kind": "initial",
+   "key": "x",
+   "text": "希。",
+   "file": "initial_x.m4a"
+  },
+  {
+   "id": "initial_zh",
+   "kind": "initial",
+   "key": "zh",
+   "text": "知。",
+   "file": "initial_zh.m4a"
+  },
+  {
+   "id": "initial_ch",
+   "kind": "initial",
+   "key": "ch",
+   "text": "吃。",
+   "file": "initial_ch.m4a"
+  },
+  {
+   "id": "initial_sh",
+   "kind": "initial",
+   "key": "sh",
+   "text": "诗。",
+   "file": "initial_sh.m4a"
+  },
+  {
+   "id": "initial_r",
+   "kind": "initial",
+   "key": "r",
+   "text": "日。",
+   "file": "initial_r.m4a"
+  },
+  {
+   "id": "initial_z",
+   "kind": "initial",
+   "key": "z",
+   "text": "资。",
+   "file": "initial_z.m4a"
+  },
+  {
+   "id": "initial_c",
+   "kind": "initial",
+   "key": "c",
+   "text": "次。",
+   "file": "initial_c.m4a"
+  },
+  {
+   "id": "initial_s",
+   "kind": "initial",
+   "key": "s",
+   "text": "思。",
+   "file": "initial_s.m4a"
+  },
+  {
+   "id": "initial_y",
+   "kind": "initial",
+   "key": "y",
+   "text": "衣。",
+   "file": "initial_y.m4a"
+  },
+  {
+   "id": "initial_w",
+   "kind": "initial",
+   "key": "w",
+   "text": "乌。",
+   "file": "initial_w.m4a"
+  },
+  {
+   "id": "final_a",
+   "kind": "final",
+   "key": "a",
+   "text": "啊。",
+   "file": "final_a.m4a"
+  },
+  {
+   "id": "final_o",
+   "kind": "final",
+   "key": "o",
+   "text": "喔。",
+   "file": "final_o.m4a"
+  },
+  {
+   "id": "final_e",
+   "kind": "final",
+   "key": "e",
+   "text": "鹅。",
+   "file": "final_e.m4a"
+  },
+  {
+   "id": "final_i",
+   "kind": "final",
+   "key": "i",
+   "text": "衣。",
+   "file": "final_i.m4a"
+  },
+  {
+   "id": "final_u",
+   "kind": "final",
+   "key": "u",
+   "text": "乌。",
+   "file": "final_u.m4a"
+  },
+  {
+   "id": "final_ai",
+   "kind": "final",
+   "key": "ai",
+   "text": "哀。",
+   "file": "final_ai.m4a"
+  },
+  {
+   "id": "final_ei",
+   "kind": "final",
+   "key": "ei",
+   "text": "诶。",
+   "file": "final_ei.m4a"
+  },
+  {
+   "id": "final_ao",
+   "kind": "final",
+   "key": "ao",
+   "text": "熬。",
+   "file": "final_ao.m4a"
+  },
+  {
+   "id": "final_ou",
+   "kind": "final",
+   "key": "ou",
+   "text": "欧。",
+   "file": "final_ou.m4a"
+  },
+  {
+   "id": "final_an",
+   "kind": "final",
+   "key": "an",
+   "text": "安。",
+   "file": "final_an.m4a"
+  },
+  {
+   "id": "final_en",
+   "kind": "final",
+   "key": "en",
+   "text": "恩。",
+   "file": "final_en.m4a"
+  },
+  {
+   "id": "final_ang",
+   "kind": "final",
+   "key": "ang",
+   "text": "昂。",
+   "file": "final_ang.m4a"
+  },
+  {
+   "id": "final_eng",
+   "kind": "final",
+   "key": "eng",
+   "text": "鞥。",
+   "file": "final_eng.m4a"
+  },
+  {
+   "id": "final_ing",
+   "kind": "final",
+   "key": "ing",
+   "text": "英。",
+   "file": "final_ing.m4a"
+  },
+  {
+   "id": "final_ong",
+   "kind": "final",
+   "key": "ong",
+   "text": "翁。",
+   "file": "final_ong.m4a"
+  },
+  {
+   "id": "whole_zhi",
+   "kind": "whole",
+   "key": "zhi",
+   "text": "知。",
+   "file": "whole_zhi.m4a"
+  },
+  {
+   "id": "whole_chi",
+   "kind": "whole",
+   "key": "chi",
+   "text": "吃。",
+   "file": "whole_chi.m4a"
+  },
+  {
+   "id": "whole_shi",
+   "kind": "whole",
+   "key": "shi",
+   "text": "狮。",
+   "file": "whole_shi.m4a"
+  },
+  {
+   "id": "whole_ri",
+   "kind": "whole",
+   "key": "ri",
+   "text": "日。",
+   "file": "whole_ri.m4a"
+  },
+  {
+   "id": "whole_zi",
+   "kind": "whole",
+   "key": "zi",
+   "text": "字。",
+   "file": "whole_zi.m4a"
+  },
+  {
+   "id": "whole_ci",
+   "kind": "whole",
+   "key": "ci",
+   "text": "刺。",
+   "file": "whole_ci.m4a"
+  },
+  {
+   "id": "whole_si",
+   "kind": "whole",
+   "key": "si",
+   "text": "丝。",
+   "file": "whole_si.m4a"
+  },
+  {
+   "id": "whole_yi",
+   "kind": "whole",
+   "key": "yi",
+   "text": "衣。",
+   "file": "whole_yi.m4a"
+  },
+  {
+   "id": "whole_wu",
+   "kind": "whole",
+   "key": "wu",
+   "text": "乌。",
+   "file": "whole_wu.m4a"
+  },
+  {
+   "id": "whole_yu",
+   "kind": "whole",
+   "key": "yu",
+   "text": "鱼。",
+   "file": "whole_yu.m4a"
+  },
+  {
+   "id": "whole_ye",
+   "kind": "whole",
+   "key": "ye",
+   "text": "叶。",
+   "file": "whole_ye.m4a"
+  },
+  {
+   "id": "whole_yue",
+   "kind": "whole",
+   "key": "yue",
+   "text": "月。",
+   "file": "whole_yue.m4a"
+  },
+  {
+   "id": "whole_yuan",
+   "kind": "whole",
+   "key": "yuan",
+   "text": "圆。",
+   "file": "whole_yuan.m4a"
+  },
+  {
+   "id": "whole_yin",
+   "kind": "whole",
+   "key": "yin",
+   "text": "音。",
+   "file": "whole_yin.m4a"
+  },
+  {
+   "id": "whole_yun",
+   "kind": "whole",
+   "key": "yun",
+   "text": "云。",
+   "file": "whole_yun.m4a"
+  },
+  {
+   "id": "whole_ying",
+   "kind": "whole",
+   "key": "ying",
+   "text": "鹰。",
+   "file": "whole_ying.m4a"
+  },
+  {
+   "id": "blend_ba",
+   "kind": "blend",
+   "key": "ba",
+   "text": "八。八个。",
+   "file": "blend_ba.m4a"
+  },
+  {
+   "id": "blend_bo",
+   "kind": "blend",
+   "key": "bo",
+   "text": "波。波浪。",
+   "file": "blend_bo.m4a"
+  },
+  {
+   "id": "blend_bi",
+   "kind": "blend",
+   "key": "bi",
+   "text": "笔。铅笔。",
+   "file": "blend_bi.m4a"
+  },
+  {
+   "id": "blend_bu",
+   "kind": "blend",
+   "key": "bu",
+   "text": "不。不要。",
+   "file": "blend_bu.m4a"
+  },
+  {
+   "id": "blend_ban",
+   "kind": "blend",
+   "key": "ban",
+   "text": "班。班级。",
+   "file": "blend_ban.m4a"
+  },
+  {
+   "id": "blend_ben",
+   "kind": "blend",
+   "key": "ben",
+   "text": "本。书本。",
+   "file": "blend_ben.m4a"
+  },
+  {
+   "id": "blend_bang",
+   "kind": "blend",
+   "key": "bang",
+   "text": "帮。帮忙。",
+   "file": "blend_bang.m4a"
+  },
+  {
+   "id": "blend_pa",
+   "kind": "blend",
+   "key": "pa",
+   "text": "趴。趴下。",
+   "file": "blend_pa.m4a"
+  },
+  {
+   "id": "blend_po",
+   "kind": "blend",
+   "key": "po",
+   "text": "坡。山坡。",
+   "file": "blend_po.m4a"
+  },
+  {
+   "id": "blend_pi",
+   "kind": "blend",
+   "key": "pi",
+   "text": "皮。皮球。",
+   "file": "blend_pi.m4a"
+  },
+  {
+   "id": "blend_pu",
+   "kind": "blend",
+   "key": "pu",
+   "text": "铺。铺路。",
+   "file": "blend_pu.m4a"
+  },
+  {
+   "id": "blend_pan",
+   "kind": "blend",
+   "key": "pan",
+   "text": "盘。盘子。",
+   "file": "blend_pan.m4a"
+  },
+  {
+   "id": "blend_pen",
+   "kind": "blend",
+   "key": "pen",
+   "text": "盆。花盆。",
+   "file": "blend_pen.m4a"
+  },
+  {
+   "id": "blend_pang",
+   "kind": "blend",
+   "key": "pang",
+   "text": "旁。旁边。",
+   "file": "blend_pang.m4a"
+  },
+  {
+   "id": "blend_ma",
+   "kind": "blend",
+   "key": "ma",
+   "text": "妈。妈妈。",
+   "file": "blend_ma.m4a"
+  },
+  {
+   "id": "blend_mo",
+   "kind": "blend",
+   "key": "mo",
+   "text": "摸。摸一摸。",
+   "file": "blend_mo.m4a"
+  },
+  {
+   "id": "blend_me",
+   "kind": "blend",
+   "key": "me",
+   "text": "么。什么。",
+   "file": "blend_me.m4a"
+  },
+  {
+   "id": "blend_mi",
+   "kind": "blend",
+   "key": "mi",
+   "text": "米。大米。",
+   "file": "blend_mi.m4a"
+  },
+  {
+   "id": "blend_mu",
+   "kind": "blend",
+   "key": "mu",
+   "text": "木。木头。",
+   "file": "blend_mu.m4a"
+  },
+  {
+   "id": "blend_man",
+   "kind": "blend",
+   "key": "man",
+   "text": "慢。慢慢走。",
+   "file": "blend_man.m4a"
+  },
+  {
+   "id": "blend_men",
+   "kind": "blend",
+   "key": "men",
+   "text": "门。大门。",
+   "file": "blend_men.m4a"
+  },
+  {
+   "id": "blend_mang",
+   "kind": "blend",
+   "key": "mang",
+   "text": "忙。很忙。",
+   "file": "blend_mang.m4a"
+  },
+  {
+   "id": "blend_da",
+   "kind": "blend",
+   "key": "da",
+   "text": "大。大小。",
+   "file": "blend_da.m4a"
+  },
+  {
+   "id": "blend_de",
+   "kind": "blend",
+   "key": "de",
+   "text": "的。我的。",
+   "file": "blend_de.m4a"
+  },
+  {
+   "id": "blend_di",
+   "kind": "blend",
+   "key": "di",
+   "text": "弟。弟弟。",
+   "file": "blend_di.m4a"
+  },
+  {
+   "id": "blend_du",
+   "kind": "blend",
+   "key": "du",
+   "text": "读。读书。",
+   "file": "blend_du.m4a"
+  },
+  {
+   "id": "blend_dan",
+   "kind": "blend",
+   "key": "dan",
+   "text": "单。单独。",
+   "file": "blend_dan.m4a"
+  },
+  {
+   "id": "blend_dang",
+   "kind": "blend",
+   "key": "dang",
+   "text": "当。当然。",
+   "file": "blend_dang.m4a"
+  },
+  {
+   "id": "blend_ta",
+   "kind": "blend",
+   "key": "ta",
+   "text": "他。他们。",
+   "file": "blend_ta.m4a"
+  },
+  {
+   "id": "blend_te",
+   "kind": "blend",
+   "key": "te",
+   "text": "特。特别。",
+   "file": "blend_te.m4a"
+  },
+  {
+   "id": "blend_ti",
+   "kind": "blend",
+   "key": "ti",
+   "text": "踢。踢球。",
+   "file": "blend_ti.m4a"
+  },
+  {
+   "id": "blend_tu",
+   "kind": "blend",
+   "key": "tu",
+   "text": "兔。兔子。",
+   "file": "blend_tu.m4a"
+  },
+  {
+   "id": "blend_tan",
+   "kind": "blend",
+   "key": "tan",
+   "text": "谈。谈话。",
+   "file": "blend_tan.m4a"
+  },
+  {
+   "id": "blend_tang",
+   "kind": "blend",
+   "key": "tang",
+   "text": "汤。喝汤。",
+   "file": "blend_tang.m4a"
+  },
+  {
+   "id": "blend_na",
+   "kind": "blend",
+   "key": "na",
+   "text": "拿。拿走。",
+   "file": "blend_na.m4a"
+  },
+  {
+   "id": "blend_ne",
+   "kind": "blend",
+   "key": "ne",
+   "text": "呢。好呢。",
+   "file": "blend_ne.m4a"
+  },
+  {
+   "id": "blend_ni",
+   "kind": "blend",
+   "key": "ni",
+   "text": "你。你好。",
+   "file": "blend_ni.m4a"
+  },
+  {
+   "id": "blend_nu",
+   "kind": "blend",
+   "key": "nu",
+   "text": "努。努力。",
+   "file": "blend_nu.m4a"
+  },
+  {
+   "id": "blend_nan",
+   "kind": "blend",
+   "key": "nan",
+   "text": "南。南方。",
+   "file": "blend_nan.m4a"
+  },
+  {
+   "id": "blend_la",
+   "kind": "blend",
+   "key": "la",
+   "text": "拉。拉手。",
+   "file": "blend_la.m4a"
+  },
+  {
+   "id": "blend_le",
+   "kind": "blend",
+   "key": "le",
+   "text": "乐。快乐。",
+   "file": "blend_le.m4a"
+  },
+  {
+   "id": "blend_li",
+   "kind": "blend",
+   "key": "li",
+   "text": "里。里面。",
+   "file": "blend_li.m4a"
+  },
+  {
+   "id": "blend_lu",
+   "kind": "blend",
+   "key": "lu",
+   "text": "路。马路。",
+   "file": "blend_lu.m4a"
+  },
+  {
+   "id": "blend_lan",
+   "kind": "blend",
+   "key": "lan",
+   "text": "蓝。蓝天。",
+   "file": "blend_lan.m4a"
+  },
+  {
+   "id": "blend_lang",
+   "kind": "blend",
+   "key": "lang",
+   "text": "狼。大灰狼。",
+   "file": "blend_lang.m4a"
+  },
+  {
+   "id": "blend_ga",
+   "kind": "blend",
+   "key": "ga",
+   "text": "嘎。嘎嘎叫。",
+   "file": "blend_ga.m4a"
+  },
+  {
+   "id": "blend_ge",
+   "kind": "blend",
+   "key": "ge",
+   "text": "哥。哥哥。",
+   "file": "blend_ge.m4a"
+  },
+  {
+   "id": "blend_gu",
+   "kind": "blend",
+   "key": "gu",
+   "text": "姑。姑姑。",
+   "file": "blend_gu.m4a"
+  },
+  {
+   "id": "blend_gan",
+   "kind": "blend",
+   "key": "gan",
+   "text": "干。干净。",
+   "file": "blend_gan.m4a"
+  },
+  {
+   "id": "blend_gen",
+   "kind": "blend",
+   "key": "gen",
+   "text": "根。树根。",
+   "file": "blend_gen.m4a"
+  },
+  {
+   "id": "blend_gang",
+   "kind": "blend",
+   "key": "gang",
+   "text": "钢。钢笔。",
+   "file": "blend_gang.m4a"
+  },
+  {
+   "id": "blend_ka",
+   "kind": "blend",
+   "key": "ka",
+   "text": "咖。咖啡。",
+   "file": "blend_ka.m4a"
+  },
+  {
+   "id": "blend_ke",
+   "kind": "blend",
+   "key": "ke",
+   "text": "科。科学。",
+   "file": "blend_ke.m4a"
+  },
+  {
+   "id": "blend_ku",
+   "kind": "blend",
+   "key": "ku",
+   "text": "哭。哭泣。",
+   "file": "blend_ku.m4a"
+  },
+  {
+   "id": "blend_kan",
+   "kind": "blend",
+   "key": "kan",
+   "text": "看。看见。",
+   "file": "blend_kan.m4a"
+  },
+  {
+   "id": "blend_ken",
+   "kind": "blend",
+   "key": "ken",
+   "text": "肯。肯定。",
+   "file": "blend_ken.m4a"
+  },
+  {
+   "id": "blend_kang",
+   "kind": "blend",
+   "key": "kang",
+   "text": "康。健康。",
+   "file": "blend_kang.m4a"
+  },
+  {
+   "id": "blend_ha",
+   "kind": "blend",
+   "key": "ha",
+   "text": "哈。哈哈笑。",
+   "file": "blend_ha.m4a"
+  },
+  {
+   "id": "blend_he",
+   "kind": "blend",
+   "key": "he",
+   "text": "喝。喝水。",
+   "file": "blend_he.m4a"
+  },
+  {
+   "id": "blend_hu",
+   "kind": "blend",
+   "key": "hu",
+   "text": "虎。老虎。",
+   "file": "blend_hu.m4a"
+  },
+  {
+   "id": "blend_han",
+   "kind": "blend",
+   "key": "han",
+   "text": "喊。大喊。",
+   "file": "blend_han.m4a"
+  },
+  {
+   "id": "blend_hen",
+   "kind": "blend",
+   "key": "hen",
+   "text": "很。很好。",
+   "file": "blend_hen.m4a"
+  },
+  {
+   "id": "blend_hang",
+   "kind": "blend",
+   "key": "hang",
+   "text": "行。银行。",
+   "file": "blend_hang.m4a"
+  },
+  {
+   "id": "syl_ba",
+   "kind": "syl",
+   "key": "ba",
+   "text": "八。",
+   "file": "syl_ba.m4a"
+  },
+  {
+   "id": "syl_bo",
+   "kind": "syl",
+   "key": "bo",
+   "text": "波。",
+   "file": "syl_bo.m4a"
+  },
+  {
+   "id": "syl_bi",
+   "kind": "syl",
+   "key": "bi",
+   "text": "笔。",
+   "file": "syl_bi.m4a"
+  },
+  {
+   "id": "syl_bu",
+   "kind": "syl",
+   "key": "bu",
+   "text": "不。",
+   "file": "syl_bu.m4a"
+  },
+  {
+   "id": "syl_ban",
+   "kind": "syl",
+   "key": "ban",
+   "text": "班。",
+   "file": "syl_ban.m4a"
+  },
+  {
+   "id": "syl_ben",
+   "kind": "syl",
+   "key": "ben",
+   "text": "本。",
+   "file": "syl_ben.m4a"
+  },
+  {
+   "id": "syl_bang",
+   "kind": "syl",
+   "key": "bang",
+   "text": "帮。",
+   "file": "syl_bang.m4a"
+  },
+  {
+   "id": "syl_pa",
+   "kind": "syl",
+   "key": "pa",
+   "text": "趴。",
+   "file": "syl_pa.m4a"
+  },
+  {
+   "id": "syl_po",
+   "kind": "syl",
+   "key": "po",
+   "text": "坡。",
+   "file": "syl_po.m4a"
+  },
+  {
+   "id": "syl_pi",
+   "kind": "syl",
+   "key": "pi",
+   "text": "皮。",
+   "file": "syl_pi.m4a"
+  },
+  {
+   "id": "syl_pu",
+   "kind": "syl",
+   "key": "pu",
+   "text": "铺。",
+   "file": "syl_pu.m4a"
+  },
+  {
+   "id": "syl_pan",
+   "kind": "syl",
+   "key": "pan",
+   "text": "盘。",
+   "file": "syl_pan.m4a"
+  },
+  {
+   "id": "syl_pen",
+   "kind": "syl",
+   "key": "pen",
+   "text": "盆。",
+   "file": "syl_pen.m4a"
+  },
+  {
+   "id": "syl_pang",
+   "kind": "syl",
+   "key": "pang",
+   "text": "旁。",
+   "file": "syl_pang.m4a"
+  },
+  {
+   "id": "syl_ma",
+   "kind": "syl",
+   "key": "ma",
+   "text": "妈。",
+   "file": "syl_ma.m4a"
+  },
+  {
+   "id": "syl_mo",
+   "kind": "syl",
+   "key": "mo",
+   "text": "摸。",
+   "file": "syl_mo.m4a"
+  },
+  {
+   "id": "syl_me",
+   "kind": "syl",
+   "key": "me",
+   "text": "么。",
+   "file": "syl_me.m4a"
+  },
+  {
+   "id": "syl_mi",
+   "kind": "syl",
+   "key": "mi",
+   "text": "米。",
+   "file": "syl_mi.m4a"
+  },
+  {
+   "id": "syl_mu",
+   "kind": "syl",
+   "key": "mu",
+   "text": "木。",
+   "file": "syl_mu.m4a"
+  },
+  {
+   "id": "syl_man",
+   "kind": "syl",
+   "key": "man",
+   "text": "慢。",
+   "file": "syl_man.m4a"
+  },
+  {
+   "id": "syl_men",
+   "kind": "syl",
+   "key": "men",
+   "text": "门。",
+   "file": "syl_men.m4a"
+  },
+  {
+   "id": "syl_mang",
+   "kind": "syl",
+   "key": "mang",
+   "text": "忙。",
+   "file": "syl_mang.m4a"
+  },
+  {
+   "id": "syl_da",
+   "kind": "syl",
+   "key": "da",
+   "text": "大。",
+   "file": "syl_da.m4a"
+  },
+  {
+   "id": "syl_de",
+   "kind": "syl",
+   "key": "de",
+   "text": "的。",
+   "file": "syl_de.m4a"
+  },
+  {
+   "id": "syl_di",
+   "kind": "syl",
+   "key": "di",
+   "text": "弟。",
+   "file": "syl_di.m4a"
+  },
+  {
+   "id": "syl_du",
+   "kind": "syl",
+   "key": "du",
+   "text": "读。",
+   "file": "syl_du.m4a"
+  },
+  {
+   "id": "syl_dan",
+   "kind": "syl",
+   "key": "dan",
+   "text": "单。",
+   "file": "syl_dan.m4a"
+  },
+  {
+   "id": "syl_dang",
+   "kind": "syl",
+   "key": "dang",
+   "text": "当。",
+   "file": "syl_dang.m4a"
+  },
+  {
+   "id": "syl_ta",
+   "kind": "syl",
+   "key": "ta",
+   "text": "他。",
+   "file": "syl_ta.m4a"
+  },
+  {
+   "id": "syl_te",
+   "kind": "syl",
+   "key": "te",
+   "text": "特。",
+   "file": "syl_te.m4a"
+  },
+  {
+   "id": "syl_ti",
+   "kind": "syl",
+   "key": "ti",
+   "text": "踢。",
+   "file": "syl_ti.m4a"
+  },
+  {
+   "id": "syl_tu",
+   "kind": "syl",
+   "key": "tu",
+   "text": "兔。",
+   "file": "syl_tu.m4a"
+  },
+  {
+   "id": "syl_tan",
+   "kind": "syl",
+   "key": "tan",
+   "text": "谈。",
+   "file": "syl_tan.m4a"
+  },
+  {
+   "id": "syl_tang",
+   "kind": "syl",
+   "key": "tang",
+   "text": "汤。",
+   "file": "syl_tang.m4a"
+  },
+  {
+   "id": "syl_na",
+   "kind": "syl",
+   "key": "na",
+   "text": "拿。",
+   "file": "syl_na.m4a"
+  },
+  {
+   "id": "syl_ne",
+   "kind": "syl",
+   "key": "ne",
+   "text": "呢。",
+   "file": "syl_ne.m4a"
+  },
+  {
+   "id": "syl_ni",
+   "kind": "syl",
+   "key": "ni",
+   "text": "你。",
+   "file": "syl_ni.m4a"
+  },
+  {
+   "id": "syl_nu",
+   "kind": "syl",
+   "key": "nu",
+   "text": "努。",
+   "file": "syl_nu.m4a"
+  },
+  {
+   "id": "syl_nan",
+   "kind": "syl",
+   "key": "nan",
+   "text": "南。",
+   "file": "syl_nan.m4a"
+  },
+  {
+   "id": "syl_la",
+   "kind": "syl",
+   "key": "la",
+   "text": "拉。",
+   "file": "syl_la.m4a"
+  },
+  {
+   "id": "syl_le",
+   "kind": "syl",
+   "key": "le",
+   "text": "乐。",
+   "file": "syl_le.m4a"
+  },
+  {
+   "id": "syl_li",
+   "kind": "syl",
+   "key": "li",
+   "text": "里。",
+   "file": "syl_li.m4a"
+  },
+  {
+   "id": "syl_lu",
+   "kind": "syl",
+   "key": "lu",
+   "text": "路。",
+   "file": "syl_lu.m4a"
+  },
+  {
+   "id": "syl_lan",
+   "kind": "syl",
+   "key": "lan",
+   "text": "蓝。",
+   "file": "syl_lan.m4a"
+  },
+  {
+   "id": "syl_lang",
+   "kind": "syl",
+   "key": "lang",
+   "text": "狼。",
+   "file": "syl_lang.m4a"
+  },
+  {
+   "id": "syl_ga",
+   "kind": "syl",
+   "key": "ga",
+   "text": "嘎。",
+   "file": "syl_ga.m4a"
+  },
+  {
+   "id": "syl_ge",
+   "kind": "syl",
+   "key": "ge",
+   "text": "哥。",
+   "file": "syl_ge.m4a"
+  },
+  {
+   "id": "syl_gu",
+   "kind": "syl",
+   "key": "gu",
+   "text": "姑。",
+   "file": "syl_gu.m4a"
+  },
+  {
+   "id": "syl_gan",
+   "kind": "syl",
+   "key": "gan",
+   "text": "干。",
+   "file": "syl_gan.m4a"
+  },
+  {
+   "id": "syl_gen",
+   "kind": "syl",
+   "key": "gen",
+   "text": "根。",
+   "file": "syl_gen.m4a"
+  },
+  {
+   "id": "syl_gang",
+   "kind": "syl",
+   "key": "gang",
+   "text": "钢。",
+   "file": "syl_gang.m4a"
+  },
+  {
+   "id": "syl_ka",
+   "kind": "syl",
+   "key": "ka",
+   "text": "咖。",
+   "file": "syl_ka.m4a"
+  },
+  {
+   "id": "syl_ke",
+   "kind": "syl",
+   "key": "ke",
+   "text": "科。",
+   "file": "syl_ke.m4a"
+  },
+  {
+   "id": "syl_ku",
+   "kind": "syl",
+   "key": "ku",
+   "text": "哭。",
+   "file": "syl_ku.m4a"
+  },
+  {
+   "id": "syl_kan",
+   "kind": "syl",
+   "key": "kan",
+   "text": "看。",
+   "file": "syl_kan.m4a"
+  },
+  {
+   "id": "syl_ken",
+   "kind": "syl",
+   "key": "ken",
+   "text": "肯。",
+   "file": "syl_ken.m4a"
+  },
+  {
+   "id": "syl_kang",
+   "kind": "syl",
+   "key": "kang",
+   "text": "康。",
+   "file": "syl_kang.m4a"
+  },
+  {
+   "id": "syl_ha",
+   "kind": "syl",
+   "key": "ha",
+   "text": "哈。",
+   "file": "syl_ha.m4a"
+  },
+  {
+   "id": "syl_he",
+   "kind": "syl",
+   "key": "he",
+   "text": "喝。",
+   "file": "syl_he.m4a"
+  },
+  {
+   "id": "syl_hu",
+   "kind": "syl",
+   "key": "hu",
+   "text": "虎。",
+   "file": "syl_hu.m4a"
+  },
+  {
+   "id": "syl_han",
+   "kind": "syl",
+   "key": "han",
+   "text": "喊。",
+   "file": "syl_han.m4a"
+  },
+  {
+   "id": "syl_hen",
+   "kind": "syl",
+   "key": "hen",
+   "text": "很。",
+   "file": "syl_hen.m4a"
+  },
+  {
+   "id": "syl_hang",
+   "kind": "syl",
+   "key": "hang",
+   "text": "行。",
+   "file": "syl_hang.m4a"
+  },
+  {
+   "id": "char_0",
+   "kind": "char",
+   "key": "0",
+   "text": "水。",
+   "file": "char_0.m4a"
+  },
+  {
+   "id": "char_1",
+   "kind": "char",
+   "key": "1",
+   "text": "火。",
+   "file": "char_1.m4a"
+  },
+  {
+   "id": "char_2",
+   "kind": "char",
+   "key": "2",
+   "text": "山。",
+   "file": "char_2.m4a"
+  },
+  {
+   "id": "char_3",
+   "kind": "char",
+   "key": "3",
+   "text": "木。",
+   "file": "char_3.m4a"
+  },
+  {
+   "id": "char_4",
+   "kind": "char",
+   "key": "4",
+   "text": "日。",
+   "file": "char_4.m4a"
+  },
+  {
+   "id": "char_5",
+   "kind": "char",
+   "key": "5",
+   "text": "月。",
+   "file": "char_5.m4a"
+  },
+  {
+   "id": "char_6",
+   "kind": "char",
+   "key": "6",
+   "text": "人。",
+   "file": "char_6.m4a"
+  },
+  {
+   "id": "char_7",
+   "kind": "char",
+   "key": "7",
+   "text": "口。",
+   "file": "char_7.m4a"
+  },
+  {
+   "id": "char_8",
+   "kind": "char",
+   "key": "8",
+   "text": "手。",
+   "file": "char_8.m4a"
+  },
+  {
+   "id": "char_9",
+   "kind": "char",
+   "key": "9",
+   "text": "足。",
+   "file": "char_9.m4a"
+  },
+  {
+   "id": "char_10",
+   "kind": "char",
+   "key": "10",
+   "text": "目。",
+   "file": "char_10.m4a"
+  },
+  {
+   "id": "char_11",
+   "kind": "char",
+   "key": "11",
+   "text": "耳。",
+   "file": "char_11.m4a"
+  },
+  {
+   "id": "char_12",
+   "kind": "char",
+   "key": "12",
+   "text": "田。",
+   "file": "char_12.m4a"
+  },
+  {
+   "id": "char_13",
+   "kind": "char",
+   "key": "13",
+   "text": "土。",
+   "file": "char_13.m4a"
+  },
+  {
+   "id": "char_14",
+   "kind": "char",
+   "key": "14",
+   "text": "上。",
+   "file": "char_14.m4a"
+  },
+  {
+   "id": "char_15",
+   "kind": "char",
+   "key": "15",
+   "text": "下。",
+   "file": "char_15.m4a"
+  },
+  {
+   "id": "char_16",
+   "kind": "char",
+   "key": "16",
+   "text": "大。",
+   "file": "char_16.m4a"
+  },
+  {
+   "id": "char_17",
+   "kind": "char",
+   "key": "17",
+   "text": "小。",
+   "file": "char_17.m4a"
+  },
+  {
+   "id": "char_18",
+   "kind": "char",
+   "key": "18",
+   "text": "中。",
+   "file": "char_18.m4a"
+  },
+  {
+   "id": "char_19",
+   "kind": "char",
+   "key": "19",
+   "text": "国。",
+   "file": "char_19.m4a"
+  },
+  {
+   "id": "char_20",
+   "kind": "char",
+   "key": "20",
+   "text": "我。",
+   "file": "char_20.m4a"
+  },
+  {
+   "id": "char_21",
+   "kind": "char",
+   "key": "21",
+   "text": "你。",
+   "file": "char_21.m4a"
+  },
+  {
+   "id": "char_22",
+   "kind": "char",
+   "key": "22",
+   "text": "妈。",
+   "file": "char_22.m4a"
+  },
+  {
+   "id": "char_23",
+   "kind": "char",
+   "key": "23",
+   "text": "爸。",
+   "file": "char_23.m4a"
+  },
+  {
+   "id": "tone_ma_1",
+   "kind": "tone",
+   "key": "ma_1",
+   "text": "妈。",
+   "file": "tone_ma_1.m4a"
+  },
+  {
+   "id": "tone_ma_2",
+   "kind": "tone",
+   "key": "ma_2",
+   "text": "麻。",
+   "file": "tone_ma_2.m4a"
+  },
+  {
+   "id": "tone_ma_3",
+   "kind": "tone",
+   "key": "ma_3",
+   "text": "马。",
+   "file": "tone_ma_3.m4a"
+  },
+  {
+   "id": "tone_ma_4",
+   "kind": "tone",
+   "key": "ma_4",
+   "text": "骂。",
+   "file": "tone_ma_4.m4a"
+  },
+  {
+   "id": "tone_ba_1",
+   "kind": "tone",
+   "key": "ba_1",
+   "text": "八。",
+   "file": "tone_ba_1.m4a"
+  },
+  {
+   "id": "tone_ba_2",
+   "kind": "tone",
+   "key": "ba_2",
+   "text": "拔。",
+   "file": "tone_ba_2.m4a"
+  },
+  {
+   "id": "tone_ba_3",
+   "kind": "tone",
+   "key": "ba_3",
+   "text": "把。",
+   "file": "tone_ba_3.m4a"
+  },
+  {
+   "id": "tone_ba_4",
+   "kind": "tone",
+   "key": "ba_4",
+   "text": "爸。",
+   "file": "tone_ba_4.m4a"
+  },
+  {
+   "id": "tone_yi_1",
+   "kind": "tone",
+   "key": "yi_1",
+   "text": "衣。",
+   "file": "tone_yi_1.m4a"
+  },
+  {
+   "id": "tone_yi_2",
+   "kind": "tone",
+   "key": "yi_2",
+   "text": "姨。",
+   "file": "tone_yi_2.m4a"
+  },
+  {
+   "id": "tone_yi_3",
+   "kind": "tone",
+   "key": "yi_3",
+   "text": "椅。",
+   "file": "tone_yi_3.m4a"
+  },
+  {
+   "id": "tone_yi_4",
+   "kind": "tone",
+   "key": "yi_4",
+   "text": "意。",
+   "file": "tone_yi_4.m4a"
+  },
+  {
+   "id": "tone_wu_1",
+   "kind": "tone",
+   "key": "wu_1",
+   "text": "屋。",
+   "file": "tone_wu_1.m4a"
+  },
+  {
+   "id": "tone_wu_2",
+   "kind": "tone",
+   "key": "wu_2",
+   "text": "无。",
+   "file": "tone_wu_2.m4a"
+  },
+  {
+   "id": "tone_wu_3",
+   "kind": "tone",
+   "key": "wu_3",
+   "text": "五。",
+   "file": "tone_wu_3.m4a"
+  },
+  {
+   "id": "tone_wu_4",
+   "kind": "tone",
+   "key": "wu_4",
+   "text": "雾。",
+   "file": "tone_wu_4.m4a"
+  },
+  {
+   "id": "tone_hu_1",
+   "kind": "tone",
+   "key": "hu_1",
+   "text": "呼。",
+   "file": "tone_hu_1.m4a"
+  },
+  {
+   "id": "tone_hu_2",
+   "kind": "tone",
+   "key": "hu_2",
+   "text": "湖。",
+   "file": "tone_hu_2.m4a"
+  },
+  {
+   "id": "tone_hu_3",
+   "kind": "tone",
+   "key": "hu_3",
+   "text": "虎。",
+   "file": "tone_hu_3.m4a"
+  },
+  {
+   "id": "tone_hu_4",
+   "kind": "tone",
+   "key": "hu_4",
+   "text": "户。",
+   "file": "tone_hu_4.m4a"
+  },
+  {
+   "id": "tone_xi_1",
+   "kind": "tone",
+   "key": "xi_1",
+   "text": "西。",
+   "file": "tone_xi_1.m4a"
+  },
+  {
+   "id": "tone_xi_2",
+   "kind": "tone",
+   "key": "xi_2",
+   "text": "习。",
+   "file": "tone_xi_2.m4a"
+  },
+  {
+   "id": "tone_xi_3",
+   "kind": "tone",
+   "key": "xi_3",
+   "text": "洗。",
+   "file": "tone_xi_3.m4a"
+  },
+  {
+   "id": "tone_xi_4",
+   "kind": "tone",
+   "key": "xi_4",
+   "text": "细。",
+   "file": "tone_xi_4.m4a"
+  },
+  {
+   "id": "tone_wan_1",
+   "kind": "tone",
+   "key": "wan_1",
+   "text": "弯。",
+   "file": "tone_wan_1.m4a"
+  },
+  {
+   "id": "tone_wan_2",
+   "kind": "tone",
+   "key": "wan_2",
+   "text": "完。",
+   "file": "tone_wan_2.m4a"
+  },
+  {
+   "id": "tone_wan_3",
+   "kind": "tone",
+   "key": "wan_3",
+   "text": "晚。",
+   "file": "tone_wan_3.m4a"
+  },
+  {
+   "id": "tone_wan_4",
+   "kind": "tone",
+   "key": "wan_4",
+   "text": "万。",
+   "file": "tone_wan_4.m4a"
+  },
+  {
+   "id": "tone_tang_1",
+   "kind": "tone",
+   "key": "tang_1",
+   "text": "汤。",
+   "file": "tone_tang_1.m4a"
+  },
+  {
+   "id": "tone_tang_2",
+   "kind": "tone",
+   "key": "tang_2",
+   "text": "糖。",
+   "file": "tone_tang_2.m4a"
+  },
+  {
+   "id": "tone_tang_3",
+   "kind": "tone",
+   "key": "tang_3",
+   "text": "躺。",
+   "file": "tone_tang_3.m4a"
+  },
+  {
+   "id": "tone_tang_4",
+   "kind": "tone",
+   "key": "tang_4",
+   "text": "烫。",
+   "file": "tone_tang_4.m4a"
+  },
+  {
+   "id": "tonefin_a_1",
+   "kind": "tonefin",
+   "key": "a_1",
+   "text": "ā",
+   "file": "tonefin_a_1.m4a",
+   "fin": "a",
+   "tone": 1,
+   "flat": true
+  },
+  {
+   "id": "tonefin_o_1",
+   "kind": "tonefin",
+   "key": "o_1",
+   "text": "ō",
+   "file": "tonefin_o_1.m4a",
+   "fin": "o",
+   "tone": 1,
+   "flat": true
+  },
+  {
+   "id": "tonefin_i_3",
+   "kind": "tonefin",
+   "key": "i_3",
+   "text": "yǐ",
+   "file": "tonefin_i_3.m4a",
+   "fin": "i",
+   "tone": 3,
+   "flat": false
+  },
+  {
+   "id": "tonefin_u_4",
+   "kind": "tonefin",
+   "key": "u_4",
+   "text": "wù",
+   "file": "tonefin_u_4.m4a",
+   "fin": "u",
+   "tone": 4,
+   "flat": false
+  },
+  {
+   "id": "tonefin_an_1",
+   "kind": "tonefin",
+   "key": "an_1",
+   "text": "ān",
+   "file": "tonefin_an_1.m4a",
+   "fin": "an",
+   "tone": 1,
+   "flat": true
+  },
+  {
+   "id": "tonefin_en_3",
+   "kind": "tonefin",
+   "key": "en_3",
+   "text": "本",
+   "file": "tonefin_en_3.m4a",
+   "fin": "en",
+   "tone": 3,
+   "cut": true
+  },
+  {
+   "id": "tonefin_ang_1",
+   "kind": "tonefin",
+   "key": "ang_1",
+   "text": "āng",
+   "file": "tonefin_ang_1.m4a",
+   "fin": "ang",
+   "tone": 1,
+   "flat": true
+  },
+  {
+   "id": "tonefin_i_2",
+   "kind": "tonefin",
+   "key": "i_2",
+   "text": "yí",
+   "file": "tonefin_i_2.m4a",
+   "fin": "i",
+   "tone": 2,
+   "flat": false
+  },
+  {
+   "id": "tonefin_u_1",
+   "kind": "tonefin",
+   "key": "u_1",
+   "text": "wū",
+   "file": "tonefin_u_1.m4a",
+   "fin": "u",
+   "tone": 1,
+   "flat": true
+  },
+  {
+   "id": "tonefin_an_2",
+   "kind": "tonefin",
+   "key": "an_2",
+   "text": "án",
+   "file": "tonefin_an_2.m4a",
+   "fin": "an",
+   "tone": 2,
+   "flat": false
+  },
+  {
+   "id": "tonefin_en_2",
+   "kind": "tonefin",
+   "key": "en_2",
+   "text": "门",
+   "file": "tonefin_en_2.m4a",
+   "fin": "en",
+   "tone": 2,
+   "cut": true
+  },
+  {
+   "id": "tonefin_ang_2",
+   "kind": "tonefin",
+   "key": "ang_2",
+   "text": "áng",
+   "file": "tonefin_ang_2.m4a",
+   "fin": "ang",
+   "tone": 2,
+   "flat": false
+  },
+  {
+   "id": "tonefin_an_4",
+   "kind": "tonefin",
+   "key": "an_4",
+   "text": "àn",
+   "file": "tonefin_an_4.m4a",
+   "fin": "an",
+   "tone": 4,
+   "flat": false
+  },
+  {
+   "id": "tonefin_a_4",
+   "kind": "tonefin",
+   "key": "a_4",
+   "text": "à",
+   "file": "tonefin_a_4.m4a",
+   "fin": "a",
+   "tone": 4,
+   "flat": false
+  },
+  {
+   "id": "tonefin_i_4",
+   "kind": "tonefin",
+   "key": "i_4",
+   "text": "yì",
+   "file": "tonefin_i_4.m4a",
+   "fin": "i",
+   "tone": 4,
+   "flat": false
+  },
+  {
+   "id": "tonefin_u_2",
+   "kind": "tonefin",
+   "key": "u_2",
+   "text": "wú",
+   "file": "tonefin_u_2.m4a",
+   "fin": "u",
+   "tone": 2,
+   "flat": false
+  },
+  {
+   "id": "tonefin_e_4",
+   "kind": "tonefin",
+   "key": "e_4",
+   "text": "è",
+   "file": "tonefin_e_4.m4a",
+   "fin": "e",
+   "tone": 4,
+   "flat": false
+  },
+  {
+   "id": "tonefin_i_1",
+   "kind": "tonefin",
+   "key": "i_1",
+   "text": "yī",
+   "file": "tonefin_i_1.m4a",
+   "fin": "i",
+   "tone": 1,
+   "flat": true
+  },
+  {
+   "id": "tonefin_a_2",
+   "kind": "tonefin",
+   "key": "a_2",
+   "text": "á",
+   "file": "tonefin_a_2.m4a",
+   "fin": "a",
+   "tone": 2,
+   "flat": false
+  },
+  {
+   "id": "tonefin_u_3",
+   "kind": "tonefin",
+   "key": "u_3",
+   "text": "wǔ",
+   "file": "tonefin_u_3.m4a",
+   "fin": "u",
+   "tone": 3,
+   "flat": false
+  },
+  {
+   "id": "tonefin_e_1",
+   "kind": "tonefin",
+   "key": "e_1",
+   "text": "ē",
+   "file": "tonefin_e_1.m4a",
+   "fin": "e",
+   "tone": 1,
+   "flat": true
+  },
+  {
+   "id": "tonefin_en_1",
+   "kind": "tonefin",
+   "key": "en_1",
+   "text": "奔",
+   "file": "tonefin_en_1.m4a",
+   "fin": "en",
+   "tone": 1,
+   "cut": true
+  },
+  {
+   "id": "tonefin_an_3",
+   "kind": "tonefin",
+   "key": "an_3",
+   "text": "ǎn",
+   "file": "tonefin_an_3.m4a",
+   "fin": "an",
+   "tone": 3,
+   "flat": false
+  }
+ ]
+}

@@ -396,7 +396,7 @@ function chineseBank(lessonId,level,spread){
   const names=['第一声','第二声','第三声','第四声'];
   const iniList=P.ini.map(x=>x.p), finList=P.fin.map(x=>x.p), whoList=P.who.map(x=>x.p);
   const hzList=P.ble.map(x=>x.hz);
-  const clipOf=(it)=>zclip('blend',it.syl);
+  const clipOf=(it)=>zclip('syl',it.syl);   // 只读音节本身：不能多读例词，否则「听音节选声母」会泄题
   const base=(it)=>({text:it.hz,lang:'zh-CN',clip:clipOf(it),autoplay:true});
 
   /* 通用音节变体：7 种问法，每种 63 道 → 441 道，题目本质互不相同 */

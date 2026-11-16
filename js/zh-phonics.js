@@ -202,9 +202,13 @@ const ZH_TONES = [
   {base:'tang', py:['tāng','táng','tǎng','tàng'], hz:['汤','糖','躺','烫'], word:['喝汤','糖果','躺下','烫伤']},
 ];
 function zhToneClip(base,t){ return zhClip('tone', base+'_'+t); }
+/* 带调韵母（四步拼读的第 2 步）：u—ù 里那个「ù」。
+ * 旧实现没有这段录音，只能把 "ù" 交给设备 TTS，而设备会忽略调号 → 第四声读成第一声。
+ * 现在按「韵母 + 声调」单独录音，音色和全库一致，调型已用 Praat 校验过。 */
+function zhToneFinClip(fin,t){ return zhClip('tonefin', fin+'_'+t); }
 
 /* ---------------- 工具 ---------------- */
-function zhClip(kind, key){ return 'audio/zh/'+kind+'_'+key+'.m4a?a=2'; }
+function zhClip(kind, key){ return 'audio/zh/'+kind+'_'+key+'.m4a?a=3'; }
 function zhInitial(p){ return ZH_INITIALS.find(x=>x.p===p); }
 function zhFinal(p){ return ZH_FINALS.find(x=>x.p===p); }
 function zhWhole(p){ return ZH_WHOLES.find(x=>x.p===p); }
@@ -255,7 +259,7 @@ function zhJudge(transcripts, target, pool){
 
 /* Node 环境导出（浏览器里这些是全局 const，不受影响） */
 if(typeof module!=='undefined' && module.exports){
-  module.exports={ZH_INITIALS,ZH_FINALS,ZH_WHOLES,ZH_BLENDS,ZH_TONES,zhClip,zhToneClip,
+  module.exports={ZH_INITIALS,ZH_FINALS,ZH_WHOLES,ZH_BLENDS,ZH_TONES,zhClip,zhToneClip,zhToneFinClip,
                   zhInitial,zhFinal,zhWhole,zhBlendDecoys,zhNormalize,zhHit,zhJudge,
                   zhToneMark,zhToneName,zhBlendBySyl,zhBlendDecoysToned,ZH_TONE_MARKS};
 }

@@ -599,14 +599,17 @@ const CHINESE=[
         return {
           type:'choice', prompt:`拼一拼：${it.ini} + ${finT} = ?`,
           sub:`🔊 听顺序：韵母 ${it.fin} → 加声调 ${finT}（${tName}）→ 声母 ${it.ini} → 拼出来 ${sylT}`,
-          /* 四步拼读法（Eric 指定的顺序）：先读韵母，再读带调韵母，
-             然后读声母，最后拼出完整音节。每段优先播本地录音，
-             带调韵母没有录音就由 TTS 读带调号文本。 */
+          /* 四步拼读法（Eric 指定的顺序）：韵母 → 带调韵母 → 声母 → 拼出音节。
+             每段只读一遍，段间留 0.4 秒让孩子跟读。
+             四段全部走预录音频：带调韵母若交给设备 TTS，设备会忽略调号，
+             第四声会被读成第一声（2026-11-16 修复）。轻声（tone=0）不标调，
+             第 2 步直接复用韵母呼读音。 */
           speak:{ lang:'zh-CN', autoplay:true, seq:[
             {clip:zhClip('final',it.fin),  text:it.fin,  gap:420},
-            {text:finT, gap:420},
+            {clip:(it.tone>=1&&it.tone<=4) ? zhToneFinClip(it.fin,it.tone) : zhClip('final',it.fin),
+             text:finT, gap:420},
             {clip:zhClip('initial',it.ini), text:it.ini, gap:420},
-            {clip:zhClip('blend',it.syl),  text:sylT}
+            {clip:zhClip('syl',it.syl),    text:sylT}
           ]},
           options:shuffle([sylT,...zhBlendDecoysToned(it)]), answer:sylT,
           explain:`${it.ini} + ${finT} = ${sylT}（${tName}）。例如「${it.word}」的「${it.hz}」。`

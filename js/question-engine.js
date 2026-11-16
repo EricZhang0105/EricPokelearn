@@ -332,14 +332,14 @@ function chineseExpand(lessonId, level, need){
       // 变体 1：听音节，选声母
       out.push({type:'choice',prompt:`🔊 听一听：${sylT} 的声母是？`,
         sub:'点 🔊 再听一次，选出开头的声母',
-        speak:{text:it.hz,lang:'zh-CN',clip:zcl?zcl('blend',it.syl):null,autoplay:true},
+        speak:{text:it.hz,lang:'zh-CN',clip:zcl?zcl('syl',it.syl):null,autoplay:true},
         options:shuffle([it.ini,...shuffle(ini.filter(x=>x.p!==it.ini)).slice(0,2).map(x=>x.p)]),
         answer:it.ini,explain:`${sylT} 的声母是 ${it.ini}。例如「${it.word}」。`});
       // 变体 2：听音节，选带调韵母
       if(out.length<need*2){
         out.push({type:'choice',prompt:`🔊 听一听：${sylT} 的韵母是？`,
           sub:'注意听声调，选出带调号的韵母',
-          speak:{text:it.hz,lang:'zh-CN',clip:zcl?zcl('blend',it.syl):null,autoplay:true},
+          speak:{text:it.hz,lang:'zh-CN',clip:zcl?zcl('syl',it.syl):null,autoplay:true},
           options:shuffle([finT,...shuffle(fin.filter(x=>x.p!==it.fin)).slice(0,2)
             .map(x=>toneMark(x.p,it.tone))]),
           answer:finT,explain:`${it.ini} + ${finT} = ${sylT}。`});
@@ -376,7 +376,7 @@ function chineseExpand(lessonId, level, need){
     const toneName=(typeof zhToneName==='function')?zhToneName:(t)=>'第'+t+'声';
     const names=['第一声','第二声','第三声','第四声'];
     shuffle(ble).forEach(it=>{
-      const clip=zcl('blend',it.syl);
+      const clip=zcl('syl',it.syl);
       const iniOpts=shuffle([it.ini,...shuffle(ini.filter(x=>x.p!==it.ini)).slice(0,2).map(x=>x.p)]);
       const finOpts=shuffle([it.fin,...shuffle(fin.filter(x=>x.p!==it.fin)).slice(0,2).map(x=>x.p)]);
       const hzOpts=shuffle([it.hz,...shuffle(ble.filter(x=>x.hz!==it.hz)).slice(0,2).map(x=>x.hz)]);
@@ -405,51 +405,238 @@ function chineseExpand(lessonId, level, need){
 /* =========================================================
    自动扩容 D：阅读理解 —— 程序化生成新短文（越往后越长）
    生成结果写进存档，题库是真的变大，并且跟着云同步一起走
+
+   ⚠️ 2026-11-16 重写：旧版只有「<人名> has a <颜色> <宠物>」一个模板，
+      换上十次也只是换了人名和颜色 —— 孩子一眼看出是同一篇。
+      现在改为 12 个结构完全不同的故事（找东西 / 做饭 / 下雨 / 风筝 / 看病 /
+      种种子 / 坐车 / 新同学 / 买菜 / 洗车 / 海边 / 图书馆），
+      每个模板的句子结构和提问方式都不一样（when / why / how many / 先后顺序 / 推断）。
    ========================================================= */
-const STORY_NAMES=['Sam','Lily','Tom','May','Ben','Ann','Ken','Zoe','Mia','Tim','Ella','Leo','Jack','Sue','Max','Amy','Nina','Rex'];
-const STORY_PETS=[['cat','🐱'],['dog','🐶'],['bird','🐦'],['fish','🐟'],['rabbit','🐰'],['duck','🦆']];
-const STORY_COLORS=['red','blue','green','yellow','pink','black','white'];
-const STORY_PLACES=['park','garden','school','shop','farm','beach','library'];
-const STORY_THINGS=['a big tree','a small ball','a red bus','a blue kite','a little frog','a yellow flower'];
-const STORY_FEEL=['happy','glad','excited','proud'];
+const ST_NAMES=['Mia','Kai','Mei','Jun','Asha','Ravi','Nina','Tim','Lily','Sam','Ben','Tom','May','Zoe','Ella','Leo','Amy','Max','Ann','Ken','Sue','Ivy','Wen','Hana'];
+const ST_FEEL=['happy','glad','proud','excited','tired but happy'];
+const hintOf=w=>{ const s=String(w||''); return s[0]+' '+Array(Math.max(2,s.length-1)).fill('_').join(' '); };
+const stPick=(a)=>pick(a);
+
+const STORY_TEMPLATES=[
+  /* 1. 找东西（顺序 + 排除） */
+  {id:'lost', visual:'🧦',
+   make(level){
+     const n=stPick(ST_NAMES), obj=stPick(['hat','sock','cap','scarf','book']);
+     const at=stPick(['on the chair','behind the door','on the sofa','in the bag']);
+     const s=[`${n} cannot find the ${obj}.`,`${n} looks under the bed.`,`It is not there.`,`Dad finds it ${at}.`];
+     if(level>=2) s.push(`${n} is happy again.`);
+     if(level>=3) s.push(`"Thank you, Dad!" says ${n}.`,`${n} puts it on and runs to the door.`);
+     return {title:`Where Is the ${obj[0].toUpperCase()+obj.slice(1)}?`, text:s.join(' '), qs:[
+       {q:`What is ${n} looking for?`,o:[`the ${obj}`,'a ball','a pen'],a:`the ${obj}`,lv:1},
+       {q:`Where does ${n} look first?`,o:['under the bed','in the box','in the garden'],a:'under the bed',lv:1},
+       {q:'Who finds it?',o:['Dad','Mum',n],a:'Dad',lv:1},
+       {q:`Where was the ${obj}?`,o:[at,'in the box','on the bed'],a:at,lv:1},
+       {q:`How does ${n} feel at the end?`,o:['happy','sad','angry'],a:'happy',lv:2},
+       {q:`${n} looks for a ___.`,short:true,a:obj,accept:[obj],hint:hintOf(obj),lv:1}
+     ]};
+   }},
+  /* 2. 一起做饭（步骤顺序） */
+  {id:'cook', visual:'🥞',
+   make(level){
+     const n=stPick(ST_NAMES), who=stPick(['Mum','Dad','Grandma']);
+     const food=stPick(['pancakes','soup','noodles']), what=stPick(['eggs and milk','carrots and rice','tomatoes and salt']);
+     const s=[`${who} and ${n} make ${food}.`,`${n} washes ${what}.`,`${who} cooks them in a hot pan.`,`The kitchen smells good.`];
+     if(level>=2) s.push(`${n} puts some on a plate for ${who}.`);
+     if(level>=3) s.push(`They sit at the table and eat together.`,`"This is the best ${food[0]==='s'?'soup':'meal'}," says ${n}.`);
+     return {title:`Making ${food[0].toUpperCase()+food.slice(1)}`, text:s.join(' '), qs:[
+       {q:`Who makes ${food} with ${n}?`,o:[who,'the teacher','a friend'],a:who,lv:1},
+       {q:'What does '+n+' wash?',o:[what,'the plates','the cups'],a:what,lv:1},
+       {q:'Where does '+who+' cook?',o:['in a hot pan','in a cup','in a bag'],a:'in a hot pan',lv:1},
+       {q:`How does the ${food} smell?`,o:['good','bad','cold'],a:'good',lv:1},
+       {q:'What happens first?',o:[`${n} washes ${what}`,`${n} eats the ${food}`,`${n} sits down`],a:`${n} washes ${what}`,lv:2},
+       {q:`${n} washes ___.`,short:true,a:what.split(' ')[0],accept:[what.split(' ')[0],what],hint:hintOf(what.split(' ')[0]),lv:1}
+     ]};
+   }},
+  /* 3. 下雨天（因果） */
+  {id:'rain', visual:'🌧️',
+   make(level){
+     const n=stPick(ST_NAMES), color=stPick(['red','blue','yellow']);
+     const s=[`It rains all morning.`,`${n} puts on ${color} boots.`,`${n} jumps in a puddle.`,`Splash!`];
+     if(level>=2) s.push(`Then the sun comes out.`);
+     if(level>=3) s.push(`${n} looks up and sees a big rainbow in the sky.`,`"I love rainy days," says ${n}.`);
+     return {title:'A Rainy Morning', text:s.join(' '), qs:[
+       {q:'What is the weather like?',o:['raining','sunny','snowy'],a:'raining',lv:1},
+       {q:`What color are ${n}'s boots?`,o:[color,'black','green'],a:color,lv:1},
+       {q:'What does '+n+' jump in?',o:['a puddle','a box','a car'],a:'a puddle',lv:1},
+       {q:'Why does '+n+' wear boots?',o:['it is raining','it is hot','it is night'],a:'it is raining',lv:2},
+       {q:'What comes out after the rain?',o:['the sun','the moon','a bus'],a:'the sun',lv:2},
+       {q:`${n} puts on ___ boots.`,short:true,a:color,accept:[color],hint:hintOf(color),lv:1}
+     ]};
+   }},
+  /* 4. 放风筝（问题—解决） */
+  {id:'kite', visual:'🪁',
+   make(level){
+     const n=stPick(ST_NAMES), color=stPick(['red','blue','green']), who=stPick(['Dad','Mum','Grandpa']);
+     const s=[`${n} flies a ${color} kite.`,`The wind is strong.`,`The kite goes up, up, up.`,`Then the string breaks!`];
+     if(level>=2) s.push(`The kite falls into a tree.`);
+     if(level>=3) s.push(`${n} is sad.`,`${who} climbs up and gets the kite down.`,`"Let us fly it again," says ${n}.`);
+     return {title:'The Kite in the Tree', text:s.join(' '), qs:[
+       {q:'What does '+n+' fly?',o:[`a ${color} kite`,'a plane','a ball'],a:`a ${color} kite`,lv:1},
+       {q:'What breaks?',o:['the string','the tree','the kite'],a:'the string',lv:1},
+       {q:'Where does the kite fall?',o:['into a tree','into the sea','into a box'],a:'into a tree',lv:2},
+       {q:'Who gets the kite down?',o:[who,n,'a friend'],a:who,lv:2},
+       {q:`Why does the kite go up high?`,o:['the wind is strong','it is very big',`${n} runs fast`],a:'the wind is strong',lv:2},
+       {q:`The kite is ___.`,short:true,a:color,accept:[color],hint:hintOf(color),lv:1}
+     ]};
+   }},
+  /* 5. 生病看医生（时间线） */
+  {id:'sick', visual:'🩺',
+   make(level){
+     const n=stPick(ST_NAMES), day=stPick(['Monday','Tuesday','Wednesday']), back=stPick(['Thursday','Friday']);
+     const s=[`On ${day}, ${n} feels hot.`,`${n}'s head hurts.`,`Mum takes ${n} to the doctor.`,`The doctor says, "Rest and drink water."`];
+     if(level>=2) s.push(`${n} stays in bed and reads a book.`);
+     if(level>=3) s.push(`On ${back} ${n} feels much better.`,`${n} goes back to school with a big smile.`);
+     return {title:'A Day at the Doctor', text:s.join(' '), qs:[
+       {q:'How does '+n+' feel?',o:['hot and tired','cold and hungry','happy'],a:'hot and tired',lv:1},
+       {q:'Who takes '+n+' to the doctor?',o:['Mum','Dad','the teacher'],a:'Mum',lv:1},
+       {q:'What does the doctor say?',o:['rest and drink water','run and jump','eat sweets'],a:'rest and drink water',lv:1},
+       {q:'When does '+n+' go back to school?',o:[`on ${back}`,`on ${day}`,'on Sunday'],a:`on ${back}`,lv:2},
+       {q:'What does '+n+' do in bed?',o:['reads a book','plays a game','washes the car'],a:'reads a book',lv:2},
+       {q:`${n}'s ___ hurts.`,short:true,a:'head',accept:['head'],hint:hintOf('head'),lv:1}
+     ]};
+   }},
+  /* 6. 种种子（耐心 / 观察） */
+  {id:'seed', visual:'🌱',
+   make(level){
+     const n=stPick(ST_NAMES), color=stPick(['yellow','red','pink']), when=stPick(['March','April','May']);
+     const s=[`In ${when}, ${n} plants a seed.`,`${n} waters it every morning.`,`Nothing happens for many days.`,`Then a green shoot comes up.`];
+     if(level>=2) s.push(`The shoot grows two small leaves.`);
+     if(level>=3) s.push(`"Be patient," says the teacher.`,`By June the plant has a ${color} flower on top.`,`The whole class comes to see it.`);
+     return {title:'The Little Seed', text:s.join(' '), qs:[
+       {q:'When does '+n+' plant the seed?',o:[`in ${when}`,'in June','in December'],a:`in ${when}`,lv:2},
+       {q:'What does '+n+' do every morning?',o:['waters the seed','sings to the seed','moves the pot'],a:'waters the seed',lv:1},
+       {q:'What comes up first?',o:['a green shoot','a flower','a leaf'],a:'a green shoot',lv:2},
+       {q:`What color is the flower?`,o:[color,'blue','white'],a:color,lv:2},
+       {q:'Why must '+n+' wait?',o:['plants grow slowly','it is raining','the pot is big'],a:'plants grow slowly',lv:3},
+       {q:`${n} waters the seed every ___.`,short:true,a:'morning',accept:['morning'],hint:hintOf('morning'),lv:1}
+     ]};
+   }},
+  /* 7. 坐车去奶奶家（路线 / 数量） */
+  {id:'trip', visual:'🚇',
+   make(level){
+     const n=stPick(ST_NAMES), how=stPick(['train','bus','MRT']), stops=stPick(['two','three','four']);
+     const s=[`${n} goes to Grandma's flat by ${how}.`,`The ${how} is long and fast.`,`${n} looks at the map.`,`It is ${stops} stops.`];
+     if(level>=2) s.push(`Grandma waits at the gate with a smile.`);
+     if(level>=3) s.push(`They walk up the stairs together.`,`Grandma has hot soup and ${n}'s favourite cake.`,`"Come again next week," she says.`);
+     return {title:`A Ride to Grandma's`, text:s.join(' '), qs:[
+       {q:'How does '+n+' go to Grandma\'s flat?',o:[`by ${how}`,'by bike','by boat'],a:`by ${how}`,lv:1},
+       {q:'How many stops is it?',o:[stops,'ten','one'],a:stops,lv:1},
+       {q:'What does '+n+' look at?',o:['the map','the sea','the sky'],a:'the map',lv:1},
+       {q:'Who waits at the gate?',o:['Grandma','Dad','a friend'],a:'Grandma',lv:1},
+       {q:'What does Grandma have for '+n+'?',o:['hot soup and cake','rice and fish','milk and bread'],a:'hot soup and cake',lv:3},
+       {q:`The ${how} is long and ___.`,short:true,a:'fast',accept:['fast'],hint:hintOf('fast'),lv:1}
+     ]};
+   }},
+  /* 8. 新同学（友谊 / 为什么） */
+  {id:'friend', visual:'🤝',
+   make(level){
+     const name=stPick(ST_NAMES), toy=stPick(['ball','book','kite']);
+     const s=[`A new pupil comes to my class today.`,`The new pupil's name is ${name}.`,`${name} sits next to me.`,`At break ${name} has no one to play with.`];
+     if(level>=2) s.push(`I share my ${toy} with ${name}.`);
+     if(level>=3) s.push(`Now we play together every day.`,`${name} says I am a good friend.`,`I am glad ${name} came to our class.`);
+     return {title:'My New Friend', text:s.join(' '), qs:[
+       {q:'Who comes to my class?',o:['a new pupil','a new teacher','my cousin'],a:'a new pupil',lv:1},
+       {q:'Where does '+name+' sit?',o:['next to me','at the back','near the door'],a:'next to me',lv:1},
+       {q:'Why does '+name+' have no one to play with?',o:[`${name} is new`,`${name} is tired`,`${name} is at home`],a:`${name} is new`,lv:2},
+       {q:'What do I share?',o:[`my ${toy}`,'my lunch','my shoes'],a:`my ${toy}`,lv:1},
+       {q:'How do we feel now?',o:['happy together','angry','sad'],a:'happy together',lv:3},
+       {q:`${name} is my new ___.`,short:true,a:'friend',accept:['friend'],hint:hintOf('friend'),lv:1}
+     ]};
+   }},
+  /* 9. 跟妈妈买菜（细节 / 重量） */
+  {id:'market', visual:'🥬',
+   make(level){
+     const n=stPick(ST_NAMES), buys=stPick(['fish and eggs','rice and beans','apples and pears']), extra=stPick(['a bun','a mango','a small cake']);
+     const s=[`${n} and Mum go to the market.`,`Mum buys ${buys}.`,`${n} carries the small bag.`,`The bag is heavy.`];
+     if(level>=2) s.push(`Mum buys ${n} ${extra}.`);
+     if(level>=3) s.push(`${extra[0].toUpperCase()+extra.slice(1)} is warm and soft.`,`They walk home and talk about the week.`,`"Next time I will carry the big bag," says ${n}.`);
+     return {title:'At the Market', text:s.join(' '), qs:[
+       {q:'Where do they go?',o:['the market','the school','the beach'],a:'the market',lv:1},
+       {q:'What does Mum buy?',o:[buys,'a toy','a hat'],a:buys,lv:1},
+       {q:'What does '+n+' carry?',o:['the small bag','the big bag','nothing'],a:'the small bag',lv:1},
+       {q:'How does the bag feel?',o:['heavy','light','cold'],a:'heavy',lv:2},
+       {q:'What does Mum buy for '+n+'?',o:[extra,'a book','a ball'],a:extra,lv:2},
+       {q:`${n} carries the small ___.`,short:true,a:'bag',accept:['bag'],hint:hintOf('bag'),lv:1}
+     ]};
+   }},
+  /* 10. 帮爸爸洗车（合作 / 结果） */
+  {id:'car', visual:'🚗',
+   make(level){
+     const n=stPick(ST_NAMES), color=stPick(['red','blue','yellow']), who=stPick(['Dad','Mum','Grandpa']);
+     const s=[`${who} washes the car.`,`${n} helps with a ${color} cloth.`,`The car is very dirty.`,`They wash the wheels and the windows.`];
+     if(level>=2) s.push(`Now the car is clean and bright.`);
+     if(level>=3) s.push(`${who} says, "Good job!"`,`${n} puts the cloth in the sun to dry.`,`Next week they will wash it again.`);
+     return {title:'Washing the Car', text:s.join(' '), qs:[
+       {q:'Who washes the car?',o:[who,'the teacher',n],a:who,lv:1},
+       {q:'What does '+n+' use?',o:[`a ${color} cloth`,'a brush','a cup'],a:`a ${color} cloth`,lv:1},
+       {q:'What do they wash?',o:['the wheels and windows','the seats','the toys'],a:'the wheels and windows',lv:1},
+       {q:'How is the car at the end?',o:['clean and bright','dirty and wet','old and slow'],a:'clean and bright',lv:2},
+       {q:'What will they do next week?',o:['wash the car again','buy a new car','go to the beach'],a:'wash the car again',lv:3},
+       {q:`The cloth is ___.`,short:true,a:color,accept:[color],hint:hintOf(color),lv:1}
+     ]};
+   }},
+  /* 11. 海边（意外—重来） */
+  {id:'beach', visual:'🏖️',
+   make(level){
+     const n=stPick(ST_NAMES), shells=stPick(['four','five','six']), who=stPick(['Dad','Mum','Grandpa']);
+     const s=[`${n} and ${who} go to the beach.`,`They build a big sand house.`,`${n} finds ${shells} shells.`,`The wind blows the house down.`];
+     if(level>=2) s.push(`They laugh and build it again.`);
+     if(level>=3) s.push(`The sea is blue and the sand is warm.`,`${n} puts the shells in a bag to take home.`,`"This was the best day," says ${n}.`);
+     return {title:'A Day at the Beach', text:s.join(' '), qs:[
+       {q:'Who goes to the beach with '+n+'?',o:[who,'a teacher','a doctor'],a:who,lv:1},
+       {q:'What do they build?',o:['a sand house','a boat','a kite'],a:'a sand house',lv:1},
+       {q:'How many shells does '+n+' find?',o:[shells,'ten','two'],a:shells,lv:1},
+       {q:'What blows the house down?',o:['the wind','the rain',n],a:'the wind',lv:2},
+       {q:'What do they do after the house falls?',o:['build it again','go home','cry'],a:'build it again',lv:2},
+       {q:`${n} finds ___ shells.`,short:true,a:shells,accept:[shells],hint:hintOf(shells),lv:1}
+     ]};
+   }},
+  /* 12. 图书馆（规则 / 时间） */
+  {id:'library', visual:'📚',
+   make(level){
+     const n=stPick(ST_NAMES), books=stPick(['two','three']), topic=stPick(['animals','trains','the sea']);
+     const s=[`On Saturday ${n} goes to the library.`,`${n} looks for books about ${topic}.`,`The librarian helps ${n} find them.`,`${n} sits on a soft mat and reads.`];
+     if(level>=2) s.push(`${n} borrows ${books} books to read at home.`);
+     if(level>=3) s.push(`"Please bring them back in two weeks," says the librarian.`,`${n} puts the books in a bag and walks home slowly.`,`${n} cannot wait to read them all.`);
+     return {title:'At the Library', text:s.join(' '), qs:[
+       {q:'When does '+n+' go to the library?',o:['on Saturday','on Monday','at night'],a:'on Saturday',lv:1},
+       {q:'What are the books about?',o:[topic,'cars','food'],a:topic,lv:1},
+       {q:'Who helps '+n+'?',o:['the librarian','Mum','a friend'],a:'the librarian',lv:1},
+       {q:'How many books does '+n+' borrow?',o:[books,'ten','one'],a:books,lv:2},
+       {q:'When must the books go back?',o:['in two weeks','tomorrow','in a year'],a:'in two weeks',lv:3},
+       {q:`${n} sits on a soft ___.`,short:true,a:'mat',accept:['mat'],hint:hintOf('mat'),lv:1}
+     ]};
+   }},
+];
+/* 保留旧词表名，供其它模块/存档兼容引用 */
+const STORY_NAMES=ST_NAMES, STORY_PETS=[['cat','🐱'],['dog','🐶']], STORY_COLORS=['red','blue','green'],
+      STORY_PLACES=['park','garden','school'], STORY_THINGS=['a big tree','a small ball'], STORY_FEEL=ST_FEEL;
+
 function makeStory(level, seed){
-  const n=pick(STORY_NAMES), pet=pick(STORY_PETS), color=pick(STORY_COLORS);
-  const place=pick(STORY_PLACES), thing=pick(STORY_THINGS), feel=pick(STORY_FEEL);
-  const s=[];
-  s.push(`${n} has a ${color} ${pet[0]}.`);
-  s.push(`The ${pet[0]} likes to sit in the sun.`);
-  s.push(`${n} can play with the ${pet[0]}.`);
-  s.push(`${n} is ${feel}.`);
-  if(level>=2){
-    s.push(`One day ${n} and the ${pet[0]} go to the ${place}.`);
-    s.push(`They see ${thing} there.`);
-  }
-  if(level>=3){
-    s.push(`"Look at that!" says ${n}.`);
-    s.push(`The ${pet[0]} runs to it and comes back with a big smile.`);
-    s.push(`They stay at the ${place} until the sun goes down.`);
-    s.push(`It is the best day for ${n} and the ${pet[0]}.`);
-  }
-  const text=s.join(' ');
-  const qs=[
-    {q:`What does ${n} have?`,o:[`a ${color} ${pet[0]}`,'a big bus','a toy box'],a:`a ${color} ${pet[0]}`},
-    {q:`What color is the ${pet[0]}?`,o:[color,pick(STORY_COLORS.filter(x=>x!==color)),'purple'],a:color},
-    {q:`Where does the ${pet[0]} like to sit?`,o:['in the sun','in a box','on a bed'],a:'in the sun'},
-    {q:`Is ${n} ${feel}?`,o:['Yes','No'],a:'Yes'},
-  ];
-  if(level>=2){
-    qs.push({q:`Where do they go?`,o:[`the ${place}`,'the zoo','the market'],a:`the ${place}`});
-    qs.push({q:`What do they see there?`,o:[thing,'a big cake','a red hat'],a:thing});
-  }
-  const shortQ=level>=3
-    ? {q:`${n} has a ___ ${pet[0]}.`,short:true,a:color,accept:[color],hint:color[0]+' _ _ _'}
-    : {q:`${n} has a ___ ${pet[0]}.`,short:true,a:color,accept:[color],hint:color[0]+' _ _ _'};
-  // 4 选择 + 1 简答；level 越高选择题越多，难度一点点上来
-  const chosen=shuffle(qs).slice(0,4);
-  const all=shuffle(chosen.concat([shortQ]));
-  return {id:'rp-auto-'+hash32(text).slice(0,10),level,
-    title:`${n} and the ${pet[0][0].toUpperCase()+pet[0].slice(1)}`,
-    visual:pet[1],text,qs:all};
+  level=Math.max(1,Math.min(3,Number(level)||1));
+  /* 优先用「本次会话里最少用过的模板」，避免连续两篇撞同一套结构 */
+  let t=stPick(STORY_TEMPLATES);
+  try{
+    _storyUse=_storyUse||{};
+    const min=Math.min(...STORY_TEMPLATES.map(x=>_storyUse[x.id]||0));
+    const pool=STORY_TEMPLATES.filter(x=>(_storyUse[x.id]||0)<=min);
+    t=stPick(pool.length?pool:STORY_TEMPLATES);
+    _storyUse[t.id]=(_storyUse[t.id]||0)+1;
+  }catch(e){}
+  const built=t.make(level);
+  const text=built.text;
+  /* 只保留本级可用题目：3–4 道选择 + 1 道简答，问法随模板不同而不同 */
+  const usable=(built.qs||[]).filter(x=>(x.lv||1)<=level);
+  const choice=shuffle(usable.filter(x=>!x.short)).slice(0,4);
+  const short=usable.filter(x=>x.short).slice(0,1);
+  const qs=shuffle(choice.concat(short));
+  return {id:'rp-auto-'+hash32(text).slice(0,10), level,
+    title:built.title, visual:t.visual||'📖', text, qs};
 }
 function growPassages(level, count){
   const d=D(); if(!d || typeof READ_PASSAGES==='undefined') return [];
