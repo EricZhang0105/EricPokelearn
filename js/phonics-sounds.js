@@ -17,71 +17,71 @@
 
 /* 音表：每个音 = 音标 + 英文音名 + 中文讲解 + 代表词 + 易混音 */
 const S = {
-  'a-short':{ipa:'/æ/', name:'short a', word:'apple', zh:'短音 a',
-    why:'单词 cat 里的字母 a 发<b>短音 /æ/</b>：嘴巴张大、"æ" 一下就收住，和 <b>apple</b> 里的 a 一样。它和 <b>cake</b> 里的 a 不一样——cake 结尾有个不发音的 <b>e</b>（叫 magic e 神奇 e），它把 a 拉成了长音 <b>/eɪ/</b>（a 念自己的名字）。所以 cat 读 /kæt/，cake 读 /keɪk/。',
+  'a-short':{ipa:'/æ/', name:'short a', word:'apple', zh:"short a",
+    why:"The <b>a</b> in cat says <b>short /æ/</b>: open your mouth wide and stop the sound quickly, like the a in <b>apple</b>. It is not the a in <b>cake</b> — cake ends with a silent <b>e</b> (magic e) that makes its a long. So cat is /kæt/ and cake is /keɪk/.",
     say:'Cat, apple. Short a, ae. Cake is different: long a, magic e.', mix:['a-long','e-short','ar']},
-  'a-long':{ipa:'/eɪ/', name:'long a', word:'cake', zh:'长音 a（magic e）',
-    why:'cake 里的 a 发<b>长音 /eɪ/</b>，也就是字母 a 自己的名字。秘密是结尾那个<b>不发音的 e</b>（magic e 神奇 e）：它不读作音，却让前面的 a 变长。对比 <b>cat</b>：没有 e，a 就发短音 /æ/。所以 cake /keɪk/、cat /kæt/。同样规则：name、game、bike、kite。',
+  'a-long':{ipa:'/eɪ/', name:'long a', word:'cake', zh:"long a (magic e)",
+    why:"The <b>a</b> in cake says <b>long /eɪ/</b> — the letter's own name. The <b>silent e</b> at the end (magic e) makes the a long. <b>Cat</b> has no e, so its a stays short /æ/. So cake /keɪk/, cat /kæt/. Same rule: name, game, bike, kite.",
     say:'Cake, long a, ay. The silent e at the end makes a say its name. Cat has no e, so short a.', mix:['a-short','ai','e-long']},
-  'e-short':{ipa:'/e/', name:'short e', word:'egg', zh:'短音 e',
-    why:'bed、pen、egg 里的 e 都发<b>短音 /e/</b>：嘴巴半开，时间短，像 <b>egg</b> 的 e。别和 a 的短音 /æ/ 搞混——/æ/ 嘴巴张得更大（cat），/e/ 嘴巴小一些（bed）。',
+  'e-short':{ipa:'/e/', name:'short e', word:'egg', zh:"short e",
+    why:"The <b>e</b> in bed, pen and egg says <b>short /e/</b>: mouth half open, a quick sound, like the e in <b>egg</b>. Do not mix it up with short a /æ/ — /æ/ opens wider (cat), /e/ is smaller (bed).",
     say:'Bed, pen, egg. Short e, eh. Mouth a little smaller than short a.', mix:['a-short','i-short','e-long']},
-  'e-long':{ipa:'/iː/', name:'long e', word:'bee', zh:'长音 e',
-    why:'bee、tree、see 里的 ee 发<b>长音 /iː/</b>：嘴角向两边拉开，声音拖长 "eeee"。它和短音 e（bed 的 /e/）完全不同：bed 短促，bee 拉长。',
+  'e-long':{ipa:'/iː/', name:'long e', word:'bee', zh:"long e",
+    why:"The <b>ee</b> in bee, tree and see says <b>long /iː/</b>: stretch your smile and hold it — eeee. Short e (bed) is quick; long e (bee) is long.",
     say:'Bee, tree, see. Long e, ee. Stretch it: eeee.', mix:['e-short','i-short','a-long']},
-  'i-short':{ipa:'/ɪ/', name:'short i', word:'pig', zh:'短音 i',
-    why:'pig、sit、big 里的 i 发<b>短音 /ɪ/</b>：嘴巴放松、很短的 "i"，像 <b>pig</b>。它和长音 i /aɪ/（bike 的 i，念字母名字）不同。',
+  'i-short':{ipa:'/ɪ/', name:'short i', word:'pig', zh:"short i",
+    why:"The <b>i</b> in pig, sit and big says <b>short /ɪ/</b>: relaxed mouth, a quick ih, like <b>pig</b>. It is not long i /aɪ/ — the i in bike says its own name.",
     say:'Pig, sit, big. Short i, ih. Bike is long i, eye.', mix:['i-long','e-short','a-short']},
-  'i-long':{ipa:'/aɪ/', name:'long i', word:'bike', zh:'长音 i（magic e）',
-    why:'bike、kite、time 里的 i 发<b>长音 /aɪ/</b>，也就是字母 i 自己的名字。又是结尾那个<b>不发音的 e</b>（magic e）在帮忙，把 i 拉长了。对比 pig：没有 e，i 发短音 /ɪ/。',
+  'i-long':{ipa:'/aɪ/', name:'long i', word:'bike', zh:"long i (magic e)",
+    why:"The <b>i</b> in bike, kite and time says <b>long /aɪ/</b> — the letter's own name. The <b>silent e</b> at the end (magic e) stretches the i. <b>Pig</b> has no e, so its i stays short /ɪ/.",
     say:'Bike, kite, time. Long i, eye. The silent e makes i say its name. Pig is short i.', mix:['i-short','a-long','e-long']},
-  'o-short':{ipa:'/ɒ/', name:'short o', word:'box', zh:'短音 o',
-    why:'dog、box、top 里的 o 发<b>短音 /o/</b>：嘴巴圆圆地张开，声音短，像 <b>box</b> 的 o。它和长音 o /oʊ/（nose 的 o，念字母名字）不同。',
+  'o-short':{ipa:'/ɒ/', name:'short o', word:'box', zh:"short o",
+    why:"The <b>o</b> in dog, box and top says <b>short /ɒ/</b>: round mouth, quick sound, like the o in <b>box</b>. It is not long o /oʊ/ — the o in nose says its own name.",
     say:'Dog, box, top. Short o, oh. Nose is long o.', mix:['o-long','u-short','ar']},
-  'o-long':{ipa:'/oʊ/', name:'long o', word:'nose', zh:'长音 o（magic e）',
-    why:'nose、home、rose 里的 o 发<b>长音 /oʊ/</b>，也就是字母 o 自己的名字。结尾的<b>不发音 e</b>（magic e）把 o 拉长了。对比 box：没有 e，o 发短音 /o/。',
+  'o-long':{ipa:'/oʊ/', name:'long o', word:'nose', zh:"long o (magic e)",
+    why:"The <b>o</b> in nose, home and rose says <b>long /oʊ/</b> — the letter's own name. The <b>silent e</b> at the end (magic e) makes it long. <b>Box</b> has no e, so its o stays short /ɒ/.",
     say:'Nose, home, rose. Long o, oh. The silent e helps. Box is short o.', mix:['o-short','oa','u-long']},
-  'u-short':{ipa:'/ʌ/', name:'short u', word:'cup', zh:'短音 u',
-    why:'cup、sun、bus 里的 u 发<b>短音 /ʌ/</b>：嘴巴自然张开、很短的 "uh"，像 <b>cup</b> 的 u。它和长音 u /juː/（cute 的 u）不同。',
+  'u-short':{ipa:'/ʌ/', name:'short u', word:'cup', zh:"short u",
+    why:"The <b>u</b> in cup, sun and bus says <b>short /ʌ/</b>: a relaxed, quick uh, like the u in <b>cup</b>. It is not long u /juː/ — the u in cute says its own name.",
     say:'Cup, sun, bus. Short u, uh. Cute is long u.', mix:['u-long','o-short','a-short']},
-  'u-long':{ipa:'/juː/', name:'long u', word:'cute', zh:'长音 u（magic e）',
-    why:'cute、tube 里的 u 发<b>长音 /juː/</b>，接近字母 u 自己的名字。还是结尾那个<b>不发音 e</b>（magic e）把 u 拉长。对比 cup：没有 e，u 发短音 /ʌ/。',
+  'u-long':{ipa:'/juː/', name:'long u', word:'cute', zh:"long u (magic e)",
+    why:"The <b>u</b> in cute and tube says <b>long /juː/</b>, close to the letter's own name. The <b>silent e</b> (magic e) stretches it. <b>Cup</b> has no e, so its u stays short /ʌ/.",
     say:'Cute, tube. Long u, you. The silent e helps. Cup is short u.', mix:['u-short','o-long']},
-  'ar':{ipa:'/ɑː/', name:'ar', word:'car', zh:'ar 组合',
-    why:'car、star、far 里的 <b>ar</b> 一起发 /ɑː/：字母 r 改变了 a 的音，嘴巴张大拖长 "ar"，像 <b>car</b>。所以这里的 a 既不是 cat 的短音，也不是 cake 的长音，而是 ar 特有的音。',
+  'ar':{ipa:'/ɑː/', name:'ar', word:'car', zh:"ar team",
+    why:"In car, star and far the letters <b>ar</b> work together and say /ɑː/: the r changes the a, so open wide and hold ar, like <b>car</b>. This a is neither short (cat) nor long (cake) — ar has its own sound.",
     say:'Car, star, far. Ar says ah. The r changes the a.', mix:['a-short','a-long','or']},
-  'or':{ipa:'/ɔː/', name:'or', word:'for', zh:'or 组合',
-    why:'for、horse、corn 里的 <b>or</b> 一起发 /ɔː/：嘴巴圆圆地拖长 "or"，像 <b>for</b>。字母 r 改变了 o 的音。',
+  'or':{ipa:'/ɔː/', name:'or', word:'for', zh:"or team",
+    why:"In for, horse and corn the letters <b>or</b> work together and say /ɔː/: round your mouth and hold or, like <b>for</b>. The r changes the sound of o.",
     say:'For, horse, corn. Or says or. The r changes the o.', mix:['o-short','o-long','ar']},
-  'er':{ipa:'/ɜː/', name:'er / ir / ur', word:'bird', zh:'er/ir/ur 组合',
-    why:'bird 里的 <b>ir</b>、girl 的 ir、nurse 的 <b>ur</b>、her 的 <b>er</b>，都发同一个音 /ɜː/：嘴巴微微张开、声音平平地拖长 "er"。这三种拼写读音一样，要一起记。',
+  'er':{ipa:'/ɜː/', name:'er / ir / ur', word:'bird', zh:"er / ir / ur team",
+    why:"The <b>ir</b> in bird, the <b>ur</b> in nurse and the <b>er</b> in her all say the same sound /ɜː/: relax your mouth and hold er. Three spellings, one sound — learn them together.",
     say:'Bird, girl, nurse, her. Ir, ur, er all say er.', mix:['e-short','ar','or']},
-  'ee':{ipa:'/iː/', name:'ee / ea', word:'tree', zh:'ee 组合',
-    why:'see、tree、bee 里的 <b>ee</b> 发长音 /iː/：嘴角拉开、拖长 "eeee"。（sea、read 里的 ea 也常发这个音。）两个元音走在一起，通常第一个"发长音、第二个不说话"。',
+  'ee':{ipa:'/iː/', name:'ee / ea', word:'tree', zh:"ee / ea team",
+    why:"The <b>ee</b> in see, tree and bee says long /iː/: stretch your smile — eeee. The <b>ea</b> in sea and read often says it too. When two vowels walk together, the first one says its name and the second one stays quiet.",
     say:'See, tree, bee. Ee says ee, long and stretchy.', mix:['e-short','i-short','e-long']},
-  'ai':{ipa:'/eɪ/', name:'ai / ay', word:'rain', zh:'ai 组合',
-    why:'rain、train、wait 里的 <b>ai</b> 发 /eɪ/（和 cake 的 a 一样念名字）。day、play 里的 <b>ay</b> 也是这个音。口诀："两个元音一起，第一个说自己的名字，第二个不说话。"',
+  'ai':{ipa:'/eɪ/', name:'ai / ay', word:'rain', zh:"ai / ay team",
+    why:"The <b>ai</b> in rain, train and wait says /eɪ/ — the same sound as the a in cake. The <b>ay</b> in day and play says it too. When two vowels walk together, the first one says its name and the second one stays quiet.",
     say:'Rain, train, wait. Ai says ay, like cake. Day and play too.', mix:['a-short','a-long','ee']},
-  'oa':{ipa:'/oʊ/', name:'oa', word:'boat', zh:'oa 组合',
-    why:'boat、coat、goat 里的 <b>oa</b> 发 /oʊ/（和 nose 的 o 一样念名字）。两个元音一起，o 说自己的名字、a 不说话。',
+  'oa':{ipa:'/oʊ/', name:'oa', word:'boat', zh:"oa team",
+    why:"The <b>oa</b> in boat, coat and goat says /oʊ/ — the same sound as the o in nose. Two vowels together: o says its name and a stays quiet.",
     say:'Boat, coat, goat. Oa says oh, like nose.', mix:['o-short','o-long','oo']},
-  'oo':{ipa:'/uː/', name:'oo', word:'moon', zh:'oo 组合',
-    why:'moon、food、zoo 里的 <b>oo</b> 发长音 /uː/：嘴巴撅圆、拖长 "oo"。（注意 book 里的 oo 是短音，是例外。）',
+  'oo':{ipa:'/uː/', name:'oo', word:'moon', zh:"oo team",
+    why:"The <b>oo</b> in moon, food and zoo says long /uː/: round your lips and hold oo. Watch out — the oo in book is the short one; that one is an exception.",
     say:'Moon, food, zoo. Oo says oo, long. Book is the short one.', mix:['o-short','o-long','u-short']},
-  'ou':{ipa:'/aʊ/', name:'ou / ow', word:'house', zh:'ou 组合',
-    why:'house、mouse、cloud 里的 <b>ou</b> 发 /aʊ/：从 "a" 滑到 "u"，像 <b>house</b>。cow、how 里的 <b>ow</b> 也是这个音。',
+  'ou':{ipa:'/aʊ/', name:'ou / ow', word:'house', zh:"ou / ow team",
+    why:"The <b>ou</b> in house, mouse and cloud says /aʊ/: slide from a to u, like <b>house</b>. The <b>ow</b> in cow and how says the same sound.",
     say:'House, mouse, cloud. Ou says ow. Cow and how too.', mix:['o-short','o-long','u-short']},
-  'sh':{ipa:'/ʃ/', name:'sh', word:'ship', zh:'sh 组合',
-    why:'<b>s 和 h 手拉手</b>变成一个新音 /ʃ/：嘴唇噘起、"嘘——"，像 <b>ship</b>、fish、shop。单独的 s 发 /s/（sun），不一样哦。',
+  'sh':{ipa:'/ʃ/', name:'sh', word:'ship', zh:"sh team",
+    why:"<b>s</b> and <b>h</b> hold hands to make one new sound /ʃ/: lips forward, shh, like <b>ship</b>, fish and shop. s on its own says /s/, like sun.",
     say:'Ship, fish, shop. Sh says shhh. S alone says s, like sun.', mix:['ch','th']},
-  'ch':{ipa:'/tʃ/', name:'ch', word:'chair', zh:'ch 组合',
-    why:'<b>c 和 h 手拉手</b>变成 /tʃ/：像打喷嚏前的 "ch"，像 <b>chair</b>、cheese、lunch。它比 sh 多了一个短短的 "t" 起头。',
+  'ch':{ipa:'/tʃ/', name:'ch', word:'chair', zh:"ch team",
+    why:"<b>c</b> and <b>h</b> hold hands to make /tʃ/: like the ch just before a sneeze, as in <b>chair</b>, cheese and lunch. It starts with a tiny t that sh does not have.",
     say:'Chair, cheese, lunch. Ch says ch. Sh is softer.', mix:['sh','th']},
-  'th':{ipa:'/θ/', name:'th', word:'three', zh:'th 组合',
-    why:'<b>t 和 h 手拉手</b>变成 /θ/：舌尖轻轻放在上下牙中间吹气，像 <b>three</b>、think、bath。（this 里的 th 是带声的另一个音。）',
+  'th':{ipa:'/θ/', name:'th', word:'three', zh:"th team",
+    why:"<b>t</b> and <b>h</b> hold hands to make /θ/: put your tongue gently between your teeth and blow, like <b>three</b>, think and bath. The th in this is the voiced one, a different sound.",
     say:'Three, think, bath. Tongue between the teeth: th.', mix:['sh','ch']},
-  'wh':{ipa:'/w/', name:'wh', word:'white', zh:'wh 组合',
-    why:'<b>w 和 h 手拉手</b>通常还是发 /w/：嘴巴撅圆、很快放开，像 <b>white</b>、what、where。',
+  'wh':{ipa:'/w/', name:'wh', word:'white', zh:"wh team",
+    why:"<b>w</b> and <b>h</b> hold hands and usually say /w/: round your lips and let go quickly, like <b>white</b>, what and where.",
     say:'White, what, where. Wh says w.', mix:['sh','ch']},
 };
 
@@ -150,7 +150,7 @@ function base(key,word,pos,type,seed){
     type:'choice', kind:'phonics', soundKey:key,
     speak:{text:word,lang:'en-US',forceAuto:true},
     answerSpeak:{text:s.say,lang:'en-US'},
-    explain:`<b>${s.zh} ${s.ipa}</b><br>${s.why}`,
+    explain:`<b>Sound: ${s.zh} ${s.ipa}</b><br>${s.why}`,
     feedbackDelay:9000,
     qid:'ph'+type+'-'+key+'-'+word+'-'+(type==='C'?s.ipa.replace(/[^\w]/g,''):'')
   };
@@ -172,7 +172,7 @@ function _allQuestions(){
       {
         const q=base(key,word,pos,'A');
         q.prompt=`What sound does the <b>${L}</b> in "${word}" make?`;
-        q.sub=`🔤 ${mark(word,pos)} &nbsp;—&nbsp; 听一听，加粗部分的发音`;
+        q.sub=`🔤 ${mark(word,pos)} &nbsp;—&nbsp; listen to the bold letters`;
         q.options=shuffle([opt(key),opt(mixes[0]),opt(mixes[1]),opt(mixes[2])]);
         q.answer=opt(key);
         q.qid='phA-'+key+'-'+word+'-'+pos;
@@ -189,7 +189,7 @@ function _allQuestions(){
         q.sub=`🔤 ${mark(word,pos)} &nbsp;→&nbsp; ${s.ipa}`;
         q.options=shuffle([right].concat(wrong));
         q.answer=right;
-        q.explain=`<b>它们读音一样！</b><br>${word} 和 <b>${right}</b> 里的 "${L}" 都发 ${s.ipa}。<br>${s.why}`;
+        q.explain=`<b>Same sound!</b><br>The "${L}" in ${word} and in <b>${right}</b> both say ${s.ipa}.<br>${s.why}`;
         q.say=`${word} and ${right} have the same sound. ${s.say}`;
         q.answerSpeak={text:q.say,lang:'en-US'};
         q.qid='phB-'+key+'-'+word+'-'+pos;
@@ -201,7 +201,7 @@ function _allQuestions(){
     list.forEach(([word,pos])=>{
       const q=base(key,word,pos,'C');
       q.prompt=`Which word has the "${s.ipa}" sound?`;
-      q.sub=`👂 听一听，哪个词含有 <b>${s.ipa}</b> 这个音？`;
+      q.sub=`👂 Which word has the <b>${s.ipa}</b> sound?`;
       q.speak={text:word,lang:'en-US',forceAuto:true};
       q.options=shuffle([word].concat(mixes.map(k=>S[k].word)).slice(0,4));
       q.answer=word;

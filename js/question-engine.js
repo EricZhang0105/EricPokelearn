@@ -131,6 +131,8 @@ function difficultyFor(lessonId){
   return Math.max(1, Math.min(5, 1+Math.floor(m/16)));
 }
 const DIFF_LABEL={1:'入门',2:'进阶',3:'熟练',4:'挑战',5:'高手'};
+/* 英文/数学科目全英文：题库扩容提示用这一套（中文科目仍用上面的中文标签） */
+const DIFF_LABEL_EN={1:'Starter',2:'Growing',3:'Confident',4:'Challenging',5:'Expert'};
 
 /* ---------------- 工具 ---------------- */
 function ri(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
@@ -254,25 +256,25 @@ function englishExpand(lessonId, level, need){
     }else if(lessonId==='e-grammar'){
       // 参数化：主语 × 句型，一次能造出 60+ 道互不相同的语法题
       const T=[
-        {s:'___ has a dog.',o:['He','They','We'],a:'He',why:'单数用 He has'},
-        {s:'There ___ two cats.',o:['is','are','am'],a:'are',why:'复数用 are'},
-        {s:'I ___ a book.',o:['have','has','having'],a:'have',why:'I 后面用 have'},
-        {s:'The ball is ___ the box.',o:['in','of','by'],a:'in',why:'在盒子里用 in'},
-        {s:'___ apple is red.',o:['A','An','The'],a:'An',why:'元音开头用 An'},
-        {s:'She ___ to school.',o:['go','goes','going'],a:'goes',why:'第三人称单数加 es'},
-        {s:'We ___ happy.',o:['is','are','am'],a:'are',why:'We 后面用 are'},
-        {s:'___ is your name?',o:['What','Who','Where'],a:'What',why:'问名字用 What'},
+        {s:'___ has a dog.',o:['He','They','We'],a:'He',why:'One person takes "He has".'},
+        {s:'There ___ two cats.',o:['is','are','am'],a:'are',why:'Two cats is plural, so we use "are".'},
+        {s:'I ___ a book.',o:['have','has','having'],a:'have',why:'Use "have" with I.'},
+        {s:'The ball is ___ the box.',o:['in','of','by'],a:'in',why:'Use "in" for something inside the box.'},
+        {s:'___ apple is red.',o:['A','An','The'],a:'An',why:'Use "An" before a vowel sound.'},
+        {s:'She ___ to school.',o:['go','goes','going'],a:'goes',why:'With she we add -es: she goes.'},
+        {s:'We ___ happy.',o:['is','are','am'],a:'are',why:'Use "are" with we.'},
+        {s:'___ is your name?',o:['What','Who','Where'],a:'What',why:'We ask a name with "What".'},
       ];
       const SUBJ=['I','You','We','They','He','She','My dad','The cat','The dogs','Tom and Ben'];
       const NOUNS=['book','ball','cake','kite','fish','hat','cup','bag'];
       const extra=[
         ...SUBJ.map(x=>({s:`${x} ___ happy.`,o:['am','is','are'],
           a:['I'].includes(x)?'am':['He','She','My dad','The cat'].includes(x)?'is':'are',
-          why:x+' 后面用对应的 be 动词'})),
+          why:`Use the be verb that matches "${x}".`})),
         ...SUBJ.map(x=>({s:`${x} ___ a ${pick(NOUNS)}.`,o:['have','has','having'],
           a:['He','She','My dad','The cat'].includes(x)?'has':'have',
-          why:'第三人称单数用 has'})),
-        ...NOUNS.map(n=>({s:`I can see two ___.`,o:[n+'s',n,n+'es'],a:n+'s',why:'两个以上用复数'})),
+          why:'One person or animal takes "has"; more than one takes "have".'})),
+        ...NOUNS.map(n=>({s:`I can see two ___.`,o:[n+'s',n,n+'es'],a:n+'s',why:'Add -s for more than one.'})),
       ];
       T.concat(extra).forEach(t=>{
         if(out.length>=need) return;
@@ -620,7 +622,10 @@ function freshQuestions(lesson,lessonId,slots,opts){
     }
   }
   if(grown && typeof toastMsg==='function'){
-    toastMsg(`📚 题库自动上新 ${grown} 道题 · 难度 ${DIFF_LABEL[level]}`);
+    const zhLesson=/^c-/.test(String(lessonId||''));
+    toastMsg(zhLesson
+      ? `📚 题库自动上新 ${grown} 道题 · 难度 ${DIFF_LABEL[level]}`
+      : `📚 ${grown} new questions added · Level ${DIFF_LABEL_EN[level]||level}`);
   }
 
   // 第三轮：极端兜底 —— 只用「从未出现过」的题补齐，绝不把做过的题再端上来。
@@ -683,12 +688,13 @@ function stats(lessonId){
     : freshPassageCount(all.filter(k=>k.indexOf('#')>0));
   return { seen:all.length, mastered:masteredOf(lessonId),
            level:difficultyFor(lessonId), label:DIFF_LABEL[difficultyFor(lessonId)],
+           labelEn:DIFF_LABEL_EN[difficultyFor(lessonId)],
            grown:(d&&Number(d.qGrown[lessonId]))||0,
            bank, extraPassages:(d&&d.extraPassages.length)||0 };
 }
 
 global.QEngine={ qKey,markShown,markMastered,isSeen,isSeenQ,normalizeQid,seenKeys,
-                 difficultyFor,difficultyLabel:DIFF_LABEL,freshQuestions,stats,
+                 difficultyFor,difficultyLabel:DIFF_LABEL,difficultyLabelEn:DIFF_LABEL_EN,freshQuestions,stats,
                  growPassages,bootExtraPassages,makeStory,ensurePassagePool,
                  /* 供 Node 回归测试 */
                  _internal:{hash32,normRaw,legacyKey,mathExpand,englishExpand,

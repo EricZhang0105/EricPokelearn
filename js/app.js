@@ -582,15 +582,22 @@ function openSubject(subject){
     const card=document.createElement('div');
     card.className='lesson-card '+subject;
     const lvl = les.level ? `<span class="level-badge">${LEVEL_LABEL[les.level]}</span>` : '';
+    const isZhSubject = subject==='chinese';
     let desc=les.desc;
     if(les.id==='e-read' && typeof readStats==='function'){
       const rs=readStats(Store.readDoneIds());
-      desc=`已答对 ${rs.done}/${rs.total} 题 · 当前第 ${rs.level} 级（${READ_LEVEL_INFO[rs.level].label}）· 每周上新 5 篇`;
+      const lv=(READ_LEVEL_INFO[rs.level]&&(READ_LEVEL_INFO[rs.level].en||READ_LEVEL_INFO[rs.level].label))||'';
+      desc=`${rs.done}/${rs.total} correct · Level ${rs.level} (${lv}) · 5 new stories every week`;
     }
     if(typeof QEngine!=='undefined' && QEngine.stats){
       const qs=QEngine.stats(les.id);
-      desc+=` · 难度 ${qs.level}/5 ${qs.label} · 已做 ${qs.seen} 题`;
-      if(qs.grown) desc+=` · 题库自动扩充 ${qs.grown} 次`;
+      if(isZhSubject){
+        desc+=` · 难度 ${qs.level}/5 ${qs.label} · 已做 ${qs.seen} 题`;
+        if(qs.grown) desc+=` · 题库自动扩充 ${qs.grown} 次`;
+      }else{
+        desc+=` · Level ${qs.level}/5 ${qs.labelEn||''} · ${qs.seen} questions done`;
+        if(qs.grown) desc+=` · ${qs.grown} auto-added`;
+      }
     }
     card.innerHTML=`<div class="lc-emoji">${les.emoji}</div>
       <div class="lc-body"><div class="lc-title">${les.title} ${lvl}</div>

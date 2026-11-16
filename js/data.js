@@ -321,16 +321,16 @@ const BUILD=[
 
 /* 语法：常见结构，每题一个知识点，答对后播报完整句子 */
 const GRAMMAR_ITEMS=[
-  {s:'I see ___ apple.',            o:['a','an'],        a:'an',   why:'an 用在元音音素前：an apple'},
-  {s:'The cats ___ sleeping.',      o:['is','are'],      a:'are',  why:'cats 是复数，用 are'},
-  {s:'One cat, two ___.',           o:['cat','cats'],    a:'cats', why:'两个以上名词要加 -s'},
-  {s:'The ball is ___ the box.',    o:['in','on'],       a:'in',   why:'在盒子里面用 in'},
-  {s:'Tom is a boy. ___ is happy.', o:['He','She'],      a:'He',   why:'男孩用 He，女孩用 She'},
-  {s:'She ___ reading a book.',     o:['is','are'],      a:'is',   why:'She 是单数，用 is'},
-  {s:'He ___ to school every day.', o:['go','goes'],     a:'goes', why:'第三人称单数动词加 -es'},
-  {s:'___ is your name?',           o:['What','Who'],    a:'What', why:'问名字用 What is your name?'},
-  {s:'The dog ___ a tail.',         o:['has','have'],    a:'has',  why:'单数主语用 has'},
-  {s:'I ___ a pencil.',             o:['has','have'],    a:'have', why:'I / you / 复数用 have'},
+  {s:'I see ___ apple.',            o:['a','an'],        a:'an',   why:'Use "an" before a vowel sound: an apple.'},
+  {s:'The cats ___ sleeping.',      o:['is','are'],      a:'are',  why:'"Cats" is plural, so we use "are".'},
+  {s:'One cat, two ___.',           o:['cat','cats'],    a:'cats', why:'Add -s when there is more than one: two cats.'},
+  {s:'The ball is ___ the box.',    o:['in','on'],       a:'in',   why:'Use "in" when something is inside the box.'},
+  {s:'Tom is a boy. ___ is happy.', o:['He','She'],      a:'He',   why:'Use "He" for a boy and "She" for a girl.'},
+  {s:'She ___ reading a book.',     o:['is','are'],      a:'is',   why:'"She" is one person, so we use "is".'},
+  {s:'He ___ to school every day.', o:['go','goes'],     a:'goes', why:'With he, she or it we add -es: he goes.'},
+  {s:'___ is your name?',           o:['What','Who'],    a:'What', why:'We ask a name with "What is your name?"'},
+  {s:'The dog ___ a tail.',         o:['has','have'],    a:'has',  why:'One dog is singular, so we use "has".'},
+  {s:'I ___ a pencil.',             o:['has','have'],    a:'have', why:'Use "have" with I, you, we and they.'},
 ];
 
 /* 分级读物（原创可解码读物，按 Level 分级；每本 10 道理解题，凑满一套 10 题） */
