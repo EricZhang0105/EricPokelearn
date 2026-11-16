@@ -83,6 +83,37 @@ function petVisual(a,b,op,pet){
 function blocks(n,opts){ return petGroup(n,MATH_PETS[0],{removed:(opts&&opts.removed)||0}); }
 function emojiGroup(n){ return petGroup(n,MATH_PETS[0]); }
 
+/* ---------- 数学解题思路（新加坡 CPA / Number Bonds / Make-10 思维） ----------
+   答对后作为 explain 展示，并由 answerSpeak 用英文朗读——和英文模块的
+   「答对 → 讲思路」一致，让小朋友更快形成快捷心算思维。 */
+function mathTip(op,x,y,ans){
+  x=Number(x)||0; y=Number(y)||0; ans=Number(ans)||0;
+  if(op==='bonds')
+    return `Part-part-whole: ${x} and ${y} are the parts, ${ans} is the whole. ${x} + ${y} = ${ans}.`;
+  if(op==='+'){
+    if(ans<=10){
+      const seq=[]; for(let n=x+1;n<=ans;n++) seq.push(n);
+      if(seq.length>0 && seq.length<=5)
+        return `Count on: start from ${x}, count ${y} more — ${seq.join(', ')}. ${x} + ${y} = ${ans}.`;
+      return `Start from ${x} and count ${y} more. ${x} + ${y} = ${ans}.`;
+    }
+    const big=Math.max(x,y), need=10-big, left=ans-10;
+    if(need>0 && left>=0)
+      return `Make 10 first: ${big} + ${need} = 10, then 10 + ${left} = ${ans}. Quick trick!`;
+    return `${x} + ${y} = ${ans}.`;
+  }
+  if(op==='-'){
+    if(x<=10)
+      return `Think addition: ${ans} and ${y} make ${x} — ${ans} + ${y} = ${x}. So ${x} − ${y} = ${ans}.`;
+    const back=x-10;
+    if(y>back)
+      return `Back to 10 first: ${x} − ${back} = 10, then 10 − ${y-back} = ${ans}. Quick trick!`;
+    return `Count back from ${x}, ${y} steps. ${x} − ${y} = ${ans}.`;
+  }
+  return `${x} ${op} ${y} = ${ans}.`;
+}
+function mathTipSpeak(t){ return {text:t, lang:'en-US'}; }
+
 /* =========================================================
    数学 · 新加坡 MOE 大纲（全英文，20以内）
    Level 1 = N2/K1 起步 · Level 2 = K1 · Level 3 = K1/K2
@@ -97,7 +128,8 @@ const MATH = [
         out.push({type:'choice', prompt:`How many?`, visual:petGroup(n,pet), petKey:petKey(pet),
           speak:{text:`Count the ${pet.name}. How many?`,lang:'en-US'},
           options:numOptions(n,1,mCap(10,6)), answer:String(n),
-          explain:`There are ${n} ${pet.name}.`});
+          explain:`There are ${n} ${pet.name}. Touch each one as you count: 1, 2, …, ${n}.`,
+          answerSpeak:mathTipSpeak(`There are ${n} ${pet.name}. Count one by one: 1, 2, up to ${n}.`)});
       }
       return out;
     }},
@@ -112,7 +144,8 @@ const MATH = [
         out.push({type:'choice', prompt:`Add the two parts`, sub:`${p1} + ${p2} = ?`,
           visual:petVisual(p1,p2,'+',pet), petKey:petKey(pet),
           speak:{text:`${p1} plus ${p2} equals what?`,lang:'en-US'},
-          options:numOptions(w,2,mCap(10,6)), answer:String(w), explain:`${p1} + ${p2} = ${w}.`});
+          options:numOptions(w,2,mCap(10,6)), answer:String(w),
+          explain:mathTip('bonds',p1,p2,w), answerSpeak:mathTipSpeak(mathTip('bonds',p1,p2,w))});
       }
       return out;
     }},
@@ -127,7 +160,8 @@ const MATH = [
         out.push({type:'choice', prompt:`How many in all?`, sub:`${a} + ${b} = ?`,
           visual:petVisual(a,b,'+',pet), petKey:petKey(pet),
           speak:{text:`${a} plus ${b} equals what?`,lang:'en-US'},
-          options:numOptions(ans,2,mCap(10,6)), answer:String(ans), explain:`${a} + ${b} = ${ans}.`});
+          options:numOptions(ans,2,mCap(10,6)), answer:String(ans),
+          explain:mathTip('+',a,b,ans), answerSpeak:mathTipSpeak(mathTip('+',a,b,ans))});
       }
       return out;
     }},
@@ -143,7 +177,8 @@ const MATH = [
         out.push({type:'choice', prompt:`Add the two parts`, sub:`${p1} + ${p2} = ?`,
           visual:petVisual(p1,p2,'+',pet), petKey:petKey(pet),
           speak:{text:`${p1} plus ${p2} equals what?`,lang:'en-US'},
-          options:numOptions(w,9,mCap(20,8)), answer:String(w), explain:`${p1} + ${p2} = ${w}.`});
+          options:numOptions(w,9,mCap(20,8)), answer:String(w),
+          explain:mathTip('+',p1,p2,w), answerSpeak:mathTipSpeak(mathTip('+',p1,p2,w))});
       }
       return out;
     }},
@@ -159,7 +194,7 @@ const MATH = [
           visual:petVisual(a,b,'+',pet), petKey:petKey(pet),
           speak:{text:`${a} plus ${b} equals what?`,lang:'en-US'},
           options:numOptions(ans,11,18), answer:String(ans),
-          explain:`Make 10: ${a}+${need}=10, then 10+${left}=${ans}. So ${a}+${b}=${ans}.`});
+          explain:mathTip('+',a,b,ans), answerSpeak:mathTipSpeak(mathTip('+',a,b,ans))});
       }
       return out;
     }},
@@ -173,7 +208,8 @@ const MATH = [
         out.push({type:'choice', prompt:`How many are left?`, sub:`${a} − ${b} = ?`,
           visual:petVisual(a,b,'-',pet), petKey:petKey(pet),
           speak:{text:`${a} minus ${b} equals what?`,lang:'en-US'},
-          options:numOptions(ans,0,mCap(9,6)), answer:String(ans), explain:`${a} − ${b} = ${ans}.`});
+          options:numOptions(ans,0,mCap(9,6)), answer:String(ans),
+          explain:mathTip('-',a,b,ans), answerSpeak:mathTipSpeak(mathTip('-',a,b,ans))});
       }
       return out;
     }},
@@ -187,7 +223,8 @@ const MATH = [
         out.push({type:'choice', prompt:`How many are left?`, sub:`${a} − ${b} = ?`,
           visual:petVisual(a,b,'-',pet), petKey:petKey(pet),
           speak:{text:`${a} minus ${b} equals what?`,lang:'en-US'},
-          options:numOptions(ans,1,mCap(19,8)), answer:String(ans), explain:`${a} − ${b} = ${ans}.`});
+          options:numOptions(ans,1,mCap(19,8)), answer:String(ans),
+          explain:mathTip('-',a,b,ans), answerSpeak:mathTipSpeak(mathTip('-',a,b,ans))});
       }
       return out;
     }},
@@ -234,7 +271,7 @@ const MATH = [
           visual:petVisual(a,b,k.op,p.pet), petKey:petKey(p.pet),
           speak:{text:q,lang:'en-US'},
           options:numOptions(ans,Math.max(0,ans-3),ans+3), answer:String(ans),
-          explain:`${a} ${k.op} ${b} = ${ans}.`};
+          explain:mathTip(k.op,a,b,ans), answerSpeak:mathTipSpeak(mathTip(k.op,a,b,ans))};
       });
     }},
 
@@ -251,7 +288,7 @@ const MATH = [
           visual:petVisual(a,b,op,pet), petKey:petKey(pet),
           speak:{text:`${a} ${op==='+'?'plus':'minus'} ${b} equals what?`,lang:'en-US'},
           options:numOptions(ans,Math.max(0,ans-3),ans+3), answer:String(ans),
-          explain:`${a} ${op} ${b} = ${ans}.`});
+          explain:mathTip(op,a,b,ans), answerSpeak:mathTipSpeak(mathTip(op,a,b,ans))});
       }
       return out;
     }},
@@ -456,26 +493,9 @@ const ENGLISH=[
       return out;
     }},
 
-  /* 分级读物（每课 = 一段朗读 + 理解题） */
-  ...READERS.map(r=>({
-    id:r.id, level:r.level, title:r.title, emoji:r.emoji, desc:r.desc,
-    make(){
-      const items=[{type:'passage', title:r.title, text:r.passage, visual:r.visual,
-        speak:{text:r.passage,lang:'en-US'}}];
-      r.qa.forEach(qa=>{
-        if(qa.short){
-          items.push({type:'type', short:true, prompt:'Short answer', sub:qa.q,
-            hint:qa.hint, accept:qa.accept,
-            speak:{text:qa.q,lang:'en-US'}, answer:qa.a, explain:`Answer: ${qa.a}.`});
-        }else{
-          items.push({type:'choice', prompt:`Question`, sub:qa.q,
-            speak:{text:qa.q,lang:'en-US'}, options:shuffle(qa.o), answer:qa.a,
-            explain:`Answer: ${qa.a}.`});
-        }
-      });
-      return items;
-    }
-  })),
+  /* 分级读物不再单列课程卡片：5 篇全部归入 Reading & Understanding (e-read)。
+     它们在 read-passages.js 里以 rp-reader-* 注册进同一套阅读题库，
+     统一走读题去重（答对过的 qid 永不再出现），避免"每个类型下又冒出 5 篇"。 */
 ];
 
 /* =========================================================
@@ -570,7 +590,7 @@ const CHINESE=[
     }},
 
   { id:'c-blend', title:'Blending 拼读练习', emoji:'🧩',
-    desc:'声母+韵母（带声调），带语音播报：听 → 跟读 → 选音节',
+    desc:'四步拼读法：韵母 → 加声调 → 声母 → 拼出音节',
     make(){
       return shuffle(ZH_BLENDS).slice(0,10).map(it=>{
         const finT = zhToneMark(it.fin, it.tone);   // 韵母带调号，拼读时看得清是第几声
@@ -578,9 +598,16 @@ const CHINESE=[
         const tName = zhToneName(it.tone);
         return {
           type:'choice', prompt:`拼一拼：${it.ini} + ${finT} = ?`,
-          sub:`🔊 仔细听：声母 → 韵母（${tName}）→ 合起来怎么读`,
-          speak:{ text:`${it.ini}，${finT}，${sylT}`, lang:'zh-CN',
-                  clip:zhClip('blend',it.syl), autoplay:true },
+          sub:`🔊 听顺序：韵母 ${it.fin} → 加声调 ${finT}（${tName}）→ 声母 ${it.ini} → 拼出来 ${sylT}`,
+          /* 四步拼读法（Eric 指定的顺序）：先读韵母，再读带调韵母，
+             然后读声母，最后拼出完整音节。每段优先播本地录音，
+             带调韵母没有录音就由 TTS 读带调号文本。 */
+          speak:{ lang:'zh-CN', autoplay:true, seq:[
+            {clip:zhClip('final',it.fin),  text:it.fin,  gap:420},
+            {text:finT, gap:420},
+            {clip:zhClip('initial',it.ini), text:it.ini, gap:420},
+            {clip:zhClip('blend',it.syl),  text:sylT}
+          ]},
           options:shuffle([sylT,...zhBlendDecoysToned(it)]), answer:sylT,
           explain:`${it.ini} + ${finT} = ${sylT}（${tName}）。例如「${it.word}」的「${it.hz}」。`
         };

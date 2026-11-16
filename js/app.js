@@ -173,9 +173,29 @@ function clipFor(text){
   return AUDIO_MAP[k] || null;
 }
 /* 读题：优先播放题目自带的本地录音（中文拼音），其次查英文词库，
-   最后才用浏览器 TTS。任何一环失败都会回退到 TTS，绝不出现「没声音」。 */
+   最后才用浏览器 TTS。任何一环失败都会回退到 TTS，绝不出现「没声音」。
+   拼读题带 seq（韵母 → 韵母带调 → 声母 → 整体拼读）时按顺序逐段播放，
+   每段都是「本地录音优先，缺了就 TTS 兜底」，段间留 0.4 秒让孩子跟读。 */
 function playSpeak(s, onEnd){
   if(!s) return;
+  if(Array.isArray(s.seq) && s.seq.length){
+    const lang=s.lang||'zh-CN';
+    let i=0;
+    const next=()=>{
+      if(i>=s.seq.length){ if(onEnd) onEnd(); return; }
+      const st=s.seq[i++];
+      const stepDone=()=>setTimeout(next, st.gap!=null?st.gap:400);
+      const fail=()=>{
+        if(st.text) speak(st.text, st.lang||lang);
+        setTimeout(next, 1000);
+      };
+      if(st.clip && playClip(st.clip,stepDone,fail)) return;
+      if(st.text){ speak(st.text, st.lang||lang); setTimeout(next, 1000); return; }
+      stepDone();
+    };
+    next();
+    return;
+  }
   let fellBack=false;
   const fallback=()=>{
     if(fellBack) return; fellBack=true;

@@ -516,6 +516,26 @@ READ_PASSAGES.forEach(p=>{
   p.qs.forEach((x,i)=>{ if(!x.qid) x.qid = p.id+'#'+(i+1); });
 });
 
+/* 把 data.js 里的 5 本分级读物（Sam and the Cat / The Big Sun / ...）
+   统一并入阅读题库，归入 Reading & Understanding，不再单列课程。
+   - 用 rp-reader-* 独立 id，避开已有 rp-* 短文，老存档 qid 不受影响；
+   - qa → qs 字段兼容（q/o/a 与 short/accept/hint 结构一致）；
+   - 只在首次加载注册一次（按 id 幂等）。 */
+(function registerReaders(){
+  if(typeof READERS==='undefined' || !Array.isArray(READERS)) return;
+  const have=new Set(READ_PASSAGES.map(p=>p.id));
+  READERS.forEach(r=>{
+    const id='rp-reader-'+r.id;
+    if(have.has(id)) return;
+    const qs=(r.qa||[]).map(x=>Object.assign({},x));
+    if(!qs.length) return;
+    READ_PASSAGES.push({ id, level:r.level||1, title:r.title,
+      visual:(r.visual||r.emoji||'📖'), text:r.passage, qs });
+    have.add(id);
+    qs.forEach((x,i)=>{ if(!x.qid) x.qid=id+'#'+(i+1); });
+  });
+})();
+
 const READ_LEVEL_INFO = {
   1:{ label:'Short sentences 短句',  min:10, max:24 },
   2:{ label:'Short stories 小段落',  min:24, max:44 },

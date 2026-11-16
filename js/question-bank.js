@@ -134,9 +134,14 @@ function speakMath(sub){
 }
 function mathBank(lessonId,level,spread){
   const out=[];
+  /* 答对后的解题思路（Make-10 / 数数 / 想加算减）：与 data.js 课程侧同一套 */
+  const tipOf=(op,x,y,ans)=>{
+    const t=(typeof mathTip==='function')?mathTip(op,x,y,ans):`${x} ${op} ${y} = ${ans}.`;
+    return {explain:t, answerSpeak:{text:t,lang:'en-US'}};
+  };
   /* 基础参数空间就要足够宽（≥200 道本质不同的题）；tier 会把大数字题
      排在后面，入门阶段依然只出小数字，难度靠排序一点点上来。 */
-  const cap=Math.min(120, 40+level*8+spread*12);
+  const cap=Math.min(150, 60+level*10+spread*20);
   const maxA=Math.max(6,Math.floor(cap*0.8));
   const pets=(typeof MATH_PETS!=='undefined')?MATH_PETS:[{id:25,name:'Pikachu'}];
   const tierOf=(n)=>Math.max(1,Math.min(5,1+Math.floor(n/Math.max(8,Math.floor(cap/5)))));
@@ -153,7 +158,8 @@ function mathBank(lessonId,level,spread){
           type:'choice',prompt:`How many ${pet.name}?`,visual,petKey:'pk'+pet.id,
           speak:{text:`Count the ${pet.name}. How many?`,lang:'en-US'},
           options:numOptionsLocal(n,1,cap+2),answer:String(n),
-          explain:`There are ${n} ${pet.name}.`
+          explain:`There are ${n} ${pet.name}. Touch each one as you count: 1, 2, …, ${n}.`,
+          answerSpeak:{text:`There are ${n} ${pet.name}. Count one by one: 1, 2, up to ${n}.`,lang:'en-US'}
         });
       }
     }
@@ -162,8 +168,8 @@ function mathBank(lessonId,level,spread){
 
   if(lessonId==='m-word'){
     let i=0;
-    for(let a=2;a<=maxA && i<400;a++){
-      for(let b=1;b<=Math.min(9,a-1) && i<400;b++){
+    for(let a=2;a<=maxA && i<600;a++){
+      for(let b=1;b<=Math.min(9,a-1) && i<600;b++){
         for(let k=0;k<2;k++){
           const op=k===0?'+':'-';
           const tpl=(op==='+'?WORD_ADD:WORD_SUB)[(a+b+k)%5];
@@ -172,25 +178,24 @@ function mathBank(lessonId,level,spread){
           const sub=tpl({n:name,pet:pet.name,a,b});
           const ans=op==='+'?a+b:a-b;
           const visual=(typeof petVisual==='function')?petVisual(a,b,op,pet):'';
-          add(op+a+'_'+b+'_'+k,tierOf(a+b),{
+          add(op+a+'_'+b+'_'+k,tierOf(a+b),Object.assign({
             type:'choice',prompt:'Read the story',sub,visual,petKey:'pk'+pet.id,
             speak:{text:sub,lang:'en-US'},
-            options:numOptionsLocal(ans,0,cap+10),answer:String(ans),
-            explain:`${a} ${op} ${b} = ${ans}.`
-          });
+            options:numOptionsLocal(ans,0,cap+10),answer:String(ans)
+          },tipOf(op,a,b,ans)));
         }
         i++;
       }
     }
-    return out.slice(0,400);
+    return out.slice(0,600);
   }
 
   /* 加减 / number bonds / mixed：枚举 (a,b) 组合 */
   const isSub=/sub/.test(lessonId);
   const isBonds=/bonds/.test(lessonId);
   let count=0;
-  for(let a=2;a<=maxA && count<420;a++){
-    for(let b=1;b<=Math.min(maxA,a) && count<420;b++){
+  for(let a=2;a<=maxA && count<600;a++){
+    for(let b=1;b<=Math.min(maxA,a) && count<600;b++){
       if(isSub && b>=a) continue;
       if(!isSub && a+b>cap) continue;
       const op=lessonId==='m-mixed' ? ((a+b)%2===0?'+':'-') : (isSub?'-':'+');
@@ -202,12 +207,11 @@ function mathBank(lessonId,level,spread){
       const sub=`${x} ${op==='+'?'+':'−'} ${y} = ?`;
       const visual=(typeof petVisual==='function')?petVisual(x,y,op,pet):'';
       const prompt=isBonds?'Add the two parts':(op==='-'?'How many are left?':'Solve it');
-      add(op+x+'_'+y+'k'+(a%3),tierOf(x+y),{
+      add(op+x+'_'+y+'k'+(a%3),tierOf(x+y),Object.assign({
         type:'choice',prompt,sub,visual,petKey:'pk'+pet.id,
         speak:{text:speakMath(sub),lang:'en-US'},
-        options:numOptionsLocal(ans,0,cap*2),answer:String(ans),
-        explain:`${x} ${op} ${y} = ${ans}.`
-      });
+        options:numOptionsLocal(ans,0,cap*2),answer:String(ans)
+      },tipOf(isBonds&&ans<=10?'bonds':op,x,y,ans)));
       count++;
     }
   }
@@ -225,7 +229,7 @@ function buildSentences(spread){
   /* spread 扩容：把派生词也放进宾语池并放宽上限，
      否则前 420 句永远是同一批，题库刷完就再也造不出新句。 */
   const objs=wordPool(spread).filter(w=>w.length<=9).slice(0,110+spread*40);
-  const limit=420+spread*200;
+  const limit=600+spread*300;
   const out=[];
   let i=0;
   for(let s=0;s<SUBJ.length;s++){
@@ -309,7 +313,7 @@ function englishBank(lessonId,level,spread){
     const NS=uniq(NS0.concat(extraN.slice(0,spread*16)));
     /* 每个句型各取一批，保证 tier 1–5 都有充足库存；
        若用全局上限截断，前面的低难度模板会把名额吃光，难度永远升不上去。 */
-    const perTemplate=70+spread*25;
+    const perTemplate=100+spread*40;
     for(let t=0;t<T.length;t++){
       let made=0;
       for(let s=0;s<SS.length&&made<perTemplate;s++){

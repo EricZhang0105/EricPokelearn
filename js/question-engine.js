@@ -86,7 +86,7 @@ function normalizeQid(q,lessonId){
    extraPassages : [ 自动生成的短文 ]            —— 题库真的变大且跟着存档走
    qGrown    : { lessonId: 已扩容次数 }          —— 统计用
 ------------------------------------------------ */
-const MAX_SEEN = 12000;
+const MAX_SEEN = 60000;   // 已出过的题指纹上限（提高 5 倍：刷再多题也不会因裁剪而把答对过的题重新端上来）
 function D(){
   if(typeof Store==='undefined' || !Store.data) return null;
   const d=Store.data;
@@ -463,7 +463,7 @@ function growPassages(level, count){
     st.qs.forEach((x,i)=>{ x.qid=st.id+'#'+(i+1); });
     READ_PASSAGES.push(st);
     d.extraPassages.push({id:st.id,level:st.level,title:st.title,visual:st.visual,text:st.text,qs:st.qs});
-    if(d.extraPassages.length>240) d.extraPassages.shift();   // 存档体积封顶
+    if(d.extraPassages.length>1200) d.extraPassages.shift();  // 存档体积封顶（提高：可长期积累新题不重复）
     made.push(st);
   }
   if(made.length){ const dd=D(); dd.qGrown['e-read']=(Number(dd.qGrown['e-read'])||0)+made.length; save(); }
