@@ -1,0 +1,3096 @@
+{
+ "voiceNote": "单一女声，禁止变声/变调",
+ "count": 515,
+ "items": [
+  {
+   "key": "the",
+   "text": "the",
+   "rate": "normal",
+   "file": "w_8fc42c6ddf.m4a"
+  },
+  {
+   "key": "the::slow",
+   "text": "the",
+   "rate": "slow",
+   "file": "w_36f99320da.m4a"
+  },
+  {
+   "key": "a",
+   "text": "a",
+   "rate": "normal",
+   "file": "w_0cc175b9c0.m4a"
+  },
+  {
+   "key": "a::slow",
+   "text": "a",
+   "rate": "slow",
+   "file": "w_68299b75b5.m4a"
+  },
+  {
+   "key": "i",
+   "text": "I",
+   "rate": "normal",
+   "file": "w_865c0c0b4a.m4a"
+  },
+  {
+   "key": "i::slow",
+   "text": "I",
+   "rate": "slow",
+   "file": "w_c752ecf18a.m4a"
+  },
+  {
+   "key": "you",
+   "text": "you",
+   "rate": "normal",
+   "file": "w_639bae9ac6.m4a"
+  },
+  {
+   "key": "you::slow",
+   "text": "you",
+   "rate": "slow",
+   "file": "w_cd1a916c1b.m4a"
+  },
+  {
+   "key": "he",
+   "text": "he",
+   "rate": "normal",
+   "file": "w_6f96cfdfe5.m4a"
+  },
+  {
+   "key": "he::slow",
+   "text": "he",
+   "rate": "slow",
+   "file": "w_91ae0052b1.m4a"
+  },
+  {
+   "key": "she",
+   "text": "she",
+   "rate": "normal",
+   "file": "w_9eb0d040ef.m4a"
+  },
+  {
+   "key": "she::slow",
+   "text": "she",
+   "rate": "slow",
+   "file": "w_8b3f55e9f1.m4a"
+  },
+  {
+   "key": "we",
+   "text": "we",
+   "rate": "normal",
+   "file": "w_ff1ccf57e9.m4a"
+  },
+  {
+   "key": "we::slow",
+   "text": "we",
+   "rate": "slow",
+   "file": "w_3315033c1f.m4a"
+  },
+  {
+   "key": "to",
+   "text": "to",
+   "rate": "normal",
+   "file": "w_01b6e20344.m4a"
+  },
+  {
+   "key": "to::slow",
+   "text": "to",
+   "rate": "slow",
+   "file": "w_b47891171d.m4a"
+  },
+  {
+   "key": "and",
+   "text": "and",
+   "rate": "normal",
+   "file": "w_be5d5d3754.m4a"
+  },
+  {
+   "key": "and::slow",
+   "text": "and",
+   "rate": "slow",
+   "file": "w_6c303da41c.m4a"
+  },
+  {
+   "key": "is",
+   "text": "is",
+   "rate": "normal",
+   "file": "w_a2a551a645.m4a"
+  },
+  {
+   "key": "is::slow",
+   "text": "is",
+   "rate": "slow",
+   "file": "w_e95fdffa06.m4a"
+  },
+  {
+   "key": "it",
+   "text": "it",
+   "rate": "normal",
+   "file": "w_0d149b90e7.m4a"
+  },
+  {
+   "key": "it::slow",
+   "text": "it",
+   "rate": "slow",
+   "file": "w_1ba5b0cefb.m4a"
+  },
+  {
+   "key": "in",
+   "text": "in",
+   "rate": "normal",
+   "file": "w_13b5bfe96f.m4a"
+  },
+  {
+   "key": "in::slow",
+   "text": "in",
+   "rate": "slow",
+   "file": "w_f18a25ff3f.m4a"
+  },
+  {
+   "key": "on",
+   "text": "on",
+   "rate": "normal",
+   "file": "w_ed2b5c0139.m4a"
+  },
+  {
+   "key": "on::slow",
+   "text": "on",
+   "rate": "slow",
+   "file": "w_4381c752ee.m4a"
+  },
+  {
+   "key": "at",
+   "text": "at",
+   "rate": "normal",
+   "file": "w_7d0db380a5.m4a"
+  },
+  {
+   "key": "at::slow",
+   "text": "at",
+   "rate": "slow",
+   "file": "w_2e39894e08.m4a"
+  },
+  {
+   "key": "can",
+   "text": "can",
+   "rate": "normal",
+   "file": "w_2c61ebff5a.m4a"
+  },
+  {
+   "key": "can::slow",
+   "text": "can",
+   "rate": "slow",
+   "file": "w_a1d493c448.m4a"
+  },
+  {
+   "key": "see",
+   "text": "see",
+   "rate": "normal",
+   "file": "w_1e8e42b87a.m4a"
+  },
+  {
+   "key": "see::slow",
+   "text": "see",
+   "rate": "slow",
+   "file": "w_208b4b68d1.m4a"
+  },
+  {
+   "key": "look",
+   "text": "look",
+   "rate": "normal",
+   "file": "w_8c4291f695.m4a"
+  },
+  {
+   "key": "look::slow",
+   "text": "look",
+   "rate": "slow",
+   "file": "w_102e0f3e1f.m4a"
+  },
+  {
+   "key": "go",
+   "text": "go",
+   "rate": "normal",
+   "file": "w_34d1f91fb2.m4a"
+  },
+  {
+   "key": "go::slow",
+   "text": "go",
+   "rate": "slow",
+   "file": "w_fb99b67637.m4a"
+  },
+  {
+   "key": "big",
+   "text": "big",
+   "rate": "normal",
+   "file": "w_d861877da5.m4a"
+  },
+  {
+   "key": "big::slow",
+   "text": "big",
+   "rate": "slow",
+   "file": "w_705538471f.m4a"
+  },
+  {
+   "key": "red",
+   "text": "red",
+   "rate": "normal",
+   "file": "w_bda9643ac6.m4a"
+  },
+  {
+   "key": "red::slow",
+   "text": "red",
+   "rate": "slow",
+   "file": "w_37984c8747.m4a"
+  },
+  {
+   "key": "blue",
+   "text": "blue",
+   "rate": "normal",
+   "file": "w_48d6215903.m4a"
+  },
+  {
+   "key": "blue::slow",
+   "text": "blue",
+   "rate": "slow",
+   "file": "w_cf1b103914.m4a"
+  },
+  {
+   "key": "cat",
+   "text": "cat",
+   "rate": "normal",
+   "file": "w_d077f244de.m4a"
+  },
+  {
+   "key": "cat::slow",
+   "text": "cat",
+   "rate": "slow",
+   "file": "w_95f8e8ecf1.m4a"
+  },
+  {
+   "key": "dog",
+   "text": "dog",
+   "rate": "normal",
+   "file": "w_06d80eb0c5.m4a"
+  },
+  {
+   "key": "dog::slow",
+   "text": "dog",
+   "rate": "slow",
+   "file": "w_e414048961.m4a"
+  },
+  {
+   "key": "sun",
+   "text": "sun",
+   "rate": "normal",
+   "file": "w_ebd556e6df.m4a"
+  },
+  {
+   "key": "sun::slow",
+   "text": "sun",
+   "rate": "slow",
+   "file": "w_edde7cadd7.m4a"
+  },
+  {
+   "key": "run",
+   "text": "run",
+   "rate": "normal",
+   "file": "w_a53108f754.m4a"
+  },
+  {
+   "key": "run::slow",
+   "text": "run",
+   "rate": "slow",
+   "file": "w_2f44d89527.m4a"
+  },
+  {
+   "key": "hot",
+   "text": "hot",
+   "rate": "normal",
+   "file": "w_27369b3bf4.m4a"
+  },
+  {
+   "key": "hot::slow",
+   "text": "hot",
+   "rate": "slow",
+   "file": "w_6225a2237f.m4a"
+  },
+  {
+   "key": "cup",
+   "text": "cup",
+   "rate": "normal",
+   "file": "w_f3f58ee455.m4a"
+  },
+  {
+   "key": "cup::slow",
+   "text": "cup",
+   "rate": "slow",
+   "file": "w_84ea03a88e.m4a"
+  },
+  {
+   "key": "book",
+   "text": "book",
+   "rate": "normal",
+   "file": "w_821f032888.m4a"
+  },
+  {
+   "key": "book::slow",
+   "text": "book",
+   "rate": "slow",
+   "file": "w_a2b6a95b37.m4a"
+  },
+  {
+   "key": "ball",
+   "text": "ball",
+   "rate": "normal",
+   "file": "w_7a10ea1b9b.m4a"
+  },
+  {
+   "key": "ball::slow",
+   "text": "ball",
+   "rate": "slow",
+   "file": "w_931932ec6e.m4a"
+  },
+  {
+   "key": "tree",
+   "text": "tree",
+   "rate": "normal",
+   "file": "w_c0af77cf82.m4a"
+  },
+  {
+   "key": "tree::slow",
+   "text": "tree",
+   "rate": "slow",
+   "file": "w_cc57b8b8fd.m4a"
+  },
+  {
+   "key": "pig",
+   "text": "pig",
+   "rate": "normal",
+   "file": "w_f74c6af46a.m4a"
+  },
+  {
+   "key": "pig::slow",
+   "text": "pig",
+   "rate": "slow",
+   "file": "w_6b531c2b31.m4a"
+  },
+  {
+   "key": "hat",
+   "text": "hat",
+   "rate": "normal",
+   "file": "w_46b5e59b2f.m4a"
+  },
+  {
+   "key": "hat::slow",
+   "text": "hat",
+   "rate": "slow",
+   "file": "w_9f81f2da8a.m4a"
+  },
+  {
+   "key": "bug",
+   "text": "bug",
+   "rate": "normal",
+   "file": "w_ae0e4bdad7.m4a"
+  },
+  {
+   "key": "bug::slow",
+   "text": "bug",
+   "rate": "slow",
+   "file": "w_5cc7dd37aa.m4a"
+  },
+  {
+   "key": "pen",
+   "text": "pen",
+   "rate": "normal",
+   "file": "w_03f00e8e9d.m4a"
+  },
+  {
+   "key": "pen::slow",
+   "text": "pen",
+   "rate": "slow",
+   "file": "w_ac8e68f26a.m4a"
+  },
+  {
+   "key": "top",
+   "text": "top",
+   "rate": "normal",
+   "file": "w_b28354b543.m4a"
+  },
+  {
+   "key": "top::slow",
+   "text": "top",
+   "rate": "slow",
+   "file": "w_e9564b611a.m4a"
+  },
+  {
+   "key": "map",
+   "text": "map",
+   "rate": "normal",
+   "file": "w_1d78dc8ed5.m4a"
+  },
+  {
+   "key": "map::slow",
+   "text": "map",
+   "rate": "slow",
+   "file": "w_5eceaec698.m4a"
+  },
+  {
+   "key": "fox",
+   "text": "fox",
+   "rate": "normal",
+   "file": "w_2b95d1f09b.m4a"
+  },
+  {
+   "key": "fox::slow",
+   "text": "fox",
+   "rate": "slow",
+   "file": "w_2e5575dff0.m4a"
+  },
+  {
+   "key": "bus",
+   "text": "bus",
+   "rate": "normal",
+   "file": "w_d20f83ee69.m4a"
+  },
+  {
+   "key": "bus::slow",
+   "text": "bus",
+   "rate": "slow",
+   "file": "w_2e9a9fedb5.m4a"
+  },
+  {
+   "key": "box",
+   "text": "box",
+   "rate": "normal",
+   "file": "w_34be958a92.m4a"
+  },
+  {
+   "key": "box::slow",
+   "text": "box",
+   "rate": "slow",
+   "file": "w_8b6ad6d922.m4a"
+  },
+  {
+   "key": "leg",
+   "text": "leg",
+   "rate": "normal",
+   "file": "w_4e1df3d256.m4a"
+  },
+  {
+   "key": "leg::slow",
+   "text": "leg",
+   "rate": "slow",
+   "file": "w_23cf3a4046.m4a"
+  },
+  {
+   "key": "sit",
+   "text": "sit",
+   "rate": "normal",
+   "file": "w_87d4eeb7de.m4a"
+  },
+  {
+   "key": "sit::slow",
+   "text": "sit",
+   "rate": "slow",
+   "file": "w_056252eb41.m4a"
+  },
+  {
+   "key": "fan",
+   "text": "fan",
+   "rate": "normal",
+   "file": "w_50bd8c21bf.m4a"
+  },
+  {
+   "key": "fan::slow",
+   "text": "fan",
+   "rate": "slow",
+   "file": "w_3e27d14b5f.m4a"
+  },
+  {
+   "key": "rat",
+   "text": "rat",
+   "rate": "normal",
+   "file": "w_e756f6aafa.m4a"
+  },
+  {
+   "key": "rat::slow",
+   "text": "rat",
+   "rate": "slow",
+   "file": "w_626d7efae7.m4a"
+  },
+  {
+   "key": "net",
+   "text": "net",
+   "rate": "normal",
+   "file": "w_40fa73c9d0.m4a"
+  },
+  {
+   "key": "net::slow",
+   "text": "net",
+   "rate": "slow",
+   "file": "w_166ccbd185.m4a"
+  },
+  {
+   "key": "sam has a red cat. the cat sits on a mat. sam pats the cat. the cat is happy.",
+   "text": "Sam has a red cat. The cat sits on a mat. Sam pats the cat. The cat is happy.",
+   "rate": "normal",
+   "file": "w_cd6939c475.m4a"
+  },
+  {
+   "key": "what color is the cat?",
+   "text": "What color is the cat?",
+   "rate": "normal",
+   "file": "w_6db558be8f.m4a"
+  },
+  {
+   "key": "where does the cat sit?",
+   "text": "Where does the cat sit?",
+   "rate": "normal",
+   "file": "w_9b1786baa5.m4a"
+  },
+  {
+   "key": "what does sam do?",
+   "text": "What does Sam do?",
+   "rate": "normal",
+   "file": "w_6215396493.m4a"
+  },
+  {
+   "key": "is the cat sad?",
+   "text": "Is the cat sad?",
+   "rate": "normal",
+   "file": "w_ecf1a80ad1.m4a"
+  },
+  {
+   "key": "how does the cat feel?",
+   "text": "How does the cat feel?",
+   "rate": "normal",
+   "file": "w_8edc027456.m4a"
+  },
+  {
+   "key": "ben has a big dog. the dog can run fast. the dog can jump high. ben loves his dog.",
+   "text": "Ben has a big dog. The dog can run fast. The dog can jump high. Ben loves his dog.",
+   "rate": "normal",
+   "file": "w_870ea0ad40.m4a"
+  },
+  {
+   "key": "what does ben have?",
+   "text": "What does Ben have?",
+   "rate": "normal",
+   "file": "w_62584df389.m4a"
+  },
+  {
+   "key": "can the dog jump?",
+   "text": "Can the dog jump?",
+   "rate": "normal",
+   "file": "w_c29c025265.m4a"
+  },
+  {
+   "key": "what can the dog do?",
+   "text": "What can the dog do?",
+   "rate": "normal",
+   "file": "w_b83fee02ff.m4a"
+  },
+  {
+   "key": "is the dog small?",
+   "text": "Is the dog small?",
+   "rate": "normal",
+   "file": "w_bf7ffe14d9.m4a"
+  },
+  {
+   "key": "ben has a big ___.",
+   "text": "Ben has a big ___.",
+   "rate": "normal",
+   "file": "w_e9dbc89499.m4a"
+  },
+  {
+   "key": "the sun is big. the sun is hot. we can see the sun in the day. we play in the sun.",
+   "text": "The sun is big. The sun is hot. We can see the sun in the day. We play in the sun.",
+   "rate": "normal",
+   "file": "w_1a9c8f39d2.m4a"
+  },
+  {
+   "key": "is the sun hot?",
+   "text": "Is the sun hot?",
+   "rate": "normal",
+   "file": "w_78b7eded58.m4a"
+  },
+  {
+   "key": "when can we see the sun?",
+   "text": "When can we see the sun?",
+   "rate": "normal",
+   "file": "w_bd724db128.m4a"
+  },
+  {
+   "key": "is the sun small?",
+   "text": "Is the sun small?",
+   "rate": "normal",
+   "file": "w_6b40f9aad6.m4a"
+  },
+  {
+   "key": "what do we do in the sun?",
+   "text": "What do we do in the sun?",
+   "rate": "normal",
+   "file": "w_b3806bf2fc.m4a"
+  },
+  {
+   "key": "the sun is big and ___.",
+   "text": "The sun is big and ___.",
+   "rate": "normal",
+   "file": "w_c9ee301467.m4a"
+  },
+  {
+   "key": "we go to the park. i see a red ball. tom kicks the ball. we are happy at the park.",
+   "text": "We go to the park. I see a red ball. Tom kicks the ball. We are happy at the park.",
+   "rate": "normal",
+   "file": "w_24e580ffca.m4a"
+  },
+  {
+   "key": "where do we go?",
+   "text": "Where do we go?",
+   "rate": "normal",
+   "file": "w_efd78230df.m4a"
+  },
+  {
+   "key": "what color is the ball?",
+   "text": "What color is the ball?",
+   "rate": "normal",
+   "file": "w_e2cc779855.m4a"
+  },
+  {
+   "key": "what does tom do?",
+   "text": "What does Tom do?",
+   "rate": "normal",
+   "file": "w_4beb67aecf.m4a"
+  },
+  {
+   "key": "are we happy at the park?",
+   "text": "Are we happy at the park?",
+   "rate": "normal",
+   "file": "w_c854e3f105.m4a"
+  },
+  {
+   "key": "i see a ___ ball.",
+   "text": "I see a ___ ball.",
+   "rate": "normal",
+   "file": "w_d223925cbc.m4a"
+  },
+  {
+   "key": "mum has a big cake. the cake is on the table. it is for sam. sam eats the cake with a spoon. the cake is sweet. sam says, thank you, mum!",
+   "text": "Mum has a big cake. The cake is on the table. It is for Sam. Sam eats the cake with a spoon. The cake is sweet. Sam says, Thank you, Mum!",
+   "rate": "normal",
+   "file": "w_3787374f93.m4a"
+  },
+  {
+   "key": "what does mum have?",
+   "text": "What does Mum have?",
+   "rate": "normal",
+   "file": "w_773f8c403f.m4a"
+  },
+  {
+   "key": "where is the cake?",
+   "text": "Where is the cake?",
+   "rate": "normal",
+   "file": "w_8a4c56641c.m4a"
+  },
+  {
+   "key": "who eats the cake?",
+   "text": "Who eats the cake?",
+   "rate": "normal",
+   "file": "w_d6edf8fe31.m4a"
+  },
+  {
+   "key": "what does sam use to eat?",
+   "text": "What does Sam use to eat?",
+   "rate": "normal",
+   "file": "w_6e701c5452.m4a"
+  },
+  {
+   "key": "the cake is ___.",
+   "text": "The cake is ___.",
+   "rate": "normal",
+   "file": "w_6224f38406.m4a"
+  },
+  {
+   "key": "a bird is in the tree. the bird is blue. it has a small beak. the bird can fly. it can sing too. i like the blue bird.",
+   "text": "A bird is in the tree. The bird is blue. It has a small beak. The bird can fly. It can sing too. I like the blue bird.",
+   "rate": "normal",
+   "file": "w_369a16fbca.m4a"
+  },
+  {
+   "key": "where is the bird?",
+   "text": "Where is the bird?",
+   "rate": "normal",
+   "file": "w_6ad3828950.m4a"
+  },
+  {
+   "key": "what color is the bird?",
+   "text": "What color is the bird?",
+   "rate": "normal",
+   "file": "w_787f59cf61.m4a"
+  },
+  {
+   "key": "what can the bird do?",
+   "text": "What can the bird do?",
+   "rate": "normal",
+   "file": "w_7440532d92.m4a"
+  },
+  {
+   "key": "do i like the bird?",
+   "text": "Do I like the bird?",
+   "rate": "normal",
+   "file": "w_8c68d5f0ec.m4a"
+  },
+  {
+   "key": "the bird is ___.",
+   "text": "The bird is ___.",
+   "rate": "normal",
+   "file": "w_b820ec0e41.m4a"
+  },
+  {
+   "key": "it is raining today. i have a big umbrella. i put on my red boots. i jump in the water. splash! then i go home and drink hot milk.",
+   "text": "It is raining today. I have a big umbrella. I put on my red boots. I jump in the water. Splash! Then I go home and drink hot milk.",
+   "rate": "normal",
+   "file": "w_403619bfc2.m4a"
+  },
+  {
+   "key": "what is the weather?",
+   "text": "What is the weather?",
+   "rate": "normal",
+   "file": "w_26a0b120d8.m4a"
+  },
+  {
+   "key": "what do i have?",
+   "text": "What do I have?",
+   "rate": "normal",
+   "file": "w_4127be5f93.m4a"
+  },
+  {
+   "key": "what color are my boots?",
+   "text": "What color are my boots?",
+   "rate": "normal",
+   "file": "w_6e28693511.m4a"
+  },
+  {
+   "key": "what do i drink at home?",
+   "text": "What do I drink at home?",
+   "rate": "normal",
+   "file": "w_727ed1312a.m4a"
+  },
+  {
+   "key": "i have a big ___.",
+   "text": "I have a big ___.",
+   "rate": "normal",
+   "file": "w_f6cbb5ecf7.m4a"
+  },
+  {
+   "key": "i have a toy box. in the box i see a red car and a blue ball. my sister has a doll. we play with our toys. my toys are fun.",
+   "text": "I have a toy box. In the box I see a red car and a blue ball. My sister has a doll. We play with our toys. My toys are fun.",
+   "rate": "normal",
+   "file": "w_75305a7e14.m4a"
+  },
+  {
+   "key": "what color is the car?",
+   "text": "What color is the car?",
+   "rate": "normal",
+   "file": "w_3e20ad09f4.m4a"
+  },
+  {
+   "key": "who has a doll?",
+   "text": "Who has a doll?",
+   "rate": "normal",
+   "file": "w_6f9e91bdb3.m4a"
+  },
+  {
+   "key": "are the toys fun?",
+   "text": "Are the toys fun?",
+   "rate": "normal",
+   "file": "w_5f3272acce.m4a"
+  },
+  {
+   "key": "my toys are ___.",
+   "text": "My toys are ___.",
+   "rate": "normal",
+   "file": "w_d39ac3eb04.m4a"
+  },
+  {
+   "key": "this is my school bag. it is blue and big. in it i have two books, a red pencil and a small box. i go to school by bus. i like my bag.",
+   "text": "This is my school bag. It is blue and big. In it I have two books, a red pencil and a small box. I go to school by bus. I like my bag.",
+   "rate": "normal",
+   "file": "w_4034c24f05.m4a"
+  },
+  {
+   "key": "what color is the bag?",
+   "text": "What color is the bag?",
+   "rate": "normal",
+   "file": "w_fdeddadb1d.m4a"
+  },
+  {
+   "key": "how many books are in the bag?",
+   "text": "How many books are in the bag?",
+   "rate": "normal",
+   "file": "w_f7407d2abf.m4a"
+  },
+  {
+   "key": "what else is in the bag?",
+   "text": "What else is in the bag?",
+   "rate": "normal",
+   "file": "w_7349fc9a4b.m4a"
+  },
+  {
+   "key": "how do i go to school?",
+   "text": "How do I go to school?",
+   "rate": "normal",
+   "file": "w_7ae6d8d398.m4a"
+  },
+  {
+   "key": "my bag is ___ and big.",
+   "text": "My bag is ___ and big.",
+   "rate": "normal",
+   "file": "w_b8afdcd0be.m4a"
+  },
+  {
+   "key": "grandma has a small garden. in the garden there are red flowers and a big tree. a cat sleeps under the tree. grandma waters the flowers every day. i help her. the garden is pretty.",
+   "text": "Grandma has a small garden. In the garden there are red flowers and a big tree. A cat sleeps under the tree. Grandma waters the flowers every day. I help her. The garden is pretty.",
+   "rate": "normal",
+   "file": "w_d7f94991ec.m4a"
+  },
+  {
+   "key": "who has a garden?",
+   "text": "Who has a garden?",
+   "rate": "normal",
+   "file": "w_ee02d0ddd3.m4a"
+  },
+  {
+   "key": "what is in the garden?",
+   "text": "What is in the garden?",
+   "rate": "normal",
+   "file": "w_c8bac3c085.m4a"
+  },
+  {
+   "key": "where does the cat sleep?",
+   "text": "Where does the cat sleep?",
+   "rate": "normal",
+   "file": "w_42792c37f3.m4a"
+  },
+  {
+   "key": "who helps grandma?",
+   "text": "Who helps Grandma?",
+   "rate": "normal",
+   "file": "w_1c81d78ba7.m4a"
+  },
+  {
+   "key": "grandma ___ the flowers every day.",
+   "text": "Grandma ___ the flowers every day.",
+   "rate": "normal",
+   "file": "w_366cb4018b.m4a"
+  },
+  {
+   "key": "i go on the bus with dad. the bus is yellow. i sit by the window. i see shops, cars and a big park. the bus stops near my school. i say thank you to the driver.",
+   "text": "I go on the bus with Dad. The bus is yellow. I sit by the window. I see shops, cars and a big park. The bus stops near my school. I say thank you to the driver.",
+   "rate": "normal",
+   "file": "w_cc0916eb48.m4a"
+  },
+  {
+   "key": "who do i go with?",
+   "text": "Who do I go with?",
+   "rate": "normal",
+   "file": "w_438bf81b32.m4a"
+  },
+  {
+   "key": "what color is the bus?",
+   "text": "What color is the bus?",
+   "rate": "normal",
+   "file": "w_c8eed33b24.m4a"
+  },
+  {
+   "key": "where do i sit?",
+   "text": "Where do I sit?",
+   "rate": "normal",
+   "file": "w_0663542e0a.m4a"
+  },
+  {
+   "key": "what do i see from the bus?",
+   "text": "What do I see from the bus?",
+   "rate": "normal",
+   "file": "w_62f72c45d2.m4a"
+  },
+  {
+   "key": "i say ___ to the driver.",
+   "text": "I say ___ to the driver.",
+   "rate": "normal",
+   "file": "w_83c12f3049.m4a"
+  },
+  {
+   "key": "i have a new puppy. his name is max. he is brown and small. max likes to run in the park. he can jump and play with a ball. at night he sleeps in a box. i love max.",
+   "text": "I have a new puppy. His name is Max. He is brown and small. Max likes to run in the park. He can jump and play with a ball. At night he sleeps in a box. I love Max.",
+   "rate": "normal",
+   "file": "w_233609b4f8.m4a"
+  },
+  {
+   "key": "what is the puppy's name?",
+   "text": "What is the puppy's name?",
+   "rate": "normal",
+   "file": "w_609f4703e7.m4a"
+  },
+  {
+   "key": "what color is max?",
+   "text": "What color is Max?",
+   "rate": "normal",
+   "file": "w_7a21717b7a.m4a"
+  },
+  {
+   "key": "what does max like to do?",
+   "text": "What does Max like to do?",
+   "rate": "normal",
+   "file": "w_4c7903959b.m4a"
+  },
+  {
+   "key": "where does max sleep at night?",
+   "text": "Where does Max sleep at night?",
+   "rate": "normal",
+   "file": "w_326092cabd.m4a"
+  },
+  {
+   "key": "max is brown and ___.",
+   "text": "Max is brown and ___.",
+   "rate": "normal",
+   "file": "w_55a42583b3.m4a"
+  },
+  {
+   "key": "on saturday, ben and his mum go to the zoo. first they see two big elephants. the elephants have long noses and small eyes. next they see monkeys. the monkeys jump from tree to tree and eat bananas. ben laughs at them. at last they see a white tiger. it is sleeping in the sun. ben is tired but very happy.",
+   "text": "On Saturday, Ben and his mum go to the zoo. First they see two big elephants. The elephants have long noses and small eyes. Next they see monkeys. The monkeys jump from tree to tree and eat bananas. Ben laughs at them. At last they see a white tiger. It is sleeping in the sun. Ben is tired but very happy.",
+   "rate": "normal",
+   "file": "w_dacb256e35.m4a"
+  },
+  {
+   "key": "when do ben and his mum go to the zoo?",
+   "text": "When do Ben and his mum go to the zoo?",
+   "rate": "normal",
+   "file": "w_741012693c.m4a"
+  },
+  {
+   "key": "what do the elephants look like?",
+   "text": "What do the elephants look like?",
+   "rate": "normal",
+   "file": "w_5b09aa4c69.m4a"
+  },
+  {
+   "key": "what do the monkeys eat?",
+   "text": "What do the monkeys eat?",
+   "rate": "normal",
+   "file": "w_67a355990c.m4a"
+  },
+  {
+   "key": "what is the tiger doing?",
+   "text": "What is the tiger doing?",
+   "rate": "normal",
+   "file": "w_31e489c7f9.m4a"
+  },
+  {
+   "key": "ben is tired but very ___.",
+   "text": "Ben is tired but very ___.",
+   "rate": "normal",
+   "file": "w_95d78134f3.m4a"
+  },
+  {
+   "key": "every sunday, mum goes to the market near our flat. she buys fish, eggs and green vegetables. the fish is fresh and the eggs are big. i carry the small bag and mum carries the big one. sometimes she buys me a bun. it is warm and soft. we walk home together and talk about the week.",
+   "text": "Every Sunday, Mum goes to the market near our flat. She buys fish, eggs and green vegetables. The fish is fresh and the eggs are big. I carry the small bag and Mum carries the big one. Sometimes she buys me a bun. It is warm and soft. We walk home together and talk about the week.",
+   "rate": "normal",
+   "file": "w_93b64e6cdb.m4a"
+  },
+  {
+   "key": "when does mum go to the market?",
+   "text": "When does Mum go to the market?",
+   "rate": "normal",
+   "file": "w_013c3e0966.m4a"
+  },
+  {
+   "key": "what does she buy?",
+   "text": "What does she buy?",
+   "rate": "normal",
+   "file": "w_98941d278d.m4a"
+  },
+  {
+   "key": "what do i carry?",
+   "text": "What do I carry?",
+   "rate": "normal",
+   "file": "w_20c57b4dc8.m4a"
+  },
+  {
+   "key": "what does mum sometimes buy for me?",
+   "text": "What does Mum sometimes buy for me?",
+   "rate": "normal",
+   "file": "w_69dac68266.m4a"
+  },
+  {
+   "key": "the bun is warm and ___.",
+   "text": "The bun is warm and ___.",
+   "rate": "normal",
+   "file": "w_41b287366c.m4a"
+  },
+  {
+   "key": "last sunday my family went to the beach. the sand was warm and the sea was blue. dad and i built a big sand house. my little sister looked for pretty shells. she found six shells and put them in her bag. then the wind came and the sand house fell down. we laughed and built it again.",
+   "text": "Last Sunday my family went to the beach. The sand was warm and the sea was blue. Dad and I built a big sand house. My little sister looked for pretty shells. She found six shells and put them in her bag. Then the wind came and the sand house fell down. We laughed and built it again.",
+   "rate": "normal",
+   "file": "w_03e0ee2ecd.m4a"
+  },
+  {
+   "key": "when did the family go to the beach?",
+   "text": "When did the family go to the beach?",
+   "rate": "normal",
+   "file": "w_5952d16af7.m4a"
+  },
+  {
+   "key": "what did dad and i build?",
+   "text": "What did Dad and I build?",
+   "rate": "normal",
+   "file": "w_ccf37574b1.m4a"
+  },
+  {
+   "key": "how many shells did my sister find?",
+   "text": "How many shells did my sister find?",
+   "rate": "normal",
+   "file": "w_5218ca7726.m4a"
+  },
+  {
+   "key": "what made the sand house fall down?",
+   "text": "What made the sand house fall down?",
+   "rate": "normal",
+   "file": "w_1d17ba7912.m4a"
+  },
+  {
+   "key": "the sea was ___.",
+   "text": "The sea was ___.",
+   "rate": "normal",
+   "file": "w_9c928fa746.m4a"
+  },
+  {
+   "key": "one morning lily could not find her cat in the house. she looked under the bed, behind the door and in the garden. she was sad. then she heard a small sound near the tree. her cat was up in the tree and could not come down. dad put a ladder under the tree and helped the cat down. lily held her cat and said, do not run away again!",
+   "text": "One morning Lily could not find her cat in the house. She looked under the bed, behind the door and in the garden. She was sad. Then she heard a small sound near the tree. Her cat was up in the tree and could not come down. Dad put a ladder under the tree and helped the cat down. Lily held her cat and said, Do not run away again!",
+   "rate": "normal",
+   "file": "w_25a3e80e36.m4a"
+  },
+  {
+   "key": "whose cat was lost?",
+   "text": "Whose cat was lost?",
+   "rate": "normal",
+   "file": "w_46e9212182.m4a"
+  },
+  {
+   "key": "where did lily look first?",
+   "text": "Where did Lily look first?",
+   "rate": "normal",
+   "file": "w_35f74b55ab.m4a"
+  },
+  {
+   "key": "where was the cat?",
+   "text": "Where was the cat?",
+   "rate": "normal",
+   "file": "w_ffea274b1d.m4a"
+  },
+  {
+   "key": "who helped the cat come down?",
+   "text": "Who helped the cat come down?",
+   "rate": "normal",
+   "file": "w_356de1e729.m4a"
+  },
+  {
+   "key": "dad put a ___ under the tree.",
+   "text": "Dad put a ___ under the tree.",
+   "rate": "normal",
+   "file": "w_eeda0d8e3c.m4a"
+  },
+  {
+   "key": "it rained all morning, so we stayed in the flat. we drew pictures and played with blocks. in the afternoon the sun came out. the road was wet and the air was cool. mum opened the window and said, look! there was a big rainbow in the sky with seven colours. we ran down to the garden to see it better. it was the best part of the day.",
+   "text": "It rained all morning, so we stayed in the flat. We drew pictures and played with blocks. In the afternoon the sun came out. The road was wet and the air was cool. Mum opened the window and said, Look! There was a big rainbow in the sky with seven colours. We ran down to the garden to see it better. It was the best part of the day.",
+   "rate": "normal",
+   "file": "w_f45dc44537.m4a"
+  },
+  {
+   "key": "why did we stay in the flat?",
+   "text": "Why did we stay in the flat?",
+   "rate": "normal",
+   "file": "w_47fc0d6ab3.m4a"
+  },
+  {
+   "key": "what did we do inside?",
+   "text": "What did we do inside?",
+   "rate": "normal",
+   "file": "w_45ecbd1de2.m4a"
+  },
+  {
+   "key": "when did the sun come out?",
+   "text": "When did the sun come out?",
+   "rate": "normal",
+   "file": "w_7125e65da3.m4a"
+  },
+  {
+   "key": "what was in the sky?",
+   "text": "What was in the sky?",
+   "rate": "normal",
+   "file": "w_d429f0720c.m4a"
+  },
+  {
+   "key": "the rainbow had ___ colours.",
+   "text": "The rainbow had ___ colours.",
+   "rate": "normal",
+   "file": "w_e952bde3dc.m4a"
+  },
+  {
+   "key": "today is ben's birthday. he is six years old. his friends come to his house with small gifts. mum makes a big cake with six candles. ben closes his eyes and makes a wish, then he blows out all the candles. everyone eats cake and plays games in the garden. ben says it is the best birthday ever.",
+   "text": "Today is Ben's birthday. He is six years old. His friends come to his house with small gifts. Mum makes a big cake with six candles. Ben closes his eyes and makes a wish, then he blows out all the candles. Everyone eats cake and plays games in the garden. Ben says it is the best birthday ever.",
+   "rate": "normal",
+   "file": "w_3b79997865.m4a"
+  },
+  {
+   "key": "how old is ben today?",
+   "text": "How old is Ben today?",
+   "rate": "normal",
+   "file": "w_56db9f5dd0.m4a"
+  },
+  {
+   "key": "who makes the cake?",
+   "text": "Who makes the cake?",
+   "rate": "normal",
+   "file": "w_a031b089ab.m4a"
+  },
+  {
+   "key": "how many candles are on the cake?",
+   "text": "How many candles are on the cake?",
+   "rate": "normal",
+   "file": "w_ff918e9924.m4a"
+  },
+  {
+   "key": "what does ben do before he blows out the candles?",
+   "text": "What does Ben do before he blows out the candles?",
+   "rate": "normal",
+   "file": "w_96393ad47d.m4a"
+  },
+  {
+   "key": "ben is ___ years old.",
+   "text": "Ben is ___ years old.",
+   "rate": "normal",
+   "file": "w_0fc2b5b4d1.m4a"
+  },
+  {
+   "key": "my uncle has a small farm. there are cows, goats and many chickens on it. every morning he gets up early and gives food to the animals. i like the little chicks best because they follow their mother everywhere. in the afternoon we collect eggs from the hens. then we sit under a tree and drink cold water. the farm is quiet and green.",
+   "text": "My uncle has a small farm. There are cows, goats and many chickens on it. Every morning he gets up early and gives food to the animals. I like the little chicks best because they follow their mother everywhere. In the afternoon we collect eggs from the hens. Then we sit under a tree and drink cold water. The farm is quiet and green.",
+   "rate": "normal",
+   "file": "w_64fb7ed065.m4a"
+  },
+  {
+   "key": "whose farm is it?",
+   "text": "Whose farm is it?",
+   "rate": "normal",
+   "file": "w_0f54776406.m4a"
+  },
+  {
+   "key": "what animals are on the farm?",
+   "text": "What animals are on the farm?",
+   "rate": "normal",
+   "file": "w_d9deebefa6.m4a"
+  },
+  {
+   "key": "which animals do i like best?",
+   "text": "Which animals do I like best?",
+   "rate": "normal",
+   "file": "w_e84cb6f9b3.m4a"
+  },
+  {
+   "key": "what do we do in the afternoon?",
+   "text": "What do we do in the afternoon?",
+   "rate": "normal",
+   "file": "w_07b4471b3f.m4a"
+  },
+  {
+   "key": "the farm is quiet and ___.",
+   "text": "The farm is quiet and ___.",
+   "rate": "normal",
+   "file": "w_6e9c38b565.m4a"
+  },
+  {
+   "key": "a new library opened near our block last week. it has many books for children. there are big picture books, small story books and books about animals. the librarian is kind and helps us find what we want. every saturday morning i go there with my sister. we sit on a soft mat, read for one hour and then borrow two books to read at home.",
+   "text": "A new library opened near our block last week. It has many books for children. There are big picture books, small story books and books about animals. The librarian is kind and helps us find what we want. Every Saturday morning I go there with my sister. We sit on a soft mat, read for one hour and then borrow two books to read at home.",
+   "rate": "normal",
+   "file": "w_c3a44b7be8.m4a"
+  },
+  {
+   "key": "when did the new library open?",
+   "text": "When did the new library open?",
+   "rate": "normal",
+   "file": "w_6b75813fbe.m4a"
+  },
+  {
+   "key": "where is the library?",
+   "text": "Where is the library?",
+   "rate": "normal",
+   "file": "w_82f864e39b.m4a"
+  },
+  {
+   "key": "who helps us find books?",
+   "text": "Who helps us find books?",
+   "rate": "normal",
+   "file": "w_36771a8b77.m4a"
+  },
+  {
+   "key": "how many books can we borrow?",
+   "text": "How many books can we borrow?",
+   "rate": "normal",
+   "file": "w_66610b8765.m4a"
+  },
+  {
+   "key": "we read for one ___.",
+   "text": "We read for one ___.",
+   "rate": "normal",
+   "file": "w_3149be629d.m4a"
+  },
+  {
+   "key": "i have a little fish. it is orange and small. it swims in a round bowl. i feed it every day.",
+   "text": "I have a little fish. It is orange and small. It swims in a round bowl. I feed it every day.",
+   "rate": "normal",
+   "file": "w_c32f777350.m4a"
+  },
+  {
+   "key": "what color is the fish?",
+   "text": "What color is the fish?",
+   "rate": "normal",
+   "file": "w_5a24ae0148.m4a"
+  },
+  {
+   "key": "where does the fish swim?",
+   "text": "Where does the fish swim?",
+   "rate": "normal",
+   "file": "w_230f1c343f.m4a"
+  },
+  {
+   "key": "when do i feed the fish?",
+   "text": "When do I feed the fish?",
+   "rate": "normal",
+   "file": "w_eef5ab67f6.m4a"
+  },
+  {
+   "key": "what do i do every day?",
+   "text": "What do I do every day?",
+   "rate": "normal",
+   "file": "w_3faadfdf6e.m4a"
+  },
+  {
+   "key": "the fish is orange and ___.",
+   "text": "The fish is orange and ___.",
+   "rate": "normal",
+   "file": "w_8fd347ca34.m4a"
+  },
+  {
+   "key": "a little duck is by the pond. the duck is yellow. it has two small feet. it can swim well. i like the duck.",
+   "text": "A little duck is by the pond. The duck is yellow. It has two small feet. It can swim well. I like the duck.",
+   "rate": "normal",
+   "file": "w_473095e433.m4a"
+  },
+  {
+   "key": "what color is the duck?",
+   "text": "What color is the duck?",
+   "rate": "normal",
+   "file": "w_05499f5870.m4a"
+  },
+  {
+   "key": "where is the duck?",
+   "text": "Where is the duck?",
+   "rate": "normal",
+   "file": "w_d17f2235d4.m4a"
+  },
+  {
+   "key": "what can the duck do?",
+   "text": "What can the duck do?",
+   "rate": "normal",
+   "file": "w_28ec1764ab.m4a"
+  },
+  {
+   "key": "how many feet does the duck have?",
+   "text": "How many feet does the duck have?",
+   "rate": "normal",
+   "file": "w_e09724e1d9.m4a"
+  },
+  {
+   "key": "the little duck can ___ well.",
+   "text": "The little duck can ___ well.",
+   "rate": "normal",
+   "file": "w_4e4d86f6d4.m4a"
+  },
+  {
+   "key": "on sunday morning dad washes the car. i help him with a big red cloth. the car is very dirty. we wash the wheels and the windows. now the car is clean and bright. dad says, good job!",
+   "text": "On Sunday morning Dad washes the car. I help him with a big red cloth. The car is very dirty. We wash the wheels and the windows. Now the car is clean and bright. Dad says, Good job!",
+   "rate": "normal",
+   "file": "w_6d64c37b5f.m4a"
+  },
+  {
+   "key": "when does dad wash the car?",
+   "text": "When does Dad wash the car?",
+   "rate": "normal",
+   "file": "w_be137ea64f.m4a"
+  },
+  {
+   "key": "what do i help with?",
+   "text": "What do I help with?",
+   "rate": "normal",
+   "file": "w_4e4a4c42c4.m4a"
+  },
+  {
+   "key": "what do we wash?",
+   "text": "What do we wash?",
+   "rate": "normal",
+   "file": "w_d4cf4721d5.m4a"
+  },
+  {
+   "key": "how is the car at the end?",
+   "text": "How is the car at the end?",
+   "rate": "normal",
+   "file": "w_c1b6eab440.m4a"
+  },
+  {
+   "key": "dad says, good ___!",
+   "text": "Dad says, Good ___!",
+   "rate": "normal",
+   "file": "w_b035d93053.m4a"
+  },
+  {
+   "key": "mum buys me a pair of new shoes. they are white with blue laces. i put them on by myself. they feel soft and light. i walk to school in them every day. my old shoes are too small now.",
+   "text": "Mum buys me a pair of new shoes. They are white with blue laces. I put them on by myself. They feel soft and light. I walk to school in them every day. My old shoes are too small now.",
+   "rate": "normal",
+   "file": "w_fe5ca5799d.m4a"
+  },
+  {
+   "key": "who buys the shoes?",
+   "text": "Who buys the shoes?",
+   "rate": "normal",
+   "file": "w_e6eb4d461c.m4a"
+  },
+  {
+   "key": "what color are the shoes?",
+   "text": "What color are the shoes?",
+   "rate": "normal",
+   "file": "w_98da1bf0a7.m4a"
+  },
+  {
+   "key": "how do the new shoes feel?",
+   "text": "How do the new shoes feel?",
+   "rate": "normal",
+   "file": "w_5fd63b91df.m4a"
+  },
+  {
+   "key": "why do i need new shoes?",
+   "text": "Why do I need new shoes?",
+   "rate": "normal",
+   "file": "w_4563301ecd.m4a"
+  },
+  {
+   "key": "the new shoes have blue ___.",
+   "text": "The new shoes have blue ___.",
+   "rate": "normal",
+   "file": "w_7e66f6ac66.m4a"
+  },
+  {
+   "key": "my grandpa has an old black bicycle. every saturday he rides it to the park. one day i asked him to take me too. he put me on the seat behind him and we went slowly. we saw a big tree with yellow flowers and two boys flying a kite. grandpa told me a funny story. when we came home, mum took a photo of us. now every saturday i wait by the door with my cap on.",
+   "text": "My grandpa has an old black bicycle. Every Saturday he rides it to the park. One day I asked him to take me too. He put me on the seat behind him and we went slowly. We saw a big tree with yellow flowers and two boys flying a kite. Grandpa told me a funny story. When we came home, Mum took a photo of us. Now every Saturday I wait by the door with my cap on.",
+   "rate": "normal",
+   "file": "w_51703211bd.m4a"
+  },
+  {
+   "key": "what color is grandpa's bicycle?",
+   "text": "What color is Grandpa's bicycle?",
+   "rate": "normal",
+   "file": "w_a9972d8f13.m4a"
+  },
+  {
+   "key": "when does grandpa ride his bicycle?",
+   "text": "When does Grandpa ride his bicycle?",
+   "rate": "normal",
+   "file": "w_63f7a9f641.m4a"
+  },
+  {
+   "key": "where did they go together?",
+   "text": "Where did they go together?",
+   "rate": "normal",
+   "file": "w_16d45d6a7a.m4a"
+  },
+  {
+   "key": "what were the two boys flying?",
+   "text": "What were the two boys flying?",
+   "rate": "normal",
+   "file": "w_7756f7aeb7.m4a"
+  },
+  {
+   "key": "mum took a ___ of us.",
+   "text": "Mum took a ___ of us.",
+   "rate": "normal",
+   "file": "w_ccd115978c.m4a"
+  },
+  {
+   "key": "nina has a white dog. the dog is small and soft. nina can play with the dog. nina is excited.",
+   "text": "Nina has a white dog. The dog is small and soft. Nina can play with the dog. Nina is excited.",
+   "rate": "normal",
+   "file": "w_122c1c5626.m4a"
+  },
+  {
+   "key": "what does nina have?",
+   "text": "What does Nina have?",
+   "rate": "normal",
+   "file": "w_ba8358c8e1.m4a"
+  },
+  {
+   "key": "what color is the dog?",
+   "text": "What color is the dog?",
+   "rate": "normal",
+   "file": "w_6475b5f542.m4a"
+  },
+  {
+   "key": "where do they go?",
+   "text": "Where do they go?",
+   "rate": "normal",
+   "file": "w_1a03786e0e.m4a"
+  },
+  {
+   "key": "is nina excited?",
+   "text": "Is Nina excited?",
+   "rate": "normal",
+   "file": "w_1742735f05.m4a"
+  },
+  {
+   "key": "nina has a ___ dog.",
+   "text": "Nina has a ___ dog.",
+   "rate": "normal",
+   "file": "w_cb1bd974a9.m4a"
+  },
+  {
+   "key": "rex has a pink cat. the cat is small and soft. rex can play with the cat. rex is proud.",
+   "text": "Rex has a pink cat. The cat is small and soft. Rex can play with the cat. Rex is proud.",
+   "rate": "normal",
+   "file": "w_dbee414bd4.m4a"
+  },
+  {
+   "key": "what does rex have?",
+   "text": "What does Rex have?",
+   "rate": "normal",
+   "file": "w_495f36b703.m4a"
+  },
+  {
+   "key": "is rex proud?",
+   "text": "Is Rex proud?",
+   "rate": "normal",
+   "file": "w_a3afeb9537.m4a"
+  },
+  {
+   "key": "rex has a ___ cat.",
+   "text": "Rex has a ___ cat.",
+   "rate": "normal",
+   "file": "w_72e44f2193.m4a"
+  },
+  {
+   "key": "in the afternoon, amy and the red rabbit go to the farm. the rabbit runs fast on the path. they see a small ball near the gate. amy looks at it and smiles. \"what a nice day!\" says amy.",
+   "text": "In the afternoon, Amy and the red rabbit go to the farm. The rabbit runs fast on the path. They see a small ball near the gate. Amy looks at it and smiles. \"What a nice day!\" says Amy.",
+   "rate": "normal",
+   "file": "w_284a6b4014.m4a"
+  },
+  {
+   "key": "what does amy have?",
+   "text": "What does Amy have?",
+   "rate": "normal",
+   "file": "w_06dd1be742.m4a"
+  },
+  {
+   "key": "what color is the rabbit?",
+   "text": "What color is the rabbit?",
+   "rate": "normal",
+   "file": "w_458535626e.m4a"
+  },
+  {
+   "key": "is amy proud?",
+   "text": "Is Amy proud?",
+   "rate": "normal",
+   "file": "w_1d049dd629.m4a"
+  },
+  {
+   "key": "amy has a ___ rabbit.",
+   "text": "Amy has a ___ rabbit.",
+   "rate": "normal",
+   "file": "w_e107888845.m4a"
+  },
+  {
+   "key": "at the weekend, lily and the white dog go to the school. the dog runs fast on the path. they see a small ball near the gate. lily looks at it and smiles. \"what a nice day!\" says lily.",
+   "text": "At the weekend, Lily and the white dog go to the school. The dog runs fast on the path. They see a small ball near the gate. Lily looks at it and smiles. \"What a nice day!\" says Lily.",
+   "rate": "normal",
+   "file": "w_ae3245a99b.m4a"
+  },
+  {
+   "key": "what does lily have?",
+   "text": "What does Lily have?",
+   "rate": "normal",
+   "file": "w_0a9309e48d.m4a"
+  },
+  {
+   "key": "is lily happy?",
+   "text": "Is Lily happy?",
+   "rate": "normal",
+   "file": "w_267fa71b7f.m4a"
+  },
+  {
+   "key": "lily has a ___ dog.",
+   "text": "Lily has a ___ dog.",
+   "rate": "normal",
+   "file": "w_ffd41fc270.m4a"
+  },
+  {
+   "key": "on monday, may takes the black cat to the beach. the sky is blue and the air is warm. soon they find a little frog beside the big tree. the cat wants to play, but may wants to look at the map first. they walk a long way and stop near a little shop. may buys a cold drink and shares it with a friend. when the sun goes down, they walk home together. \"we will come back next week,\" says may.",
+   "text": "On Monday, May takes the black cat to the beach. The sky is blue and the air is warm. Soon they find a little frog beside the big tree. The cat wants to play, but May wants to look at the map first. They walk a long way and stop near a little shop. May buys a cold drink and shares it with a friend. When the sun goes down, they walk home together. \"We will come back next week,\" says May.",
+   "rate": "normal",
+   "file": "w_4d5b68dc2a.m4a"
+  },
+  {
+   "key": "what does may have?",
+   "text": "What does May have?",
+   "rate": "normal",
+   "file": "w_d856bf08a5.m4a"
+  },
+  {
+   "key": "is may happy?",
+   "text": "Is May happy?",
+   "rate": "normal",
+   "file": "w_d07895e7fb.m4a"
+  },
+  {
+   "key": "may has a ___ cat.",
+   "text": "May has a ___ cat.",
+   "rate": "normal",
+   "file": "w_0d65bd6658.m4a"
+  },
+  {
+   "key": "nina has a yellow bird. the bird is small and soft. nina can play with the bird. nina is glad.",
+   "text": "Nina has a yellow bird. The bird is small and soft. Nina can play with the bird. Nina is glad.",
+   "rate": "normal",
+   "file": "w_53802bd300.m4a"
+  },
+  {
+   "key": "is nina glad?",
+   "text": "Is Nina glad?",
+   "rate": "normal",
+   "file": "w_8c94a1b2ad.m4a"
+  },
+  {
+   "key": "nina has a ___ bird.",
+   "text": "Nina has a ___ bird.",
+   "rate": "normal",
+   "file": "w_71897343b4.m4a"
+  },
+  {
+   "key": "mia has a red cat. the cat is small and soft. mia can play with the cat. mia is proud.",
+   "text": "Mia has a red cat. The cat is small and soft. Mia can play with the cat. Mia is proud.",
+   "rate": "normal",
+   "file": "w_06ec8f89a8.m4a"
+  },
+  {
+   "key": "what does mia have?",
+   "text": "What does Mia have?",
+   "rate": "normal",
+   "file": "w_308ddefdbc.m4a"
+  },
+  {
+   "key": "is mia proud?",
+   "text": "Is Mia proud?",
+   "rate": "normal",
+   "file": "w_a9b43856b1.m4a"
+  },
+  {
+   "key": "mia has a ___ cat.",
+   "text": "Mia has a ___ cat.",
+   "rate": "normal",
+   "file": "w_4f51b682dd.m4a"
+  },
+  {
+   "key": "after school, ivy and the green rabbit go to the shop. the rabbit runs fast on the path. they see a little frog near the gate. ivy looks at it and smiles. \"what a nice day!\" says ivy.",
+   "text": "After school, Ivy and the green rabbit go to the shop. The rabbit runs fast on the path. They see a little frog near the gate. Ivy looks at it and smiles. \"What a nice day!\" says Ivy.",
+   "rate": "normal",
+   "file": "w_51d75e0efa.m4a"
+  },
+  {
+   "key": "what does ivy have?",
+   "text": "What does Ivy have?",
+   "rate": "normal",
+   "file": "w_216afff7cc.m4a"
+  },
+  {
+   "key": "is ivy glad?",
+   "text": "Is Ivy glad?",
+   "rate": "normal",
+   "file": "w_3345532eba.m4a"
+  },
+  {
+   "key": "ivy has a ___ rabbit.",
+   "text": "Ivy has a ___ rabbit.",
+   "rate": "normal",
+   "file": "w_ec1fe7d9d0.m4a"
+  },
+  {
+   "key": "one morning, may and the yellow rabbit go to the park. the rabbit runs fast on the path. they see a big tree near the gate. may looks at it and smiles. \"what a nice day!\" says may.",
+   "text": "One morning, May and the yellow rabbit go to the park. The rabbit runs fast on the path. They see a big tree near the gate. May looks at it and smiles. \"What a nice day!\" says May.",
+   "rate": "normal",
+   "file": "w_5c3c259a97.m4a"
+  },
+  {
+   "key": "is may excited?",
+   "text": "Is May excited?",
+   "rate": "normal",
+   "file": "w_e46127bfb5.m4a"
+  },
+  {
+   "key": "may has a ___ rabbit.",
+   "text": "May has a ___ rabbit.",
+   "rate": "normal",
+   "file": "w_7c44f8b0d6.m4a"
+  },
+  {
+   "key": "in the afternoon, tom takes the blue rabbit to the farm. the sky is blue and the air is warm. soon they find a yellow flower beside the big tree. the rabbit wants to play, but tom wants to look at the map first. they walk a long way and stop near a little shop. tom buys a cold drink and shares it with a friend. when the sun goes down, they walk home together. \"we will come back next week,\" says tom.",
+   "text": "In the afternoon, Tom takes the blue rabbit to the farm. The sky is blue and the air is warm. Soon they find a yellow flower beside the big tree. The rabbit wants to play, but Tom wants to look at the map first. They walk a long way and stop near a little shop. Tom buys a cold drink and shares it with a friend. When the sun goes down, they walk home together. \"We will come back next week,\" says Tom.",
+   "rate": "normal",
+   "file": "w_27a22b6226.m4a"
+  },
+  {
+   "key": "what does tom have?",
+   "text": "What does Tom have?",
+   "rate": "normal",
+   "file": "w_38e905bd57.m4a"
+  },
+  {
+   "key": "is tom happy?",
+   "text": "Is Tom happy?",
+   "rate": "normal",
+   "file": "w_3cf015b7ad.m4a"
+  },
+  {
+   "key": "tom has a ___ rabbit.",
+   "text": "Tom has a ___ rabbit.",
+   "rate": "normal",
+   "file": "w_5349e09b14.m4a"
+  },
+  {
+   "key": "sam has a cat. the cat is red. sam can pat the cat. the cat is fun!",
+   "text": "Sam has a cat. The cat is red. Sam can pat the cat. The cat is fun!",
+   "rate": "normal",
+   "file": "w_efef1811f4.m4a"
+  },
+  {
+   "key": "what pet does sam have?",
+   "text": "What pet does Sam have?",
+   "rate": "normal",
+   "file": "w_2cfd7b9ff9.m4a"
+  },
+  {
+   "key": "is the cat red?",
+   "text": "Is the cat red?",
+   "rate": "normal",
+   "file": "w_bb2e345047.m4a"
+  },
+  {
+   "key": "is the cat blue?",
+   "text": "Is the cat blue?",
+   "rate": "normal",
+   "file": "w_1348b06462.m4a"
+  },
+  {
+   "key": "who has a cat?",
+   "text": "Who has a cat?",
+   "rate": "normal",
+   "file": "w_ba0d44b832.m4a"
+  },
+  {
+   "key": "is the cat fun?",
+   "text": "Is the cat fun?",
+   "rate": "normal",
+   "file": "w_ad937dacfd.m4a"
+  },
+  {
+   "key": "can sam pat the cat?",
+   "text": "Can Sam pat the cat?",
+   "rate": "normal",
+   "file": "w_4af4bb3803.m4a"
+  },
+  {
+   "key": "does sam have a dog?",
+   "text": "Does Sam have a dog?",
+   "rate": "normal",
+   "file": "w_47bb53b948.m4a"
+  },
+  {
+   "key": "the cat is ___.",
+   "text": "The cat is ___.",
+   "rate": "normal",
+   "file": "w_0e7df9e4a3.m4a"
+  },
+  {
+   "key": "the sun is hot. the sun is big. we like the sun. the sun is up.",
+   "text": "The sun is hot. The sun is big. We like the sun. The sun is up.",
+   "rate": "normal",
+   "file": "w_c8ba2acd6a.m4a"
+  },
+  {
+   "key": "is the sun big?",
+   "text": "Is the sun big?",
+   "rate": "normal",
+   "file": "w_c6421809e3.m4a"
+  },
+  {
+   "key": "do we like the sun?",
+   "text": "Do we like the sun?",
+   "rate": "normal",
+   "file": "w_af80cd1943.m4a"
+  },
+  {
+   "key": "what do we like?",
+   "text": "What do we like?",
+   "rate": "normal",
+   "file": "w_2b2931d72f.m4a"
+  },
+  {
+   "key": "is the sun cold?",
+   "text": "Is the sun cold?",
+   "rate": "normal",
+   "file": "w_4facd0f675.m4a"
+  },
+  {
+   "key": "where is the sun?",
+   "text": "Where is the sun?",
+   "rate": "normal",
+   "file": "w_49606313fc.m4a"
+  },
+  {
+   "key": "the sun is hot and ___.",
+   "text": "The sun is hot and ___.",
+   "rate": "normal",
+   "file": "w_45722f3d70.m4a"
+  },
+  {
+   "key": "is the sun up?",
+   "text": "Is the sun up?",
+   "rate": "normal",
+   "file": "w_f4c183a9d6.m4a"
+  },
+  {
+   "key": "we like the ___.",
+   "text": "We like the ___.",
+   "rate": "normal",
+   "file": "w_a9feb0cb0d.m4a"
+  },
+  {
+   "key": "ben has a big dog. the dog can run. the dog can jump. ben likes his dog.",
+   "text": "Ben has a big dog. The dog can run. The dog can jump. Ben likes his dog.",
+   "rate": "normal",
+   "file": "w_fa6d6801a0.m4a"
+  },
+  {
+   "key": "who has a dog?",
+   "text": "Who has a dog?",
+   "rate": "normal",
+   "file": "w_8b91b4eb14.m4a"
+  },
+  {
+   "key": "is the dog big?",
+   "text": "Is the dog big?",
+   "rate": "normal",
+   "file": "w_64f4a43290.m4a"
+  },
+  {
+   "key": "does ben like his dog?",
+   "text": "Does Ben like his dog?",
+   "rate": "normal",
+   "file": "w_11af2947f9.m4a"
+  },
+  {
+   "key": "who likes the dog?",
+   "text": "Who likes the dog?",
+   "rate": "normal",
+   "file": "w_d6ee35a4c7.m4a"
+  },
+  {
+   "key": "can the dog run?",
+   "text": "Can the dog run?",
+   "rate": "normal",
+   "file": "w_436d9e34c6.m4a"
+  },
+  {
+   "key": "it is raining. mom has an umbrella. we sit and read a book. we are happy.",
+   "text": "It is raining. Mom has an umbrella. We sit and read a book. We are happy.",
+   "rate": "normal",
+   "file": "w_213202acd1.m4a"
+  },
+  {
+   "key": "what does mom have?",
+   "text": "What does Mom have?",
+   "rate": "normal",
+   "file": "w_38aec9ca40.m4a"
+  },
+  {
+   "key": "is it raining?",
+   "text": "Is it raining?",
+   "rate": "normal",
+   "file": "w_900fe0ba3a.m4a"
+  },
+  {
+   "key": "is it sunny?",
+   "text": "Is it sunny?",
+   "rate": "normal",
+   "file": "w_8469fd9a93.m4a"
+  },
+  {
+   "key": "who has an umbrella?",
+   "text": "Who has an umbrella?",
+   "rate": "normal",
+   "file": "w_66dba97451.m4a"
+  },
+  {
+   "key": "what do we do?",
+   "text": "What do we do?",
+   "rate": "normal",
+   "file": "w_53945e6331.m4a"
+  },
+  {
+   "key": "what do we read?",
+   "text": "What do we read?",
+   "rate": "normal",
+   "file": "w_805c4b63da.m4a"
+  },
+  {
+   "key": "are we sad?",
+   "text": "Are we sad?",
+   "rate": "normal",
+   "file": "w_5a445f494d.m4a"
+  },
+  {
+   "key": "are we happy?",
+   "text": "Are we happy?",
+   "rate": "normal",
+   "file": "w_b6d07ed951.m4a"
+  },
+  {
+   "key": "we read a ___.",
+   "text": "We read a ___.",
+   "rate": "normal",
+   "file": "w_8a019f7fcd.m4a"
+  },
+  {
+   "key": "we go to the park. i see a red ball. tom can kick the ball. we are happy at the park.",
+   "text": "We go to the park. I see a red ball. Tom can kick the ball. We are happy at the park.",
+   "rate": "normal",
+   "file": "w_446a4dd873.m4a"
+  },
+  {
+   "key": "who can kick the ball?",
+   "text": "Who can kick the ball?",
+   "rate": "normal",
+   "file": "w_35b8a2358f.m4a"
+  },
+  {
+   "key": "is the ball blue?",
+   "text": "Is the ball blue?",
+   "rate": "normal",
+   "file": "w_e80053a478.m4a"
+  },
+  {
+   "key": "what do i see?",
+   "text": "What do I see?",
+   "rate": "normal",
+   "file": "w_aa3489e33e.m4a"
+  },
+  {
+   "key": "where are we happy?",
+   "text": "Where are we happy?",
+   "rate": "normal",
+   "file": "w_fe7dd3c206.m4a"
+  },
+  {
+   "key": "can tom kick the ball?",
+   "text": "Can Tom kick the ball?",
+   "rate": "normal",
+   "file": "w_cf3151ac49.m4a"
+  },
+  {
+   "key": "do we go to the park?",
+   "text": "Do we go to the park?",
+   "rate": "normal",
+   "file": "w_abc776a6cc.m4a"
+  },
+  {
+   "key": "i see a dog.",
+   "text": "I see a dog.",
+   "rate": "normal",
+   "file": "w_4d6405160d.m4a"
+  },
+  {
+   "key": "the cat is red.",
+   "text": "The cat is red.",
+   "rate": "normal",
+   "file": "w_a9ac3573fb.m4a"
+  },
+  {
+   "key": "we go to school.",
+   "text": "We go to school.",
+   "rate": "normal",
+   "file": "w_8a27953d43.m4a"
+  },
+  {
+   "key": "i like my book.",
+   "text": "I like my book.",
+   "rate": "normal",
+   "file": "w_d0106f4d08.m4a"
+  },
+  {
+   "key": "the sun is hot.",
+   "text": "The sun is hot.",
+   "rate": "normal",
+   "file": "w_ba5fcc94f3.m4a"
+  },
+  {
+   "key": "the dog can run.",
+   "text": "The dog can run.",
+   "rate": "normal",
+   "file": "w_4ebb278eb9.m4a"
+  },
+  {
+   "key": "look at the sun.",
+   "text": "Look at the sun.",
+   "rate": "normal",
+   "file": "w_3f5236e8ad.m4a"
+  },
+  {
+   "key": "she has a ball.",
+   "text": "She has a ball.",
+   "rate": "normal",
+   "file": "w_12b69eb38d.m4a"
+  },
+  {
+   "key": "we are happy.",
+   "text": "We are happy.",
+   "rate": "normal",
+   "file": "w_1746635650.m4a"
+  },
+  {
+   "key": "i can see a bird.",
+   "text": "I can see a bird.",
+   "rate": "normal",
+   "file": "w_29c83eaa51.m4a"
+  },
+  {
+   "key": "i see an apple.",
+   "text": "I see an apple.",
+   "rate": "normal",
+   "file": "w_9c55e61db5.m4a"
+  },
+  {
+   "key": "the cats are sleeping.",
+   "text": "The cats are sleeping.",
+   "rate": "normal",
+   "file": "w_f914dbc315.m4a"
+  },
+  {
+   "key": "one cat, two cats.",
+   "text": "One cat, two cats.",
+   "rate": "normal",
+   "file": "w_895bef257c.m4a"
+  },
+  {
+   "key": "the ball is in the box.",
+   "text": "The ball is in the box.",
+   "rate": "normal",
+   "file": "w_602bc5058d.m4a"
+  },
+  {
+   "key": "tom is a boy. he is happy.",
+   "text": "Tom is a boy. He is happy.",
+   "rate": "normal",
+   "file": "w_362aebbf28.m4a"
+  },
+  {
+   "key": "she is reading a book.",
+   "text": "She is reading a book.",
+   "rate": "normal",
+   "file": "w_3290af5d01.m4a"
+  },
+  {
+   "key": "he goes to school every day.",
+   "text": "He goes to school every day.",
+   "rate": "normal",
+   "file": "w_26dc99bb61.m4a"
+  },
+  {
+   "key": "what is your name?",
+   "text": "What is your name?",
+   "rate": "normal",
+   "file": "w_7faca309a8.m4a"
+  },
+  {
+   "key": "the dog has a tail.",
+   "text": "The dog has a tail.",
+   "rate": "normal",
+   "file": "w_7864dbfb3e.m4a"
+  },
+  {
+   "key": "i have a pencil.",
+   "text": "I have a pencil.",
+   "rate": "normal",
+   "file": "w_dc42ebf13c.m4a"
+  },
+  {
+   "key": "zero",
+   "text": "zero",
+   "rate": "normal",
+   "file": "w_d02c4c4cde.m4a"
+  },
+  {
+   "key": "one",
+   "text": "one",
+   "rate": "normal",
+   "file": "w_f97c5d2994.m4a"
+  },
+  {
+   "key": "two",
+   "text": "two",
+   "rate": "normal",
+   "file": "w_b8a9f715db.m4a"
+  },
+  {
+   "key": "three",
+   "text": "three",
+   "rate": "normal",
+   "file": "w_35d6d33467.m4a"
+  },
+  {
+   "key": "four",
+   "text": "four",
+   "rate": "normal",
+   "file": "w_8cbad96ace.m4a"
+  },
+  {
+   "key": "five",
+   "text": "five",
+   "rate": "normal",
+   "file": "w_30056e1cab.m4a"
+  },
+  {
+   "key": "six",
+   "text": "six",
+   "rate": "normal",
+   "file": "w_f52b5e449a.m4a"
+  },
+  {
+   "key": "seven",
+   "text": "seven",
+   "rate": "normal",
+   "file": "w_bb3aec0fdc.m4a"
+  },
+  {
+   "key": "eight",
+   "text": "eight",
+   "rate": "normal",
+   "file": "w_24d27c169c.m4a"
+  },
+  {
+   "key": "nine",
+   "text": "nine",
+   "rate": "normal",
+   "file": "w_c785e1ed29.m4a"
+  },
+  {
+   "key": "ten",
+   "text": "ten",
+   "rate": "normal",
+   "file": "w_b1b9a972cc.m4a"
+  },
+  {
+   "key": "eleven",
+   "text": "eleven",
+   "rate": "normal",
+   "file": "w_9c8454ddf7.m4a"
+  },
+  {
+   "key": "twelve",
+   "text": "twelve",
+   "rate": "normal",
+   "file": "w_15f6f8dc03.m4a"
+  },
+  {
+   "key": "thirteen",
+   "text": "thirteen",
+   "rate": "normal",
+   "file": "w_422ecc084f.m4a"
+  },
+  {
+   "key": "fourteen",
+   "text": "fourteen",
+   "rate": "normal",
+   "file": "w_279e962ea6.m4a"
+  },
+  {
+   "key": "fifteen",
+   "text": "fifteen",
+   "rate": "normal",
+   "file": "w_92a2132e01.m4a"
+  },
+  {
+   "key": "sixteen",
+   "text": "sixteen",
+   "rate": "normal",
+   "file": "w_bd2c775d9e.m4a"
+  },
+  {
+   "key": "seventeen",
+   "text": "seventeen",
+   "rate": "normal",
+   "file": "w_2e457d2f9f.m4a"
+  },
+  {
+   "key": "eighteen",
+   "text": "eighteen",
+   "rate": "normal",
+   "file": "w_2cbdaf9ce4.m4a"
+  },
+  {
+   "key": "nineteen",
+   "text": "nineteen",
+   "rate": "normal",
+   "file": "w_1d56cec552.m4a"
+  },
+  {
+   "key": "twenty",
+   "text": "twenty",
+   "rate": "normal",
+   "file": "w_ab389edaab.m4a"
+  },
+  {
+   "key": "twenty one",
+   "text": "twenty one",
+   "rate": "normal",
+   "file": "w_f349be2dc6.m4a"
+  },
+  {
+   "key": "twenty two",
+   "text": "twenty two",
+   "rate": "normal",
+   "file": "w_ca5ae33294.m4a"
+  },
+  {
+   "key": "twenty three",
+   "text": "twenty three",
+   "rate": "normal",
+   "file": "w_046148c1e9.m4a"
+  },
+  {
+   "key": "twenty four",
+   "text": "twenty four",
+   "rate": "normal",
+   "file": "w_c2ca890c0e.m4a"
+  },
+  {
+   "key": "twenty five",
+   "text": "twenty five",
+   "rate": "normal",
+   "file": "w_7150750836.m4a"
+  },
+  {
+   "key": "twenty six",
+   "text": "twenty six",
+   "rate": "normal",
+   "file": "w_03e50f8c27.m4a"
+  },
+  {
+   "key": "twenty seven",
+   "text": "twenty seven",
+   "rate": "normal",
+   "file": "w_58b8d51781.m4a"
+  },
+  {
+   "key": "twenty eight",
+   "text": "twenty eight",
+   "rate": "normal",
+   "file": "w_c3d2060299.m4a"
+  },
+  {
+   "key": "twenty nine",
+   "text": "twenty nine",
+   "rate": "normal",
+   "file": "w_d909dd5382.m4a"
+  },
+  {
+   "key": "thirty",
+   "text": "thirty",
+   "rate": "normal",
+   "file": "w_1a3161e2dd.m4a"
+  },
+  {
+   "key": "thirty one",
+   "text": "thirty one",
+   "rate": "normal",
+   "file": "w_27737afbc8.m4a"
+  },
+  {
+   "key": "thirty two",
+   "text": "thirty two",
+   "rate": "normal",
+   "file": "w_8cb16a6da2.m4a"
+  },
+  {
+   "key": "thirty three",
+   "text": "thirty three",
+   "rate": "normal",
+   "file": "w_274dc2558d.m4a"
+  },
+  {
+   "key": "thirty four",
+   "text": "thirty four",
+   "rate": "normal",
+   "file": "w_ff2fe7fe41.m4a"
+  },
+  {
+   "key": "thirty five",
+   "text": "thirty five",
+   "rate": "normal",
+   "file": "w_d8a1e6b3ab.m4a"
+  },
+  {
+   "key": "thirty six",
+   "text": "thirty six",
+   "rate": "normal",
+   "file": "w_41c9fdbd66.m4a"
+  },
+  {
+   "key": "thirty seven",
+   "text": "thirty seven",
+   "rate": "normal",
+   "file": "w_3dc4d8070b.m4a"
+  },
+  {
+   "key": "thirty eight",
+   "text": "thirty eight",
+   "rate": "normal",
+   "file": "w_e08f72a100.m4a"
+  },
+  {
+   "key": "thirty nine",
+   "text": "thirty nine",
+   "rate": "normal",
+   "file": "w_f843a7c093.m4a"
+  },
+  {
+   "key": "forty",
+   "text": "forty",
+   "rate": "normal",
+   "file": "w_2b54fd1b55.m4a"
+  },
+  {
+   "key": "forty one",
+   "text": "forty one",
+   "rate": "normal",
+   "file": "w_7b6cd20827.m4a"
+  },
+  {
+   "key": "forty two",
+   "text": "forty two",
+   "rate": "normal",
+   "file": "w_1fd37eafab.m4a"
+  },
+  {
+   "key": "forty three",
+   "text": "forty three",
+   "rate": "normal",
+   "file": "w_118d6aac64.m4a"
+  },
+  {
+   "key": "forty four",
+   "text": "forty four",
+   "rate": "normal",
+   "file": "w_b2d14fe3cc.m4a"
+  },
+  {
+   "key": "forty five",
+   "text": "forty five",
+   "rate": "normal",
+   "file": "w_2edbbecc10.m4a"
+  },
+  {
+   "key": "forty six",
+   "text": "forty six",
+   "rate": "normal",
+   "file": "w_8a27408145.m4a"
+  },
+  {
+   "key": "forty seven",
+   "text": "forty seven",
+   "rate": "normal",
+   "file": "w_a5d7e9b4a6.m4a"
+  },
+  {
+   "key": "forty eight",
+   "text": "forty eight",
+   "rate": "normal",
+   "file": "w_ad4270b305.m4a"
+  },
+  {
+   "key": "forty nine",
+   "text": "forty nine",
+   "rate": "normal",
+   "file": "w_35b3a3cbd6.m4a"
+  },
+  {
+   "key": "fifty",
+   "text": "fifty",
+   "rate": "normal",
+   "file": "w_97a9bccc3d.m4a"
+  },
+  {
+   "key": "fifty one",
+   "text": "fifty one",
+   "rate": "normal",
+   "file": "w_293a555b45.m4a"
+  },
+  {
+   "key": "fifty two",
+   "text": "fifty two",
+   "rate": "normal",
+   "file": "w_090f8b0d5c.m4a"
+  },
+  {
+   "key": "fifty three",
+   "text": "fifty three",
+   "rate": "normal",
+   "file": "w_eacece460c.m4a"
+  },
+  {
+   "key": "fifty four",
+   "text": "fifty four",
+   "rate": "normal",
+   "file": "w_1e2f74495a.m4a"
+  },
+  {
+   "key": "fifty five",
+   "text": "fifty five",
+   "rate": "normal",
+   "file": "w_1789b3c790.m4a"
+  },
+  {
+   "key": "fifty six",
+   "text": "fifty six",
+   "rate": "normal",
+   "file": "w_dcf8dd03ed.m4a"
+  },
+  {
+   "key": "fifty seven",
+   "text": "fifty seven",
+   "rate": "normal",
+   "file": "w_a82e384af7.m4a"
+  },
+  {
+   "key": "fifty eight",
+   "text": "fifty eight",
+   "rate": "normal",
+   "file": "w_eb86e305fb.m4a"
+  },
+  {
+   "key": "fifty nine",
+   "text": "fifty nine",
+   "rate": "normal",
+   "file": "w_674573a74d.m4a"
+  },
+  {
+   "key": "sixty",
+   "text": "sixty",
+   "rate": "normal",
+   "file": "w_cd0dd38642.m4a"
+  },
+  {
+   "key": "sixty one",
+   "text": "sixty one",
+   "rate": "normal",
+   "file": "w_8e0a9f97de.m4a"
+  },
+  {
+   "key": "sixty two",
+   "text": "sixty two",
+   "rate": "normal",
+   "file": "w_a9dd2ac771.m4a"
+  },
+  {
+   "key": "sixty three",
+   "text": "sixty three",
+   "rate": "normal",
+   "file": "w_9f5ff05b01.m4a"
+  },
+  {
+   "key": "sixty four",
+   "text": "sixty four",
+   "rate": "normal",
+   "file": "w_28d668624b.m4a"
+  },
+  {
+   "key": "sixty five",
+   "text": "sixty five",
+   "rate": "normal",
+   "file": "w_ea5a234f16.m4a"
+  },
+  {
+   "key": "sixty six",
+   "text": "sixty six",
+   "rate": "normal",
+   "file": "w_32e3358439.m4a"
+  },
+  {
+   "key": "sixty seven",
+   "text": "sixty seven",
+   "rate": "normal",
+   "file": "w_bd8c596e05.m4a"
+  },
+  {
+   "key": "sixty eight",
+   "text": "sixty eight",
+   "rate": "normal",
+   "file": "w_f92e5b0180.m4a"
+  },
+  {
+   "key": "sixty nine",
+   "text": "sixty nine",
+   "rate": "normal",
+   "file": "w_e781a3cf25.m4a"
+  },
+  {
+   "key": "seventy",
+   "text": "seventy",
+   "rate": "normal",
+   "file": "w_5456a19d6c.m4a"
+  },
+  {
+   "key": "seventy one",
+   "text": "seventy one",
+   "rate": "normal",
+   "file": "w_8456ebf0e7.m4a"
+  },
+  {
+   "key": "seventy two",
+   "text": "seventy two",
+   "rate": "normal",
+   "file": "w_24e9da0a82.m4a"
+  },
+  {
+   "key": "seventy three",
+   "text": "seventy three",
+   "rate": "normal",
+   "file": "w_389b435b7a.m4a"
+  },
+  {
+   "key": "seventy four",
+   "text": "seventy four",
+   "rate": "normal",
+   "file": "w_4c78bb8904.m4a"
+  },
+  {
+   "key": "seventy five",
+   "text": "seventy five",
+   "rate": "normal",
+   "file": "w_8c40dc7360.m4a"
+  },
+  {
+   "key": "seventy six",
+   "text": "seventy six",
+   "rate": "normal",
+   "file": "w_55bde30275.m4a"
+  },
+  {
+   "key": "seventy seven",
+   "text": "seventy seven",
+   "rate": "normal",
+   "file": "w_824bdf2967.m4a"
+  },
+  {
+   "key": "seventy eight",
+   "text": "seventy eight",
+   "rate": "normal",
+   "file": "w_61bcb94d68.m4a"
+  },
+  {
+   "key": "seventy nine",
+   "text": "seventy nine",
+   "rate": "normal",
+   "file": "w_25772b6a25.m4a"
+  },
+  {
+   "key": "eighty",
+   "text": "eighty",
+   "rate": "normal",
+   "file": "w_b82bb8f7eb.m4a"
+  },
+  {
+   "key": "eighty one",
+   "text": "eighty one",
+   "rate": "normal",
+   "file": "w_d5e7e900e7.m4a"
+  },
+  {
+   "key": "eighty two",
+   "text": "eighty two",
+   "rate": "normal",
+   "file": "w_5c15ae0267.m4a"
+  },
+  {
+   "key": "eighty three",
+   "text": "eighty three",
+   "rate": "normal",
+   "file": "w_6f7b8d41fa.m4a"
+  },
+  {
+   "key": "eighty four",
+   "text": "eighty four",
+   "rate": "normal",
+   "file": "w_60bc132ca6.m4a"
+  },
+  {
+   "key": "eighty five",
+   "text": "eighty five",
+   "rate": "normal",
+   "file": "w_4b4bd456e0.m4a"
+  },
+  {
+   "key": "eighty six",
+   "text": "eighty six",
+   "rate": "normal",
+   "file": "w_e9e234541c.m4a"
+  },
+  {
+   "key": "eighty seven",
+   "text": "eighty seven",
+   "rate": "normal",
+   "file": "w_a3862f91f7.m4a"
+  },
+  {
+   "key": "eighty eight",
+   "text": "eighty eight",
+   "rate": "normal",
+   "file": "w_70fa651f7d.m4a"
+  },
+  {
+   "key": "eighty nine",
+   "text": "eighty nine",
+   "rate": "normal",
+   "file": "w_9b8559664e.m4a"
+  },
+  {
+   "key": "ninety",
+   "text": "ninety",
+   "rate": "normal",
+   "file": "w_2a08e96cad.m4a"
+  },
+  {
+   "key": "ninety one",
+   "text": "ninety one",
+   "rate": "normal",
+   "file": "w_e2820a2035.m4a"
+  },
+  {
+   "key": "ninety two",
+   "text": "ninety two",
+   "rate": "normal",
+   "file": "w_48424d5176.m4a"
+  },
+  {
+   "key": "ninety three",
+   "text": "ninety three",
+   "rate": "normal",
+   "file": "w_651ad37b6b.m4a"
+  },
+  {
+   "key": "ninety four",
+   "text": "ninety four",
+   "rate": "normal",
+   "file": "w_96b0d8d339.m4a"
+  },
+  {
+   "key": "ninety five",
+   "text": "ninety five",
+   "rate": "normal",
+   "file": "w_65701178ab.m4a"
+  },
+  {
+   "key": "ninety six",
+   "text": "ninety six",
+   "rate": "normal",
+   "file": "w_f587ad36ac.m4a"
+  },
+  {
+   "key": "ninety seven",
+   "text": "ninety seven",
+   "rate": "normal",
+   "file": "w_aecdcf5520.m4a"
+  },
+  {
+   "key": "ninety eight",
+   "text": "ninety eight",
+   "rate": "normal",
+   "file": "w_d34ddedc2d.m4a"
+  },
+  {
+   "key": "ninety nine",
+   "text": "ninety nine",
+   "rate": "normal",
+   "file": "w_2ae4ce28dd.m4a"
+  },
+  {
+   "key": "one hundred",
+   "text": "one hundred",
+   "rate": "normal",
+   "file": "w_50c91a1c1d.m4a"
+  },
+  {
+   "key": "one hundred and one",
+   "text": "one hundred and one",
+   "rate": "normal",
+   "file": "w_5f542044d0.m4a"
+  },
+  {
+   "key": "one hundred and two",
+   "text": "one hundred and two",
+   "rate": "normal",
+   "file": "w_a5fab0e249.m4a"
+  },
+  {
+   "key": "one hundred and three",
+   "text": "one hundred and three",
+   "rate": "normal",
+   "file": "w_d8942e3976.m4a"
+  },
+  {
+   "key": "one hundred and four",
+   "text": "one hundred and four",
+   "rate": "normal",
+   "file": "w_f557f7ed35.m4a"
+  },
+  {
+   "key": "one hundred and five",
+   "text": "one hundred and five",
+   "rate": "normal",
+   "file": "w_5b65f1ba7a.m4a"
+  },
+  {
+   "key": "one hundred and six",
+   "text": "one hundred and six",
+   "rate": "normal",
+   "file": "w_4dd7963a78.m4a"
+  },
+  {
+   "key": "one hundred and seven",
+   "text": "one hundred and seven",
+   "rate": "normal",
+   "file": "w_8c12755af6.m4a"
+  },
+  {
+   "key": "one hundred and eight",
+   "text": "one hundred and eight",
+   "rate": "normal",
+   "file": "w_90be1be779.m4a"
+  },
+  {
+   "key": "one hundred and nine",
+   "text": "one hundred and nine",
+   "rate": "normal",
+   "file": "w_444c68c7f0.m4a"
+  },
+  {
+   "key": "one hundred and ten",
+   "text": "one hundred and ten",
+   "rate": "normal",
+   "file": "w_138d97c99c.m4a"
+  },
+  {
+   "key": "one hundred and eleven",
+   "text": "one hundred and eleven",
+   "rate": "normal",
+   "file": "w_862afb816c.m4a"
+  },
+  {
+   "key": "one hundred and twelve",
+   "text": "one hundred and twelve",
+   "rate": "normal",
+   "file": "w_98a47c2e8d.m4a"
+  },
+  {
+   "key": "one hundred and thirteen",
+   "text": "one hundred and thirteen",
+   "rate": "normal",
+   "file": "w_f13b2b19ac.m4a"
+  },
+  {
+   "key": "one hundred and fourteen",
+   "text": "one hundred and fourteen",
+   "rate": "normal",
+   "file": "w_2ff03535f7.m4a"
+  },
+  {
+   "key": "one hundred and fifteen",
+   "text": "one hundred and fifteen",
+   "rate": "normal",
+   "file": "w_eb36d6e175.m4a"
+  },
+  {
+   "key": "one hundred and sixteen",
+   "text": "one hundred and sixteen",
+   "rate": "normal",
+   "file": "w_59a88d17ba.m4a"
+  },
+  {
+   "key": "one hundred and seventeen",
+   "text": "one hundred and seventeen",
+   "rate": "normal",
+   "file": "w_2b15ce3d67.m4a"
+  },
+  {
+   "key": "one hundred and eighteen",
+   "text": "one hundred and eighteen",
+   "rate": "normal",
+   "file": "w_afac80a5b9.m4a"
+  },
+  {
+   "key": "one hundred and nineteen",
+   "text": "one hundred and nineteen",
+   "rate": "normal",
+   "file": "w_52cee399cb.m4a"
+  },
+  {
+   "key": "one hundred and twenty",
+   "text": "one hundred and twenty",
+   "rate": "normal",
+   "file": "w_3cfe6926f6.m4a"
+  },
+  {
+   "key": "one hundred and twenty one",
+   "text": "one hundred and twenty one",
+   "rate": "normal",
+   "file": "w_854b44122a.m4a"
+  },
+  {
+   "key": "one hundred and twenty two",
+   "text": "one hundred and twenty two",
+   "rate": "normal",
+   "file": "w_4e944eb93d.m4a"
+  },
+  {
+   "key": "one hundred and twenty three",
+   "text": "one hundred and twenty three",
+   "rate": "normal",
+   "file": "w_9920eb5349.m4a"
+  },
+  {
+   "key": "one hundred and twenty four",
+   "text": "one hundred and twenty four",
+   "rate": "normal",
+   "file": "w_fde6648750.m4a"
+  },
+  {
+   "key": "one hundred and twenty five",
+   "text": "one hundred and twenty five",
+   "rate": "normal",
+   "file": "w_60f5491d5b.m4a"
+  },
+  {
+   "key": "one hundred and twenty six",
+   "text": "one hundred and twenty six",
+   "rate": "normal",
+   "file": "w_af3b80cc14.m4a"
+  },
+  {
+   "key": "one hundred and twenty seven",
+   "text": "one hundred and twenty seven",
+   "rate": "normal",
+   "file": "w_0fb1eb5fb2.m4a"
+  },
+  {
+   "key": "one hundred and twenty eight",
+   "text": "one hundred and twenty eight",
+   "rate": "normal",
+   "file": "w_02c297c639.m4a"
+  },
+  {
+   "key": "one hundred and twenty nine",
+   "text": "one hundred and twenty nine",
+   "rate": "normal",
+   "file": "w_a77d0eb6b9.m4a"
+  },
+  {
+   "key": "one hundred and thirty",
+   "text": "one hundred and thirty",
+   "rate": "normal",
+   "file": "w_8773dbbb48.m4a"
+  },
+  {
+   "key": "one hundred and thirty one",
+   "text": "one hundred and thirty one",
+   "rate": "normal",
+   "file": "w_6a38230a1c.m4a"
+  },
+  {
+   "key": "one hundred and thirty two",
+   "text": "one hundred and thirty two",
+   "rate": "normal",
+   "file": "w_474ccd4e6e.m4a"
+  },
+  {
+   "key": "one hundred and thirty three",
+   "text": "one hundred and thirty three",
+   "rate": "normal",
+   "file": "w_b3223194a1.m4a"
+  },
+  {
+   "key": "one hundred and thirty four",
+   "text": "one hundred and thirty four",
+   "rate": "normal",
+   "file": "w_aa31de66a1.m4a"
+  },
+  {
+   "key": "one hundred and thirty five",
+   "text": "one hundred and thirty five",
+   "rate": "normal",
+   "file": "w_4572ac75d2.m4a"
+  },
+  {
+   "key": "one hundred and thirty six",
+   "text": "one hundred and thirty six",
+   "rate": "normal",
+   "file": "w_6815ae5aa6.m4a"
+  },
+  {
+   "key": "one hundred and thirty seven",
+   "text": "one hundred and thirty seven",
+   "rate": "normal",
+   "file": "w_f3ebe26983.m4a"
+  },
+  {
+   "key": "one hundred and thirty eight",
+   "text": "one hundred and thirty eight",
+   "rate": "normal",
+   "file": "w_3e1b893c9a.m4a"
+  },
+  {
+   "key": "one hundred and thirty nine",
+   "text": "one hundred and thirty nine",
+   "rate": "normal",
+   "file": "w_1ee458b887.m4a"
+  },
+  {
+   "key": "one hundred and forty",
+   "text": "one hundred and forty",
+   "rate": "normal",
+   "file": "w_4556995f83.m4a"
+  },
+  {
+   "key": "one hundred and forty one",
+   "text": "one hundred and forty one",
+   "rate": "normal",
+   "file": "w_e0a890eef3.m4a"
+  },
+  {
+   "key": "one hundred and forty two",
+   "text": "one hundred and forty two",
+   "rate": "normal",
+   "file": "w_1fb3cb9736.m4a"
+  },
+  {
+   "key": "one hundred and forty three",
+   "text": "one hundred and forty three",
+   "rate": "normal",
+   "file": "w_b83a135cd8.m4a"
+  },
+  {
+   "key": "one hundred and forty four",
+   "text": "one hundred and forty four",
+   "rate": "normal",
+   "file": "w_0401751f25.m4a"
+  },
+  {
+   "key": "one hundred and forty five",
+   "text": "one hundred and forty five",
+   "rate": "normal",
+   "file": "w_f187a73bc0.m4a"
+  },
+  {
+   "key": "one hundred and forty six",
+   "text": "one hundred and forty six",
+   "rate": "normal",
+   "file": "w_2a7f47907f.m4a"
+  },
+  {
+   "key": "one hundred and forty seven",
+   "text": "one hundred and forty seven",
+   "rate": "normal",
+   "file": "w_f6b161f2dc.m4a"
+  },
+  {
+   "key": "one hundred and forty eight",
+   "text": "one hundred and forty eight",
+   "rate": "normal",
+   "file": "w_bbc30fd11f.m4a"
+  },
+  {
+   "key": "one hundred and forty nine",
+   "text": "one hundred and forty nine",
+   "rate": "normal",
+   "file": "w_9aabb79f5c.m4a"
+  },
+  {
+   "key": "one hundred and fifty",
+   "text": "one hundred and fifty",
+   "rate": "normal",
+   "file": "w_20a77453b6.m4a"
+  },
+  {
+   "key": "plus",
+   "text": "plus",
+   "rate": "normal",
+   "file": "w_d7d18cfb3a.m4a"
+  },
+  {
+   "key": "minus",
+   "text": "minus",
+   "rate": "normal",
+   "file": "w_dabe6e597b.m4a"
+  },
+  {
+   "key": "equals",
+   "text": "equals",
+   "rate": "normal",
+   "file": "w_51c3f59625.m4a"
+  },
+  {
+   "key": "equals what",
+   "text": "equals what",
+   "rate": "normal",
+   "file": "w_273d00851e.m4a"
+  },
+  {
+   "key": "how many",
+   "text": "How many",
+   "rate": "normal",
+   "file": "w_671a9c7372.m4a"
+  },
+  {
+   "key": "count the",
+   "text": "Count the",
+   "rate": "normal",
+   "file": "w_721e4445a1.m4a"
+  },
+  {
+   "key": "count the pikachu. how many?",
+   "text": "Count the Pikachu. How many?",
+   "rate": "normal",
+   "file": "w_0d8dbc088c.m4a"
+  },
+  {
+   "key": "count the bulbasaur. how many?",
+   "text": "Count the Bulbasaur. How many?",
+   "rate": "normal",
+   "file": "w_ae68fc2516.m4a"
+  },
+  {
+   "key": "count the charmander. how many?",
+   "text": "Count the Charmander. How many?",
+   "rate": "normal",
+   "file": "w_5d4d18eed3.m4a"
+  },
+  {
+   "key": "count the squirtle. how many?",
+   "text": "Count the Squirtle. How many?",
+   "rate": "normal",
+   "file": "w_d5e1a0cac6.m4a"
+  },
+  {
+   "key": "count the jigglypuff. how many?",
+   "text": "Count the Jigglypuff. How many?",
+   "rate": "normal",
+   "file": "w_b3d654f20e.m4a"
+  },
+  {
+   "key": "count the meowth. how many?",
+   "text": "Count the Meowth. How many?",
+   "rate": "normal",
+   "file": "w_0375a66f36.m4a"
+  },
+  {
+   "key": "count the psyduck. how many?",
+   "text": "Count the Psyduck. How many?",
+   "rate": "normal",
+   "file": "w_5f8e611016.m4a"
+  },
+  {
+   "key": "count the eevee. how many?",
+   "text": "Count the Eevee. How many?",
+   "rate": "normal",
+   "file": "w_82f545f7ed.m4a"
+  },
+  {
+   "key": "count the pichu. how many?",
+   "text": "Count the Pichu. How many?",
+   "rate": "normal",
+   "file": "w_b0d259f4a5.m4a"
+  },
+  {
+   "key": "count the cleffa. how many?",
+   "text": "Count the Cleffa. How many?",
+   "rate": "normal",
+   "file": "w_8b7dd2c866.m4a"
+  },
+  {
+   "key": "count the pidgey. how many?",
+   "text": "Count the Pidgey. How many?",
+   "rate": "normal",
+   "file": "w_f84ebaa506.m4a"
+  },
+  {
+   "key": "count the snorlax. how many?",
+   "text": "Count the Snorlax. How many?",
+   "rate": "normal",
+   "file": "w_922feb1d27.m4a"
+  },
+  {
+   "key": "good job!",
+   "text": "Good job!",
+   "rate": "normal",
+   "file": "w_a729936b9d.m4a"
+  },
+  {
+   "key": "well done!",
+   "text": "Well done!",
+   "rate": "normal",
+   "file": "w_882aaff63d.m4a"
+  },
+  {
+   "key": "you did it!",
+   "text": "You did it!",
+   "rate": "normal",
+   "file": "w_3c3c6e8621.m4a"
+  },
+  {
+   "key": "great work!",
+   "text": "Great work!",
+   "rate": "normal",
+   "file": "w_e5ea0590df.m4a"
+  },
+  {
+   "key": "almost perfect!",
+   "text": "Almost perfect!",
+   "rate": "normal",
+   "file": "w_db203cd99e.m4a"
+  },
+  {
+   "key": "well done",
+   "text": "Well done",
+   "rate": "normal",
+   "file": "w_e53992bb5f.m4a"
+  },
+  {
+   "key": "good job",
+   "text": "Good job",
+   "rate": "normal",
+   "file": "w_96e28e87f0.m4a"
+  }
+ ]
+}

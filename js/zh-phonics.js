@@ -204,7 +204,7 @@ const ZH_TONES = [
 function zhToneClip(base,t){ return zhClip('tone', base+'_'+t); }
 
 /* ---------------- 工具 ---------------- */
-function zhClip(kind, key){ return 'audio/zh/'+kind+'_'+key+'.m4a'; }
+function zhClip(kind, key){ return 'audio/zh/'+kind+'_'+key+'.m4a?a=2'; }
 function zhInitial(p){ return ZH_INITIALS.find(x=>x.p===p); }
 function zhFinal(p){ return ZH_FINALS.find(x=>x.p===p); }
 function zhWhole(p){ return ZH_WHOLES.find(x=>x.p===p); }

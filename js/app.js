@@ -73,63 +73,112 @@ function goBack(){
 
 function setTopTitle(t){ $('#topbarTitle').textContent = t; }
 
-/* ---------- 语音：全程序锁定「单一、清晰的英文女声」 ----------
-   旧实现从 11 个候选里按加载顺序命中，男声女声混着来、每句音色都可能变。
-   现在：一旦选定一个女声就全程锁定（含中文单独一个），绝不中途换人；
-   语速/音高全程序统一，任何地方读英文都走同一个出口 ttsSpeak()。 */
+/* ==================== 语音规范（全 App 唯一出口） ====================
+   全程序只有两把嗓子，任何模块都不许再引入第三种：
+   · 英文 = 一把神经女声（en-US-JennyNeural）。audio/words 里 515 段录音全部由它录制，
+     覆盖词库 / 短文 / 理解题 / 语法 / 造句 / 数字词 / 数数题 / 鼓励语。
+     数学算式是运行时随机生成的，朗读时拆成「7 / plus / 5 / equals what」四段拼起来，
+     用的还是同一批录音 → 数学题也不会突然换人。
+   · 中文 = Ting-Ting（婷婷），audio/zh 173 段录音同一把嗓子。
+   只有极少数「运行时才生成的自由句子」（数学应用题故事、周更新增短文、
+   解题思路提示）没有录音，这时才回落到系统 TTS，并强制锁在同一族女声上。
+   硬规则（2026-11-16 定，新增模块必须遵守）：
+   1) 不准为不同角色 / 宝可梦做变声或变调；鼓励语统一用 CHEER_LINES + speak()。
+   2) 不准在别处 new SpeechSynthesisUtterance，一律走 speak() / playSpeak()。
+   3) 新增英文内容先跑 tools/voice_manifest.js + tools/tts_build.py 补录音；
+      补不上也没关系，TTS 兜底仍是女声，但绝不允许写死别的音色。
+   4) 要换音色只有一条路：整库重录（tts_build.py --force）+ 同步改 EN_VOICE_PREF。
+      只改一边 = 必然出现两种声音。
+   ==================================================================== */
 const EN_VOICE_PREF = [
-  'Samantha',                       // iOS/macOS 原生清晰女声（首选）
-  'Google US English',              // Chrome 清晰女声
-  'Microsoft Aria Online (Natural) - English (United States)',
+  /* 设备端兜底也优先「更自然的新一代女声」 */
+  'Ava (Premium)', 'Ava (Enhanced)', 'Ava',
+  'Samantha (Premium)', 'Samantha (Enhanced)', 'Samantha',
+  'Google US English', 'Microsoft Aria Online (Natural) - English (United States)',
   'Microsoft Aria - English (United States)',
-  'Ava (Enhanced)', 'Ava', 'Allison (Enhanced)', 'Allison',
-  'Samantha (Enhanced)', 'Karen', 'Google UK English Female',
-  'Zira', 'Hazel', 'Jenny'          // 均为女声；绝不选 Daniel/Alex 等男声
+  /* 设备只装了英式/澳式/其他英语时，优先这些女声（新加坡 iPad 常是 en-GB，
+     旧名单只有美式女声，匹配不到就退到系统默认的 Daniel —— 男声，这正是
+     「同一个 App 两种声音」的来源之一） */
+  'Kate (Enhanced)', 'Kate', 'Serena (Enhanced)', 'Serena', 'Stephanie', 'Moira', 'Tessa',
+  'Karen (Enhanced)', 'Karen', 'Fiona', 'Martha', 'Allison (Enhanced)', 'Allison',
+  'Google UK English Female', 'Zira', 'Hazel'
 ];
-const ZH_VOICE_PREF = ['Ting-Ting','Tingting','Google 普通话','Microsoft Huihui','Microsoft Yaoyao'];
-let _enVoice=undefined, _zhVoice=undefined; // undefined=还没挑；null=确定没有可用声音
-function pickVoice(vs, pref, langRe){
-  if(!vs || !vs.length) return undefined;          // 声音还没加载完，等下次
+const ZH_VOICE_PREF = ['Ting-Ting (Premium)','Ting-Ting (Enhanced)','Ting-Ting','Tingting',
+  'Meijia','Google 普通话','Microsoft Huihui','Microsoft Yaoyao'];
+/* 女声白名单 / 男声黑名单：设备命名千奇百怪，靠这两张表兜住「绝不出现男声」 */
+const EN_FEMALE_RE = /samantha|kate|serena|stephanie|moira|tessa|karen|fiona|martha|ava|allison|susan|zira|hazel|aria|jenny|michelle|sonia|libby|natasha|clara|emily|olivia|amelie|female/i;
+const EN_MALE_RE   = /\bdaniel\b|\balex\b|oliver|arthur|aaron|\bfred\b|\btom\b|gordon|\blee\b|rishi|malcolm|david|\bmark\b|james|george|\bguy\b|ryan|\bmale\b|junior|ralph|albert|reed|rocko|eddy|diego|jorge|juan|carlos|luca|thomas/i;
+const ZH_MALE_RE   = /yunxi|yunjian|yunyang|yunxia|kangkang|liang|yao|\bmale\b/i;
+const CHEER_LINES = ['Good job!','Well done!','You did it!','Great work!','Almost perfect!'];
+let _enVoice=undefined, _zhVoice=undefined; // undefined=还没挑；null=确认没有可用声音
+function pickVoice(vs, pref, langRe, maleRe){
+  if(!vs || !vs.length) return undefined;          // 声音列表还没加载完，等下次
   for(const name of pref){ const v=vs.find(x=>x.name===name && langRe.test(x.lang)); if(v) return v; }
-  // 兜底也只在女声/自然声里找，绝不退回系统默认的男声
-  const soft=vs.find(x=>langRe.test(x.lang) && /female|natural|samantha|aria|ava|allison|karen|ting|huihui|yaoyao|zira|hazel|jenny|google/i.test(x.name));
-  if(soft) return soft;
-  return vs.find(x=>langRe.test(x.lang)) || null;
+  const pool=vs.filter(x=>langRe.test(x.lang));
+  if(!pool.length) return null;
+  /* 兜底顺序：英文→女声白名单（美式优先）；中文→排除男声。绝不返回系统默认男声 */
+  const female=pool.filter(x=>!maleRe.test(x.name));
+  if(langRe.source==='^en'){
+    return female.find(x=>EN_FEMALE_RE.test(x.name) && /^en[-_]US/i.test(x.lang))
+        || female.find(x=>EN_FEMALE_RE.test(x.name))
+        || female[0] || null;
+  }
+  const good=female.find(x=>/ting|huihui|yaoyao|xiaoxiao|meijia|female/i.test(x.name));
+  return good || female[0] || null;
 }
-function bestVoice(){                 // 返回锁定的英文女声（供各处复用）
-  if(_enVoice!==undefined) return _enVoice;
-  if(!('speechSynthesis' in window)) return null;
-  _enVoice=pickVoice(speechSynthesis.getVoices()||[], EN_VOICE_PREF, /^en/i) || null;
-  return _enVoice;
+function refreshVoices(){
+  if(!('speechSynthesis' in window)) return;
+  const vs=speechSynthesis.getVoices()||[];
+  if(!vs.length) return;
+  if(_enVoice===undefined) _enVoice=pickVoice(vs,EN_VOICE_PREF,/^en/i,EN_MALE_RE)||null;
+  if(_zhVoice===undefined) _zhVoice=pickVoice(vs,ZH_VOICE_PREF,/^zh/i,ZH_MALE_RE)||null;
 }
-function zhVoice(){
-  if(_zhVoice!==undefined) return _zhVoice;
-  if(!('speechSynthesis' in window)) return null;
-  _zhVoice=pickVoice(speechSynthesis.getVoices()||[], ZH_VOICE_PREF, /^zh/i) || null;
-  return _zhVoice;
-}
-/* 声音列表就绪后只补挑一次；已锁定的不会被覆盖，保证全程序同一把嗓子 */
+function bestVoice(){ if(_enVoice===undefined) refreshVoices(); return _enVoice===undefined?null:_enVoice; }
+function zhVoice(){   if(_zhVoice===undefined) refreshVoices(); return _zhVoice===undefined?null:_zhVoice; }
 if('speechSynthesis' in window){
-  speechSynthesis.onvoiceschanged=()=>{
-    if(_enVoice===undefined) _enVoice=pickVoice(speechSynthesis.getVoices()||[],EN_VOICE_PREF,/^en/i)||null;
-    if(_zhVoice===undefined) _zhVoice=pickVoice(speechSynthesis.getVoices()||[],ZH_VOICE_PREF,/^zh/i)||null;
-  };
+  try{ speechSynthesis.addEventListener('voiceschanged',refreshVoices); }catch(e){}
+  refreshVoices();
+  /* iOS 的声音列表是异步回来的，多探几次确保第一句就用对嗓子 */
+  setTimeout(refreshVoices,300); setTimeout(refreshVoices,1200);
 }
-/* 全程序唯一 TTS 出口：统一语速/音高/音量，锁定声音 */
+/* 全程序唯一 TTS 出口：锁定声音，统一语速/音高/音量 */
 function ttsSpeak(text, lang){
-  if(!('speechSynthesis' in window) || !text) return;
+  if(!('speechSynthesis' in window)) return;
+  const t=String(text==null?'':text);
+  if(!t.trim()) return;
   const zh=/^zh/i.test(lang||'');
-  try{
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(text);
-    u.lang=zh?'zh-CN':(lang||'en-US');
-    u.rate=zh?0.82:0.86; u.pitch=1.02; u.volume=1;  // 全程序统一，放慢但不拖音
-    const v=zh?zhVoice():bestVoice();
-    if(v) u.voice=v;
-    speechSynthesis.speak(u);
-  }catch(e){}
+  const play=()=>{
+    try{
+      speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(t);
+      const v=zh?zhVoice():bestVoice();
+      /* lang 必须和所选声音一致，否则 iOS 会把 utterance 丢回系统默认（可能是男声） */
+      u.lang=(v && v.lang) ? v.lang : (zh?'zh-CN':'en-US');
+      const long=t.length>90;                 // 长句（短文/故事）再放慢一点，咬字更清
+      u.rate=zh?0.82:(long?0.80:0.86);
+      u.pitch=1; u.volume=1;
+      if(v) u.voice=v;
+      /* iOS：cancel() 与 speak() 挤在同一个事件循环里会被吞掉，隔一帧再播 */
+      setTimeout(()=>{ try{ speechSynthesis.speak(u); }catch(e){} },20);
+    }catch(e){}
+  };
+  if(zh?zhVoice():bestVoice()){ play(); return; }
+  /* 声音还没加载出来：等一次 voiceschanged（最多 600ms），再照常播 */
+  let fired=false;
+  const go=()=>{ if(fired) return; fired=true; refreshVoices(); play(); };
+  try{ speechSynthesis.addEventListener('voiceschanged',go,{once:true}); }catch(e){}
+  setTimeout(go,600);
 }
 function speak(text,lang){ ttsSpeak(text,lang); }
+/* 家长端自检用：显示当前锁定的两把嗓子，方便确认设备有没有装到高清女声 */
+function voiceLabel(){
+  if(!('speechSynthesis' in window)) return 'This browser has no speech synthesis';
+  const en=bestVoice(), zh=zhVoice();
+  if(!en && !zh) return 'voices not loaded yet — open any question, then come back';
+  const nm=v=>v?(v.name+' · '+v.lang):'—';
+  const hi=(en && /premium|enhanced|natural/i.test(en.name));
+  return 'EN '+nm(en)+'  /  中文 '+nm(zh)+(hi?'':'  ·  tip: Settings › Accessibility › Spoken Content › English → download a natural female voice (Ava / Samantha Enhanced) for even clearer audio');
+}
 
 /* 首次触摸解锁 iOS Safari 的音频播放权限（自动读题需要在手势之外播放） */
 document.addEventListener('pointerdown', ()=>{
@@ -141,13 +190,15 @@ document.addEventListener('pointerdown', ()=>{
     // 否则自动读题（setTimeout 里调用）会被系统静音
     if('speechSynthesis' in window){
       const warm=new SpeechSynthesisUtterance(' ');
+      const v=bestVoice();                       // 预热的也是锁定女声，别让默认男声先出声
+      if(v){ warm.voice=v; warm.lang=v.lang; }
       warm.volume=0; warm.rate=1.5;
       speechSynthesis.speak(warm);
     }
   }catch(e){}
 }, {once:true, passive:true});
 
-/* 本地音频播放：AUDIO_MAP / CHEER_MAP 由 js/audio-map.js 提供 */
+/* 本地音频播放：AUDIO_MAP 由 js/audio-map.js 提供（CHEER_MAP 已废弃，恒为空） */
 let _audio=null, _audioToken=0;
 function playClip(url, onEnd, onFail){
   if(!url) return false;
@@ -172,12 +223,46 @@ function clipFor(text){
   const k=String(text||'').trim().toLowerCase();
   return AUDIO_MAP[k] || null;
 }
+/* 数学算式拆段：数字词与 plus / minus / equals what 都是同一把女声录的，
+   拼起来读整道题 → 数学题也不会突然换成系统语音的那把嗓子。
+   （题面的算式是随机生成的，不可能逐题预录，所以拆成「7 / plus / 5 / equals what」四段） */
+const NUM_ONES=['zero','one','two','three','four','five','six','seven','eight','nine','ten',
+  'eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+const NUM_TENS=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+function numWord(n){
+  n=Math.floor(Number(n));
+  if(!isFinite(n) || n<0) return null;
+  if(n<20) return NUM_ONES[n];
+  if(n<100){ const t=Math.floor(n/10), r=n%10; return NUM_TENS[t]+(r?' '+NUM_ONES[r]:''); }
+  if(n<1000){ const h=Math.floor(n/100), r=n%100;
+    return NUM_ONES[h]+' hundred'+(r?' and '+numWord(r):''); }
+  return null;
+}
+function mathSteps(text){
+  const m=/^(\d{1,3})\s+(plus|minus)\s+(\d{1,3})\s+equals(?:\s+what)?\s*\??$/i.exec(String(text||'').trim());
+  if(!m) return null;
+  const tail=/what/i.test(m[0]) ? 'equals what' : 'equals';
+  const parts=[numWord(m[1]), m[2].toLowerCase(), numWord(m[3]), tail];
+  const steps=[];
+  for(const p of parts){
+    if(!p) return null;
+    const u=clipFor(p);
+    if(!u) return null;                    // 缺任何一段就整句交给 TTS，别读半句
+    steps.push({clip:u, text:p, lang:'en-US', gap:120});
+  }
+  return steps;
+}
 /* 读题：优先播放题目自带的本地录音（中文拼音），其次查英文词库，
    最后才用浏览器 TTS。任何一环失败都会回退到 TTS，绝不出现「没声音」。
    拼读题带 seq（韵母 → 韵母带调 → 声母 → 整体拼读）时按顺序逐段播放，
    每段都是「本地录音优先，缺了就 TTS 兜底」，段间留 0.4 秒让孩子跟读。 */
 function playSpeak(s, onEnd){
   if(!s) return;
+  /* 数学算式自动拆成预录片段，避免和词库/短文的声音不是同一个人 */
+  if(!Array.isArray(s.seq) && s.text){
+    const ms=mathSteps(s.text);
+    if(ms){ playSpeak({seq:ms, lang:s.lang}, onEnd); return; }
+  }
   if(Array.isArray(s.seq) && s.seq.length){
     const lang=s.lang||'zh-CN';
     let i=0;
@@ -243,15 +328,14 @@ function pokeCry(id){
     o.start(); o.stop(c.currentTime+0.34);
   }catch(e){}
 }
+/* 完成课程：宝可梦叫声（区分角色）+ 统一女声鼓励语
+   旧版给 63 只宝可梦各录了一套「不同底嗓 + 变调」的鼓励语（男声 Fred/Ralph/
+   Albert/Reed/Rocko 都在里面，音高 1.06–1.58 倍），这就是「一句话一个声音、
+   有的还发闷」的来源。现在鼓励语只由 ttsSpeak 用锁定女声说，角色差异交给叫声。 */
 function playCheer(id){
   if(!Store.getSetting('sound')) return;
-  const list=(typeof CHEER_MAP!=='undefined' && CHEER_MAP[id]) || [];
-  const url=list.length ? list[Math.floor(Math.random()*list.length)] : null;
   pokeCry(id||'pikachu');
-  setTimeout(()=>{
-    if(url) playClip(url);
-    else speak('Well done!', 'en-US');
-  }, 330);
+  setTimeout(()=>{ speak(pick(CHEER_LINES), 'en-US'); }, 330);
 }
 
 /* ---------- 轻量音效（WebAudio 合成，无需音频文件） ---------- */
@@ -1652,7 +1736,8 @@ function renderParent(){
       <button class="btn-danger" id="resetBtn">Reset all data</button>
     </div>
     <p class="muted" style="text-align:center;font-size:12px;margin:6px 0 18px">
-      Build ${(typeof POKELEARN_BUILD!=='undefined')?POKELEARN_BUILD:'dev'}</p>`;
+      Build ${(typeof POKELEARN_BUILD!=='undefined')?POKELEARN_BUILD:'dev'}<br/>
+      <span style="font-size:11px">Voice — ${voiceLabel()}</span></p>`;
 
   $('#parentHomeBtn').onclick=()=>show('screen-home');
   $('#optAutoread').onchange=e=>Store.setSetting('autoread', e.target.checked);

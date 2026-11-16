@@ -9,5 +9,8 @@
     "audio": "node gen_audio.js",
     "zh-audio": "node gen_zh_audio.js",
     "assets": "node fetch_sprites.js && node gen_audio.js && node gen_zh_audio.js"
+  },
+  "dependencies": {
+    "jsdom": "^31.0.1"
   }
 }

@@ -1,15 +1,13 @@
-/* 生成 App 用到的全部音频（本地预录，iPad 上无需依赖系统 TTS）
- *   1) 英文词库/句子/阅读短文：Samantha 清晰女声，另给拼写词生成慢速版
- *   2) 每只宝可梦专属音色的鼓励语：不同底嗓 + 变调，完成课程时播放
- * 运行： node gen_audio.js [--force] [--force-cheer]
- *   --force        重做全部英文词句音频（换语音/改码率后必须用）
- *   --force-cheer  连宝可梦鼓励语一起重做（默认沿用，体积大且对清晰度不敏感）
- * 依赖： macOS say / afconvert + tools/pitch_wav.py
- * 产物： audio/words/*.m4a, audio/cheer/*.m4a, js/audio-map.js
+/* ⚠️ 已由 tools/tts_build.py 取代（2026-11-16）—— 保留仅作历史参考。
+ *    现在的语音库是「跨平台单女声」生成：node tools/voice_manifest.js 出清单 →
+ *    python tools/tts_build.py [--force] 录音 → 自动写 js/audio-map.js。
+ *    新脚本用 edge-tts 的 en-US-JennyNeural，Windows/macOS 都能跑，且已覆盖
+ *    阅读理解 / 分级读物 / 数字词 / 数数题 / 鼓励语（515 段，单一女声）。
+ *    本文件依赖 macOS 的 say + afconvert，只能在 Mac 上跑，请勿再用于发版。
  *
- * v8 音质修订：旧版用 Flo 语音 + 22050Hz + 48kbps 请求，实测只有 15kbps，
- * 摩擦音（/s/ /f/ /θ/）几乎全被削掉 → 拼读听不清。现改 Samantha（5–8kHz
- * 能量 2.39%，Flo 为 0.00%）、44.1kHz、96kbps，并做峰值归一化。
+ * 原用途（历史）：生成 App 用到的全部音频（本地预录，iPad 上无需依赖系统 TTS）
+ *   1) 英文词库/句子/阅读短文：Samantha 清晰女声，另给拼写词生成慢速版
+ *   2) 宝可梦鼓励语：已废弃（2026-11-16 统一女声），改由 app.js 用锁定女声 TTS 朗读
  */
 const fs=require('fs'), path=require('path'), vm=require('vm'), crypto=require('crypto');
 const {execFileSync}=require('child_process');
@@ -46,7 +44,7 @@ function hash(s){ return crypto.createHash('md5').update(s).digest('hex').slice(
 function addWord(text, rate, key){
   const k=key||String(text).trim().toLowerCase();
   const f='w_'+hash(k)+'.m4a';
-  AUDIO_MAP[k]='audio/words/'+f;
+  AUDIO_MAP[k]='audio/words/'+f+'?a=2';   // ?a=N：改录音后就 +1，顶掉设备上的旧缓存
   tasks.push({out:path.join(WORDS,f), text:String(text), voice:WORD_VOICE, rate, pitch:1});
 }
 function addCheer(id, voice, pitch, phrase, i){
@@ -77,13 +75,13 @@ BUILD.forEach(b=>addWord(b.a.replace(/ \./g,'.'),RATE));
 /* 语法题：朗读填好空之后的完整句子 */
 GRAMMAR_ITEMS.forEach(g=>addWord(g.s.replace('___',g.a),RATE));
 
-/* --- 每只宝可梦的专属鼓励语音色 --- */
-POKEMON.forEach(pk=>{
-  const n=[...pk.id].reduce((a,c)=>a+c.charCodeAt(0),0);
-  const voice=CHEER_VOICES[n%CHEER_VOICES.length];
-  const pitch=1.06+(n%9)*0.065;            // 1.06 ~ 1.58，大小朋友都能听出区别
-  PHRASES.forEach((p,i)=>addCheer(pk.id,voice,pitch,p,i));
-});
+/* --- 每只宝可梦的专属鼓励语音色 ---
+ * 2026-11-16 废弃：沙盒里 63 只宝可梦 × 5 句用了 12 个不同底嗓（含 Fred/Ralph/
+ * Albert/Reed/Rocko 等男声）再叠加 1.06–1.58 倍变调，实测基频跨 74–400Hz、
+ * 高频能量低到 0.01%（发闷）→ 这正是「一句话一个声音、有的听不清」的根源。
+ * 现在鼓励语统一由 app.js 的 ttsSpeak() 用锁定女声朗读（CHEER_LINES），
+ * 角色差异只靠 WebAudio 合成的叫声，不再生成任何变声录音。 */
+POKEMON.forEach(()=>{});   // 保留占位：不再产出 audio/cheer
 
 console.log(`待生成 ${tasks.length} 段音频（${uniq.size} 个词、${POKEMON.length} 只宝可梦 × ${PHRASES.length} 句）`);
 
