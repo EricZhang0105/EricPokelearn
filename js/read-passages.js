@@ -243,536 +243,97 @@ const READ_PASSAGES = [
       {q:'What were the two boys flying?', o:['a kite','a ball','a flag'], a:'a kite'},
       {q:'Mum took a ___ of us.', short:true, a:'photo', accept:['photo','picture'], hint:'p _ _ _ _'}
     ]},
-  {
-    "id": "rp-2026w46-1",
-    "level": 1,
-    "title": "Nina and the Dog",
-    "visual": "🐶",
-    "text": "Nina has a white dog. The dog is small and soft. Nina can play with the dog. Nina is excited.",
-    "qs": [
-      {
-        "q": "What does Nina have?",
-        "o": [
-          "a white dog",
-          "a big bus",
-          "a toy box"
-        ],
-        "a": "a white dog"
-      },
-      {
-        "q": "What color is the dog?",
-        "o": [
-          "white",
-          "yellow",
-          "purple"
-        ],
-        "a": "white"
-      },
-      {
-        "q": "Where do they go?",
-        "o": [
-          "the park",
-          "the zoo",
-          "the market"
-        ],
-        "a": "the park"
-      },
-      {
-        "q": "Is Nina excited?",
-        "o": [
-          "Yes",
-          "No"
-        ],
-        "a": "Yes"
-      },
-      {
-        "q": "Nina has a ___ dog.",
-        "short": true,
-        "a": "white",
-        "accept": [
-          "white"
-        ],
-        "hint": "w _ _ _"
-      }
-    ]
-  },
-  {
-    "id": "rp-2026w46-2",
-    "level": 1,
-    "title": "Rex and the Cat",
-    "visual": "🐱",
-    "text": "Rex has a pink cat. The cat is small and soft. Rex can play with the cat. Rex is proud.",
-    "qs": [
-      {
-        "q": "What does Rex have?",
-        "o": [
-          "a pink cat",
-          "a big bus",
-          "a toy box"
-        ],
-        "a": "a pink cat"
-      },
-      {
-        "q": "What color is the cat?",
-        "o": [
-          "pink",
-          "green",
-          "purple"
-        ],
-        "a": "pink"
-      },
-      {
-        "q": "Where do they go?",
-        "o": [
-          "the garden",
-          "the zoo",
-          "the market"
-        ],
-        "a": "the garden"
-      },
-      {
-        "q": "Is Rex proud?",
-        "o": [
-          "Yes",
-          "No"
-        ],
-        "a": "Yes"
-      },
-      {
-        "q": "Rex has a ___ cat.",
-        "short": true,
-        "a": "pink",
-        "accept": [
-          "pink"
-        ],
-        "hint": "p _ _ _"
-      }
-    ]
-  },
-  {
-    "id": "rp-2026w46-3",
-    "level": 2,
-    "title": "Amy and the Rabbit",
-    "visual": "🐰",
-    "text": "In the afternoon, Amy and the red rabbit go to the farm. The rabbit runs fast on the path. They see a small ball near the gate. Amy looks at it and smiles. \"What a nice day!\" says Amy.",
-    "qs": [
-      {
-        "q": "What does Amy have?",
-        "o": [
-          "a red rabbit",
-          "a big bus",
-          "a toy box"
-        ],
-        "a": "a red rabbit"
-      },
-      {
-        "q": "What color is the rabbit?",
-        "o": [
-          "red",
-          "blue",
-          "purple"
-        ],
-        "a": "red"
-      },
-      {
-        "q": "Where do they go?",
-        "o": [
-          "the farm",
-          "the zoo",
-          "the market"
-        ],
-        "a": "the farm"
-      },
-      {
-        "q": "Is Amy proud?",
-        "o": [
-          "Yes",
-          "No"
-        ],
-        "a": "Yes"
-      },
-      {
-        "q": "Amy has a ___ rabbit.",
-        "short": true,
-        "a": "red",
-        "accept": [
-          "red"
-        ],
-        "hint": "r _ _ _"
-      }
-    ]
-  },
-  {
-    "id": "rp-2026w46-4",
-    "level": 2,
-    "title": "Lily and the Dog",
-    "visual": "🐶",
-    "text": "At the weekend, Lily and the white dog go to the school. The dog runs fast on the path. They see a small ball near the gate. Lily looks at it and smiles. \"What a nice day!\" says Lily.",
-    "qs": [
-      {
-        "q": "What does Lily have?",
-        "o": [
-          "a white dog",
-          "a big bus",
-          "a toy box"
-        ],
-        "a": "a white dog"
-      },
-      {
-        "q": "What color is the dog?",
-        "o": [
-          "white",
-          "green",
-          "purple"
-        ],
-        "a": "white"
-      },
-      {
-        "q": "Where do they go?",
-        "o": [
-          "the school",
-          "the zoo",
-          "the market"
-        ],
-        "a": "the school"
-      },
-      {
-        "q": "Is Lily happy?",
-        "o": [
-          "Yes",
-          "No"
-        ],
-        "a": "Yes"
-      },
-      {
-        "q": "Lily has a ___ dog.",
-        "short": true,
-        "a": "white",
-        "accept": [
-          "white"
-        ],
-        "hint": "w _ _ _"
-      }
-    ]
-  },
-  {
-    "id": "rp-2026w46-5",
-    "level": 3,
-    "title": "May and the Cat",
-    "visual": "🐱",
-    "text": "On Monday, May takes the black cat to the beach. The sky is blue and the air is warm. Soon they find a little frog beside the big tree. The cat wants to play, but May wants to look at the map first. They walk a long way and stop near a little shop. May buys a cold drink and shares it with a friend. When the sun goes down, they walk home together. \"We will come back next week,\" says May.",
-    "qs": [
-      {
-        "q": "What does May have?",
-        "o": [
-          "a black cat",
-          "a big bus",
-          "a toy box"
-        ],
-        "a": "a black cat"
-      },
-      {
-        "q": "What color is the cat?",
-        "o": [
-          "black",
-          "white",
-          "purple"
-        ],
-        "a": "black"
-      },
-      {
-        "q": "Where do they go?",
-        "o": [
-          "the beach",
-          "the zoo",
-          "the market"
-        ],
-        "a": "the beach"
-      },
-      {
-        "q": "Is May happy?",
-        "o": [
-          "Yes",
-          "No"
-        ],
-        "a": "Yes"
-      },
-      {
-        "q": "May has a ___ cat.",
-        "short": true,
-        "a": "black",
-        "accept": [
-          "black"
-        ],
-        "hint": "b _ _ _"
-      }
-    ]
-  },
-  {
-    "id": "rp-2026w47-1",
-    "level": 1,
-    "title": "Nina and the Bird",
-    "visual": "🐦",
-    "text": "Nina has a yellow bird. The bird is small and soft. Nina can play with the bird. Nina is glad.",
-    "qs": [
-      {
-        "q": "What does Nina have?",
-        "o": [
-          "a yellow bird",
-          "a big bus",
-          "a toy box"
-        ],
-        "a": "a yellow bird"
-      },
-      {
-        "q": "What color is the bird?",
-        "o": [
-          "yellow",
-          "pink",
-          "purple"
-        ],
-        "a": "yellow"
-      },
-      {
-        "q": "Where do they go?",
-        "o": [
-          "the garden",
-          "the zoo",
-          "the market"
-        ],
-        "a": "the garden"
-      },
-      {
-        "q": "Is Nina glad?",
-        "o": [
-          "Yes",
-          "No"
-        ],
-        "a": "Yes"
-      },
-      {
-        "q": "Nina has a ___ bird.",
-        "short": true,
-        "a": "yellow",
-        "accept": [
-          "yellow"
-        ],
-        "hint": "y _ _ _"
-      }
-    ]
-  },
-  {
-    "id": "rp-2026w47-2",
-    "level": 1,
-    "title": "Mia and the Cat",
-    "visual": "🐱",
-    "text": "Mia has a red cat. The cat is small and soft. Mia can play with the cat. Mia is proud.",
-    "qs": [
-      {
-        "q": "What does Mia have?",
-        "o": [
-          "a red cat",
-          "a big bus",
-          "a toy box"
-        ],
-        "a": "a red cat"
-      },
-      {
-        "q": "What color is the cat?",
-        "o": [
-          "red",
-          "black",
-          "purple"
-        ],
-        "a": "red"
-      },
-      {
-        "q": "Where do they go?",
-        "o": [
-          "the library",
-          "the zoo",
-          "the market"
-        ],
-        "a": "the library"
-      },
-      {
-        "q": "Is Mia proud?",
-        "o": [
-          "Yes",
-          "No"
-        ],
-        "a": "Yes"
-      },
-      {
-        "q": "Mia has a ___ cat.",
-        "short": true,
-        "a": "red",
-        "accept": [
-          "red"
-        ],
-        "hint": "r _ _ _"
-      }
-    ]
-  },
-  {
-    "id": "rp-2026w47-3",
-    "level": 2,
-    "title": "Ivy and the Rabbit",
-    "visual": "🐰",
-    "text": "After school, Ivy and the green rabbit go to the shop. The rabbit runs fast on the path. They see a little frog near the gate. Ivy looks at it and smiles. \"What a nice day!\" says Ivy.",
-    "qs": [
-      {
-        "q": "What does Ivy have?",
-        "o": [
-          "a green rabbit",
-          "a big bus",
-          "a toy box"
-        ],
-        "a": "a green rabbit"
-      },
-      {
-        "q": "What color is the rabbit?",
-        "o": [
-          "green",
-          "blue",
-          "purple"
-        ],
-        "a": "green"
-      },
-      {
-        "q": "Where do they go?",
-        "o": [
-          "the shop",
-          "the zoo",
-          "the market"
-        ],
-        "a": "the shop"
-      },
-      {
-        "q": "Is Ivy glad?",
-        "o": [
-          "Yes",
-          "No"
-        ],
-        "a": "Yes"
-      },
-      {
-        "q": "Ivy has a ___ rabbit.",
-        "short": true,
-        "a": "green",
-        "accept": [
-          "green"
-        ],
-        "hint": "g _ _ _"
-      }
-    ]
-  },
-  {
-    "id": "rp-2026w47-4",
-    "level": 2,
-    "title": "May and the Rabbit",
-    "visual": "🐰",
-    "text": "One morning, May and the yellow rabbit go to the park. The rabbit runs fast on the path. They see a big tree near the gate. May looks at it and smiles. \"What a nice day!\" says May.",
-    "qs": [
-      {
-        "q": "What does May have?",
-        "o": [
-          "a yellow rabbit",
-          "a big bus",
-          "a toy box"
-        ],
-        "a": "a yellow rabbit"
-      },
-      {
-        "q": "What color is the rabbit?",
-        "o": [
-          "yellow",
-          "pink",
-          "purple"
-        ],
-        "a": "yellow"
-      },
-      {
-        "q": "Where do they go?",
-        "o": [
-          "the park",
-          "the zoo",
-          "the market"
-        ],
-        "a": "the park"
-      },
-      {
-        "q": "Is May excited?",
-        "o": [
-          "Yes",
-          "No"
-        ],
-        "a": "Yes"
-      },
-      {
-        "q": "May has a ___ rabbit.",
-        "short": true,
-        "a": "yellow",
-        "accept": [
-          "yellow"
-        ],
-        "hint": "y _ _ _"
-      }
-    ]
-  },
-  {
-    "id": "rp-2026w47-5",
-    "level": 3,
-    "title": "Tom and the Rabbit",
-    "visual": "🐰",
-    "text": "In the afternoon, Tom takes the blue rabbit to the farm. The sky is blue and the air is warm. Soon they find a yellow flower beside the big tree. The rabbit wants to play, but Tom wants to look at the map first. They walk a long way and stop near a little shop. Tom buys a cold drink and shares it with a friend. When the sun goes down, they walk home together. \"We will come back next week,\" says Tom.",
-    "qs": [
-      {
-        "q": "What does Tom have?",
-        "o": [
-          "a blue rabbit",
-          "a big bus",
-          "a toy box"
-        ],
-        "a": "a blue rabbit"
-      },
-      {
-        "q": "What color is the rabbit?",
-        "o": [
-          "blue",
-          "red",
-          "purple"
-        ],
-        "a": "blue"
-      },
-      {
-        "q": "Where do they go?",
-        "o": [
-          "the farm",
-          "the zoo",
-          "the market"
-        ],
-        "a": "the farm"
-      },
-      {
-        "q": "Is Tom happy?",
-        "o": [
-          "Yes",
-          "No"
-        ],
-        "a": "Yes"
-      },
-      {
-        "q": "Tom has a ___ rabbit.",
-        "short": true,
-        "a": "blue",
-        "accept": [
-          "blue"
-        ],
-        "hint": "b _ _ _"
-      }
-    ]
-  },
+  /* ---- 2026-11-16 重写周更模板短文（原 w46/w47 为同一模板换皮，题型题面雷同） ---- */
+  { id:'rp-2026w46-1', level:1, title:'The Lost Sock', visual:'🧦',
+    text:'Tim looks for his sock. Is it under the bed? No. Is it in the box? Yes! The sock is in the box.',
+    qs:[
+      {q:'What is Tim looking for?', o:['his sock','his hat','his ball'], a:'his sock'},
+      {q:'Where does Tim look first?', o:['under the bed','in the box','in the garden'], a:'under the bed'},
+      {q:'Is the sock under the bed?', o:['No','Yes'], a:'No'},
+      {q:'Where is the sock?', o:['in the box','on the bed','in the bag'], a:'in the box'},
+      {q:'Tim looks for his ___.', short:true, a:'sock', accept:['sock','socks'], hint:'s _ _ _'}
+    ]},
+  { id:'rp-2026w46-2', level:1, title:'The Big Strawberry', visual:'🍓',
+    text:'Asha eats a big strawberry. It is sweet and red. Yum! She wants one more, but the bowl is empty.',
+    qs:[
+      {q:'What does Asha eat?', o:['a strawberry','a banana','a cake'], a:'a strawberry'},
+      {q:'How is the strawberry?', o:['sweet and red','sour and green','cold and hard'], a:'sweet and red'},
+      {q:'Why can Asha not have one more?', o:['the bowl is empty','she is full','it is too hot'], a:'the bowl is empty'},
+      {q:'Is the strawberry small?', o:['No','Yes'], a:'No'},
+      {q:'The bowl is ___.', short:true, a:'empty', accept:['empty'], hint:'e _ _ _ _'}
+    ]},
+  { id:'rp-2026w46-3', level:2, title:'The Red Kite', visual:'🪁',
+    text:'Kai flies his red kite at the field. The wind is strong. The kite goes up, up, up. Then the string breaks! The kite falls into a tree. Kai is sad, but Dad climbs up and gets it back.',
+    qs:[
+      {q:'What does Kai fly?', o:['a red kite','a blue plane','a big balloon'], a:'a red kite'},
+      {q:'Why does the kite fly high?', o:['the wind is strong','it is very big','Kai throws it far'], a:'the wind is strong'},
+      {q:'What breaks?', o:['the string','the kite','a tree'], a:'the string'},
+      {q:'Who gets the kite back?', o:['Dad','Mum','Kai\u2019s friend'], a:'Dad'},
+      {q:'The kite falls into a ___.', short:true, a:'tree', accept:['tree'], hint:'t _ _ _'}
+    ]},
+  { id:'rp-2026w46-4', level:2, title:'Making Pancakes', visual:'🥞',
+    text:'On Sunday morning, Lele and Dad make pancakes. First they mix eggs, milk and flour. Then Dad cooks them in the hot pan. Lele puts honey on her pancake. It is soft and sweet. Dad eats three!',
+    qs:[
+      {q:'Who makes pancakes with Lele?', o:['Dad','Mum','her friend'], a:'Dad'},
+      {q:'What do they mix first?', o:['eggs, milk and flour','honey and jam','sugar and salt'], a:'eggs, milk and flour'},
+      {q:'What does Lele put on her pancake?', o:['honey','jam','butter'], a:'honey'},
+      {q:'How many pancakes does Dad eat?', o:['three','two','five'], a:'three'},
+      {q:'Lele puts ___ on her pancake.', short:true, a:'honey', accept:['honey'], hint:'h _ _ _ _'}
+    ]},
+  { id:'rp-2026w46-5', level:3, title:'A Visit to the Doctor', visual:'🩺',
+    text:'On Tuesday, Ravi did not feel well. His throat hurt and he was hot. Mum took him to the doctor. The doctor looked at his throat and said, You have a cold. Drink water and rest. Ravi stayed in bed and read his dinosaur book. On Thursday he felt much better and went back to school.',
+    qs:[
+      {q:'What was wrong with Ravi?', o:['he had a cold','he broke his arm','he lost his book'], a:'he had a cold'},
+      {q:'Where did Mum take Ravi?', o:['to the doctor','to the park','to the market'], a:'to the doctor'},
+      {q:'What did the doctor tell Ravi to do?', o:['drink water and rest','run every day','eat ice cream'], a:'drink water and rest'},
+      {q:'When did Ravi go back to school?', o:['on Thursday','on Tuesday','on Saturday'], a:'on Thursday'},
+      {q:'Ravi read his ___ book in bed.', short:true, a:'dinosaur', accept:['dinosaur'], hint:'d _ _ _ _ _ _ _'}
+    ]},
+  { id:'rp-2026w47-1', level:1, title:'The Hungry Squirrel', visual:'🐿️',
+    text:'A squirrel runs to the big tree. It finds three nuts. It eats one nut now. It hides two nuts under the leaves.',
+    qs:[
+      {q:'How many nuts does the squirrel find?', o:['three','two','five'], a:'three'},
+      {q:'What does the squirrel eat now?', o:['one nut','two nuts','all the nuts'], a:'one nut'},
+      {q:'Where does the squirrel hide the nuts?', o:['under the leaves','in a box','under the bed'], a:'under the leaves'},
+      {q:'Is the tree small?', o:['No','Yes'], a:'No'},
+      {q:'The squirrel finds ___ nuts.', short:true, a:'three', accept:['three','3'], hint:'t _ _ _ _'}
+    ]},
+  { id:'rp-2026w47-2', level:1, title:'Morning Time', visual:'⏰',
+    text:'The clock rings. Mei jumps out of bed. She washes her face and eats breakfast. She puts on her shoes. The bus is coming!',
+    qs:[
+      {q:'What rings in the morning?', o:['the clock','the bell','the phone'], a:'the clock'},
+      {q:'What does Mei do first?', o:['washes her face','puts on her shoes','runs to the bus'], a:'washes her face'},
+      {q:'What does Mei put on?', o:['her shoes','her hat','her coat'], a:'her shoes'},
+      {q:'Who is coming?', o:['the bus','her friend','her teacher'], a:'the bus'},
+      {q:'Mei eats ___ in the morning.', short:true, a:'breakfast', accept:['breakfast'], hint:'b _ _ _ _ _ _ _'}
+    ]},
+  { id:'rp-2026w47-3', level:2, title:'A Ride on the MRT', visual:'🚇',
+    text:"We take the MRT to Grandma's flat. The train is long and fast. I hold the rail and look at the map. Three stops, then we get off. Grandma waits at the gate with a smile.",
+    qs:[
+      {q:"How do we go to Grandma's flat?", o:['by MRT','by bus','by bike'], a:'by MRT'},
+      {q:'What do I look at on the train?', o:['the map','the sea','my shoes'], a:'the map'},
+      {q:'How many stops is it?', o:['three','two','five'], a:'three'},
+      {q:'Who waits at the gate?', o:['Grandma','Dad','my teacher'], a:'Grandma'},
+      {q:'The train is long and ___.', short:true, a:'fast', accept:['fast'], hint:'f _ _ _'}
+    ]},
+  { id:'rp-2026w47-4', level:2, title:'My New Friend', visual:'🤝',
+    text:'A new boy joins my class. His name is Jun. He sits next to me. At break he has no one to play with, so I share my ball. We play together every day now. Jun is my best friend.',
+    qs:[
+      {q:'Who joins my class?', o:['a new boy','a new teacher','my cousin'], a:'a new boy'},
+      {q:'Where does Jun sit?', o:['next to me','at the back','near the door'], a:'next to me'},
+      {q:'Why does Jun have no one to play with?', o:['he is new to the class','he lost his ball','he does not like games'], a:'he is new to the class'},
+      {q:'What do I share with Jun?', o:['my ball','my lunch','my book'], a:'my ball'},
+      {q:'Jun is my best ___.', short:true, a:'friend', accept:['friend'], hint:'f _ _ _ _ _'}
+    ]},
+  { id:'rp-2026w47-5', level:3, title:'My Little Seed', visual:'🌱',
+    text:'In March, our class planted little seeds in pots. I watered my seed every morning. For many days nothing happened. Then one Monday, a tiny green shoot came out of the soil. It grew two small leaves. My teacher said, Be patient, it will grow tall. By June, my plant had a yellow flower on top.',
+    qs:[
+      {q:'When did the class plant the seeds?', o:['in March','in June','in December'], a:'in March'},
+      {q:'What did I do every morning?', o:['watered my seed','sang to my seed','moved my pot'], a:'watered my seed'},
+      {q:'What came out of the soil first?', o:['a tiny green shoot','a yellow flower','a big leaf'], a:'a tiny green shoot'},
+      {q:'What was on top of the plant in June?', o:['a yellow flower','a red apple','a new seed'], a:'a yellow flower'},
+      {q:'The shoot grew two small ___.', short:true, a:'leaves', accept:['leaves','leaf'], hint:'l _ _ _ _ _'}
+    ]},
 ];
 
 /* ---------------- 题目 ID + 分级信息 ---------------- */

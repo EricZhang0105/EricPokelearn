@@ -1,6 +1,6 @@
 {
  "voiceNote": "单一女声，禁止变声/变调",
- "count": 515,
+ "count": 534,
  "items": [
   {
    "key": "the",
@@ -1425,250 +1425,364 @@
    "file": "w_ccd115978c.m4a"
   },
   {
-   "key": "nina has a white dog. the dog is small and soft. nina can play with the dog. nina is excited.",
-   "text": "Nina has a white dog. The dog is small and soft. Nina can play with the dog. Nina is excited.",
+   "key": "tim looks for his sock. is it under the bed? no. is it in the box? yes! the sock is in the box.",
+   "text": "Tim looks for his sock. Is it under the bed? No. Is it in the box? Yes! The sock is in the box.",
    "rate": "normal",
-   "file": "w_122c1c5626.m4a"
+   "file": "w_22125a2ec6.m4a"
   },
   {
-   "key": "what does nina have?",
-   "text": "What does Nina have?",
+   "key": "what is tim looking for?",
+   "text": "What is Tim looking for?",
    "rate": "normal",
-   "file": "w_ba8358c8e1.m4a"
+   "file": "w_90a49f3331.m4a"
   },
   {
-   "key": "what color is the dog?",
-   "text": "What color is the dog?",
+   "key": "where does tim look first?",
+   "text": "Where does Tim look first?",
    "rate": "normal",
-   "file": "w_6475b5f542.m4a"
+   "file": "w_53e84def5b.m4a"
   },
   {
-   "key": "where do they go?",
-   "text": "Where do they go?",
+   "key": "is the sock under the bed?",
+   "text": "Is the sock under the bed?",
    "rate": "normal",
-   "file": "w_1a03786e0e.m4a"
+   "file": "w_0939eccf2d.m4a"
   },
   {
-   "key": "is nina excited?",
-   "text": "Is Nina excited?",
+   "key": "where is the sock?",
+   "text": "Where is the sock?",
    "rate": "normal",
-   "file": "w_1742735f05.m4a"
+   "file": "w_bea38ec7d9.m4a"
   },
   {
-   "key": "nina has a ___ dog.",
-   "text": "Nina has a ___ dog.",
+   "key": "tim looks for his ___.",
+   "text": "Tim looks for his ___.",
    "rate": "normal",
-   "file": "w_cb1bd974a9.m4a"
+   "file": "w_8d0d70c24b.m4a"
   },
   {
-   "key": "rex has a pink cat. the cat is small and soft. rex can play with the cat. rex is proud.",
-   "text": "Rex has a pink cat. The cat is small and soft. Rex can play with the cat. Rex is proud.",
+   "key": "asha eats a big strawberry. it is sweet and red. yum! she wants one more, but the bowl is empty.",
+   "text": "Asha eats a big strawberry. It is sweet and red. Yum! She wants one more, but the bowl is empty.",
    "rate": "normal",
-   "file": "w_dbee414bd4.m4a"
+   "file": "w_f4a592d816.m4a"
   },
   {
-   "key": "what does rex have?",
-   "text": "What does Rex have?",
+   "key": "what does asha eat?",
+   "text": "What does Asha eat?",
    "rate": "normal",
-   "file": "w_495f36b703.m4a"
+   "file": "w_568b97dceb.m4a"
   },
   {
-   "key": "is rex proud?",
-   "text": "Is Rex proud?",
+   "key": "how is the strawberry?",
+   "text": "How is the strawberry?",
    "rate": "normal",
-   "file": "w_a3afeb9537.m4a"
+   "file": "w_fcadb22323.m4a"
   },
   {
-   "key": "rex has a ___ cat.",
-   "text": "Rex has a ___ cat.",
+   "key": "why can asha not have one more?",
+   "text": "Why can Asha not have one more?",
    "rate": "normal",
-   "file": "w_72e44f2193.m4a"
+   "file": "w_8bb4e04e4c.m4a"
   },
   {
-   "key": "in the afternoon, amy and the red rabbit go to the farm. the rabbit runs fast on the path. they see a small ball near the gate. amy looks at it and smiles. \"what a nice day!\" says amy.",
-   "text": "In the afternoon, Amy and the red rabbit go to the farm. The rabbit runs fast on the path. They see a small ball near the gate. Amy looks at it and smiles. \"What a nice day!\" says Amy.",
+   "key": "is the strawberry small?",
+   "text": "Is the strawberry small?",
    "rate": "normal",
-   "file": "w_284a6b4014.m4a"
+   "file": "w_68a3a2d7fd.m4a"
   },
   {
-   "key": "what does amy have?",
-   "text": "What does Amy have?",
+   "key": "the bowl is ___.",
+   "text": "The bowl is ___.",
    "rate": "normal",
-   "file": "w_06dd1be742.m4a"
+   "file": "w_d88896cd6e.m4a"
   },
   {
-   "key": "what color is the rabbit?",
-   "text": "What color is the rabbit?",
+   "key": "kai flies his red kite at the field. the wind is strong. the kite goes up, up, up. then the string breaks! the kite falls into a tree. kai is sad, but dad climbs up and gets it back.",
+   "text": "Kai flies his red kite at the field. The wind is strong. The kite goes up, up, up. Then the string breaks! The kite falls into a tree. Kai is sad, but Dad climbs up and gets it back.",
    "rate": "normal",
-   "file": "w_458535626e.m4a"
+   "file": "w_4e031f320c.m4a"
   },
   {
-   "key": "is amy proud?",
-   "text": "Is Amy proud?",
+   "key": "what does kai fly?",
+   "text": "What does Kai fly?",
    "rate": "normal",
-   "file": "w_1d049dd629.m4a"
+   "file": "w_960eac94b1.m4a"
   },
   {
-   "key": "amy has a ___ rabbit.",
-   "text": "Amy has a ___ rabbit.",
+   "key": "why does the kite fly high?",
+   "text": "Why does the kite fly high?",
    "rate": "normal",
-   "file": "w_e107888845.m4a"
+   "file": "w_dfa992620e.m4a"
   },
   {
-   "key": "at the weekend, lily and the white dog go to the school. the dog runs fast on the path. they see a small ball near the gate. lily looks at it and smiles. \"what a nice day!\" says lily.",
-   "text": "At the weekend, Lily and the white dog go to the school. The dog runs fast on the path. They see a small ball near the gate. Lily looks at it and smiles. \"What a nice day!\" says Lily.",
+   "key": "what breaks?",
+   "text": "What breaks?",
    "rate": "normal",
-   "file": "w_ae3245a99b.m4a"
+   "file": "w_03540aff62.m4a"
   },
   {
-   "key": "what does lily have?",
-   "text": "What does Lily have?",
+   "key": "who gets the kite back?",
+   "text": "Who gets the kite back?",
    "rate": "normal",
-   "file": "w_0a9309e48d.m4a"
+   "file": "w_c6a220efb0.m4a"
   },
   {
-   "key": "is lily happy?",
-   "text": "Is Lily happy?",
+   "key": "the kite falls into a ___.",
+   "text": "The kite falls into a ___.",
    "rate": "normal",
-   "file": "w_267fa71b7f.m4a"
+   "file": "w_278a1ae480.m4a"
   },
   {
-   "key": "lily has a ___ dog.",
-   "text": "Lily has a ___ dog.",
+   "key": "on sunday morning, lele and dad make pancakes. first they mix eggs, milk and flour. then dad cooks them in the hot pan. lele puts honey on her pancake. it is soft and sweet. dad eats three!",
+   "text": "On Sunday morning, Lele and Dad make pancakes. First they mix eggs, milk and flour. Then Dad cooks them in the hot pan. Lele puts honey on her pancake. It is soft and sweet. Dad eats three!",
    "rate": "normal",
-   "file": "w_ffd41fc270.m4a"
+   "file": "w_372c213bcf.m4a"
   },
   {
-   "key": "on monday, may takes the black cat to the beach. the sky is blue and the air is warm. soon they find a little frog beside the big tree. the cat wants to play, but may wants to look at the map first. they walk a long way and stop near a little shop. may buys a cold drink and shares it with a friend. when the sun goes down, they walk home together. \"we will come back next week,\" says may.",
-   "text": "On Monday, May takes the black cat to the beach. The sky is blue and the air is warm. Soon they find a little frog beside the big tree. The cat wants to play, but May wants to look at the map first. They walk a long way and stop near a little shop. May buys a cold drink and shares it with a friend. When the sun goes down, they walk home together. \"We will come back next week,\" says May.",
+   "key": "who makes pancakes with lele?",
+   "text": "Who makes pancakes with Lele?",
    "rate": "normal",
-   "file": "w_4d5b68dc2a.m4a"
+   "file": "w_8b75305119.m4a"
   },
   {
-   "key": "what does may have?",
-   "text": "What does May have?",
+   "key": "what do they mix first?",
+   "text": "What do they mix first?",
    "rate": "normal",
-   "file": "w_d856bf08a5.m4a"
+   "file": "w_f5f7cccfa7.m4a"
   },
   {
-   "key": "is may happy?",
-   "text": "Is May happy?",
+   "key": "what does lele put on her pancake?",
+   "text": "What does Lele put on her pancake?",
    "rate": "normal",
-   "file": "w_d07895e7fb.m4a"
+   "file": "w_63db4b139e.m4a"
   },
   {
-   "key": "may has a ___ cat.",
-   "text": "May has a ___ cat.",
+   "key": "how many pancakes does dad eat?",
+   "text": "How many pancakes does Dad eat?",
    "rate": "normal",
-   "file": "w_0d65bd6658.m4a"
+   "file": "w_79da89248d.m4a"
   },
   {
-   "key": "nina has a yellow bird. the bird is small and soft. nina can play with the bird. nina is glad.",
-   "text": "Nina has a yellow bird. The bird is small and soft. Nina can play with the bird. Nina is glad.",
+   "key": "lele puts ___ on her pancake.",
+   "text": "Lele puts ___ on her pancake.",
    "rate": "normal",
-   "file": "w_53802bd300.m4a"
+   "file": "w_b03c7063ae.m4a"
   },
   {
-   "key": "is nina glad?",
-   "text": "Is Nina glad?",
+   "key": "on tuesday, ravi did not feel well. his throat hurt and he was hot. mum took him to the doctor. the doctor looked at his throat and said, you have a cold. drink water and rest. ravi stayed in bed and read his dinosaur book. on thursday he felt much better and went back to school.",
+   "text": "On Tuesday, Ravi did not feel well. His throat hurt and he was hot. Mum took him to the doctor. The doctor looked at his throat and said, You have a cold. Drink water and rest. Ravi stayed in bed and read his dinosaur book. On Thursday he felt much better and went back to school.",
    "rate": "normal",
-   "file": "w_8c94a1b2ad.m4a"
+   "file": "w_4859569222.m4a"
   },
   {
-   "key": "nina has a ___ bird.",
-   "text": "Nina has a ___ bird.",
+   "key": "what was wrong with ravi?",
+   "text": "What was wrong with Ravi?",
    "rate": "normal",
-   "file": "w_71897343b4.m4a"
+   "file": "w_6d79de5526.m4a"
   },
   {
-   "key": "mia has a red cat. the cat is small and soft. mia can play with the cat. mia is proud.",
-   "text": "Mia has a red cat. The cat is small and soft. Mia can play with the cat. Mia is proud.",
+   "key": "where did mum take ravi?",
+   "text": "Where did Mum take Ravi?",
    "rate": "normal",
-   "file": "w_06ec8f89a8.m4a"
+   "file": "w_992f52f87c.m4a"
   },
   {
-   "key": "what does mia have?",
-   "text": "What does Mia have?",
+   "key": "what did the doctor tell ravi to do?",
+   "text": "What did the doctor tell Ravi to do?",
    "rate": "normal",
-   "file": "w_308ddefdbc.m4a"
+   "file": "w_59fed3e513.m4a"
   },
   {
-   "key": "is mia proud?",
-   "text": "Is Mia proud?",
+   "key": "when did ravi go back to school?",
+   "text": "When did Ravi go back to school?",
    "rate": "normal",
-   "file": "w_a9b43856b1.m4a"
+   "file": "w_0c7a1d4a0b.m4a"
   },
   {
-   "key": "mia has a ___ cat.",
-   "text": "Mia has a ___ cat.",
+   "key": "ravi read his ___ book in bed.",
+   "text": "Ravi read his ___ book in bed.",
    "rate": "normal",
-   "file": "w_4f51b682dd.m4a"
+   "file": "w_acc7abfc3b.m4a"
   },
   {
-   "key": "after school, ivy and the green rabbit go to the shop. the rabbit runs fast on the path. they see a little frog near the gate. ivy looks at it and smiles. \"what a nice day!\" says ivy.",
-   "text": "After school, Ivy and the green rabbit go to the shop. The rabbit runs fast on the path. They see a little frog near the gate. Ivy looks at it and smiles. \"What a nice day!\" says Ivy.",
+   "key": "a squirrel runs to the big tree. it finds three nuts. it eats one nut now. it hides two nuts under the leaves.",
+   "text": "A squirrel runs to the big tree. It finds three nuts. It eats one nut now. It hides two nuts under the leaves.",
    "rate": "normal",
-   "file": "w_51d75e0efa.m4a"
+   "file": "w_ae40c410fd.m4a"
   },
   {
-   "key": "what does ivy have?",
-   "text": "What does Ivy have?",
+   "key": "how many nuts does the squirrel find?",
+   "text": "How many nuts does the squirrel find?",
    "rate": "normal",
-   "file": "w_216afff7cc.m4a"
+   "file": "w_b27ae9859b.m4a"
   },
   {
-   "key": "is ivy glad?",
-   "text": "Is Ivy glad?",
+   "key": "what does the squirrel eat now?",
+   "text": "What does the squirrel eat now?",
    "rate": "normal",
-   "file": "w_3345532eba.m4a"
+   "file": "w_05720f4301.m4a"
   },
   {
-   "key": "ivy has a ___ rabbit.",
-   "text": "Ivy has a ___ rabbit.",
+   "key": "where does the squirrel hide the nuts?",
+   "text": "Where does the squirrel hide the nuts?",
    "rate": "normal",
-   "file": "w_ec1fe7d9d0.m4a"
+   "file": "w_05c3e4c782.m4a"
   },
   {
-   "key": "one morning, may and the yellow rabbit go to the park. the rabbit runs fast on the path. they see a big tree near the gate. may looks at it and smiles. \"what a nice day!\" says may.",
-   "text": "One morning, May and the yellow rabbit go to the park. The rabbit runs fast on the path. They see a big tree near the gate. May looks at it and smiles. \"What a nice day!\" says May.",
+   "key": "is the tree small?",
+   "text": "Is the tree small?",
    "rate": "normal",
-   "file": "w_5c3c259a97.m4a"
+   "file": "w_32174d1cd4.m4a"
   },
   {
-   "key": "is may excited?",
-   "text": "Is May excited?",
+   "key": "the squirrel finds ___ nuts.",
+   "text": "The squirrel finds ___ nuts.",
    "rate": "normal",
-   "file": "w_e46127bfb5.m4a"
+   "file": "w_331eadcc1c.m4a"
   },
   {
-   "key": "may has a ___ rabbit.",
-   "text": "May has a ___ rabbit.",
+   "key": "the clock rings. mei jumps out of bed. she washes her face and eats breakfast. she puts on her shoes. the bus is coming!",
+   "text": "The clock rings. Mei jumps out of bed. She washes her face and eats breakfast. She puts on her shoes. The bus is coming!",
    "rate": "normal",
-   "file": "w_7c44f8b0d6.m4a"
+   "file": "w_fc4d44f703.m4a"
   },
   {
-   "key": "in the afternoon, tom takes the blue rabbit to the farm. the sky is blue and the air is warm. soon they find a yellow flower beside the big tree. the rabbit wants to play, but tom wants to look at the map first. they walk a long way and stop near a little shop. tom buys a cold drink and shares it with a friend. when the sun goes down, they walk home together. \"we will come back next week,\" says tom.",
-   "text": "In the afternoon, Tom takes the blue rabbit to the farm. The sky is blue and the air is warm. Soon they find a yellow flower beside the big tree. The rabbit wants to play, but Tom wants to look at the map first. They walk a long way and stop near a little shop. Tom buys a cold drink and shares it with a friend. When the sun goes down, they walk home together. \"We will come back next week,\" says Tom.",
+   "key": "what rings in the morning?",
+   "text": "What rings in the morning?",
    "rate": "normal",
-   "file": "w_27a22b6226.m4a"
+   "file": "w_daf6269709.m4a"
   },
   {
-   "key": "what does tom have?",
-   "text": "What does Tom have?",
+   "key": "what does mei do first?",
+   "text": "What does Mei do first?",
    "rate": "normal",
-   "file": "w_38e905bd57.m4a"
+   "file": "w_3b829e708f.m4a"
   },
   {
-   "key": "is tom happy?",
-   "text": "Is Tom happy?",
+   "key": "what does mei put on?",
+   "text": "What does Mei put on?",
    "rate": "normal",
-   "file": "w_3cf015b7ad.m4a"
+   "file": "w_377781eb0b.m4a"
   },
   {
-   "key": "tom has a ___ rabbit.",
-   "text": "Tom has a ___ rabbit.",
+   "key": "who is coming?",
+   "text": "Who is coming?",
    "rate": "normal",
-   "file": "w_5349e09b14.m4a"
+   "file": "w_96934bbf74.m4a"
+  },
+  {
+   "key": "mei eats ___ in the morning.",
+   "text": "Mei eats ___ in the morning.",
+   "rate": "normal",
+   "file": "w_11846075cd.m4a"
+  },
+  {
+   "key": "we take the mrt to grandma's flat. the train is long and fast. i hold the rail and look at the map. three stops, then we get off. grandma waits at the gate with a smile.",
+   "text": "We take the MRT to Grandma's flat. The train is long and fast. I hold the rail and look at the map. Three stops, then we get off. Grandma waits at the gate with a smile.",
+   "rate": "normal",
+   "file": "w_0f8d2df65e.m4a"
+  },
+  {
+   "key": "how do we go to grandma's flat?",
+   "text": "How do we go to Grandma's flat?",
+   "rate": "normal",
+   "file": "w_61afe40615.m4a"
+  },
+  {
+   "key": "what do i look at on the train?",
+   "text": "What do I look at on the train?",
+   "rate": "normal",
+   "file": "w_d607beeefa.m4a"
+  },
+  {
+   "key": "how many stops is it?",
+   "text": "How many stops is it?",
+   "rate": "normal",
+   "file": "w_8349a13c6b.m4a"
+  },
+  {
+   "key": "who waits at the gate?",
+   "text": "Who waits at the gate?",
+   "rate": "normal",
+   "file": "w_00cb6601d3.m4a"
+  },
+  {
+   "key": "the train is long and ___.",
+   "text": "The train is long and ___.",
+   "rate": "normal",
+   "file": "w_667594014f.m4a"
+  },
+  {
+   "key": "a new boy joins my class. his name is jun. he sits next to me. at break he has no one to play with, so i share my ball. we play together every day now. jun is my best friend.",
+   "text": "A new boy joins my class. His name is Jun. He sits next to me. At break he has no one to play with, so I share my ball. We play together every day now. Jun is my best friend.",
+   "rate": "normal",
+   "file": "w_4c90594370.m4a"
+  },
+  {
+   "key": "who joins my class?",
+   "text": "Who joins my class?",
+   "rate": "normal",
+   "file": "w_9bf12ce60b.m4a"
+  },
+  {
+   "key": "where does jun sit?",
+   "text": "Where does Jun sit?",
+   "rate": "normal",
+   "file": "w_c3bcfff5f4.m4a"
+  },
+  {
+   "key": "why does jun have no one to play with?",
+   "text": "Why does Jun have no one to play with?",
+   "rate": "normal",
+   "file": "w_0a8b404809.m4a"
+  },
+  {
+   "key": "what do i share with jun?",
+   "text": "What do I share with Jun?",
+   "rate": "normal",
+   "file": "w_5d2f46191a.m4a"
+  },
+  {
+   "key": "jun is my best ___.",
+   "text": "Jun is my best ___.",
+   "rate": "normal",
+   "file": "w_dbedfa9f47.m4a"
+  },
+  {
+   "key": "in march, our class planted little seeds in pots. i watered my seed every morning. for many days nothing happened. then one monday, a tiny green shoot came out of the soil. it grew two small leaves. my teacher said, be patient, it will grow tall. by june, my plant had a yellow flower on top.",
+   "text": "In March, our class planted little seeds in pots. I watered my seed every morning. For many days nothing happened. Then one Monday, a tiny green shoot came out of the soil. It grew two small leaves. My teacher said, Be patient, it will grow tall. By June, my plant had a yellow flower on top.",
+   "rate": "normal",
+   "file": "w_63d3a8aa16.m4a"
+  },
+  {
+   "key": "when did the class plant the seeds?",
+   "text": "When did the class plant the seeds?",
+   "rate": "normal",
+   "file": "w_24daa58baf.m4a"
+  },
+  {
+   "key": "what did i do every morning?",
+   "text": "What did I do every morning?",
+   "rate": "normal",
+   "file": "w_2136077685.m4a"
+  },
+  {
+   "key": "what came out of the soil first?",
+   "text": "What came out of the soil first?",
+   "rate": "normal",
+   "file": "w_6a825135c8.m4a"
+  },
+  {
+   "key": "what was on top of the plant in june?",
+   "text": "What was on top of the plant in June?",
+   "rate": "normal",
+   "file": "w_656b657541.m4a"
+  },
+  {
+   "key": "the shoot grew two small ___.",
+   "text": "The shoot grew two small ___.",
+   "rate": "normal",
+   "file": "w_880936b97a.m4a"
   },
   {
    "key": "sam has a cat. the cat is red. sam can pat the cat. the cat is fun!",
