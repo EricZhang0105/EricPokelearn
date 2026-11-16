@@ -222,24 +222,38 @@ function stableShuffle(arr,seed){
   a.forEach(x=>{ delete x._s; });
   return a;
 }
-/* 生成一套题：level 越高越倾向高 tier，但保证三型混合 */
+/* 生成一套题：核心是「一套 n 题尽量覆盖 n 个不同的音」。
+   旧实现按 tier 排序后从同一个音里连取多题 → 一套里 a/e/i 反复出现，
+   孩子看着就像重复题。现在按「音」分组轮转：贴近当前难度的音优先，
+   每个音一套里最多出一题，音内 A/B/C 三型随机。 */
 function make(n, level, spread){
   n=n||10; level=level||1;
   const pool=all();
-  // 难度分层选：贴近当前 level 的优先，超出太多的压后，简单题保底
-  const scored=pool.map(q=>{
-    const t=q.tier, over=t>level+1?100:0;
-    return {q, score:over+Math.abs(t-level)*12+Math.random()*10};
-  }).sort((a,b)=>a.score-b.score).map(x=>x.q);
-  // 尽量让 A/B/C 三型轮转出现：按题型分桶再交错
-  const buckets={A:[],B:[],C:[]};
-  scored.forEach(q=>{ const k=(q.qid[2]||'A'); (buckets[k]||buckets.A).push(q); });
-  const out=[], order=['A','B','C']; let i=0;
-  while(out.length<n && i<n*6){
-    const k=order[i%3];
-    if(buckets[k] && buckets[k].length) out.push(buckets[k].shift());
-    else { for(const kk of order){ if(buckets[kk]&&buckets[kk].length){out.push(buckets[kk].shift());break;} } }
-    i++;
+  // 按 soundKey 分桶
+  const byKey={};
+  pool.forEach(q=>{ (byKey[q.soundKey]=byKey[q.soundKey]||[]).push(q); });
+  // 音的出场顺序：贴近当前 level 的优先；超纲两档以上的压后；同档随机
+  const keyOrder=Object.keys(byKey).map(k=>{
+    const t=TIER[k]||2;
+    return {k, score:(t>level+1?100:0)+Math.abs(t-level)*10+Math.random()*8};
+  }).sort((a,b)=>a.score-b.score).map(x=>x.k);
+  keyOrder.forEach(k=>{ byKey[k]=shuffle(byKey[k]); });
+  // 轮转：第一轮每个音各出一题（保证音不重复），不够再进第二轮换题型
+  const out=[], usedSound=new Set();
+  for(let round=0; out.length<n && round<n+3; round++){
+    for(const k of keyOrder){
+      if(out.length>=n) break;
+      if(!byKey[k].length) continue;
+      if(round===0 && usedSound.has(k)) continue;
+      let q=byKey[k].shift();
+      // 第二轮起，优先换个题型（A/B/C），同一音不同问法也更新鲜
+      if(round>0){
+        const lastType=out.length?out[out.length-1].qid[2]:'';
+        const alt=byKey[k].findIndex(x=>x.qid[2]!==lastType);
+        if(alt>0){ const pick=byKey[k].splice(alt,1)[0]; byKey[k].unshift(q); q=pick; }
+      }
+      out.push(q); usedSound.add(k);
+    }
   }
   return out.slice(0,n);
 }

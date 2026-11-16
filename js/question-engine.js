@@ -564,6 +564,11 @@ function freshQuestions(lesson,lessonId,slots,opts){
   }
 
   const picked=[], local=new Set(), localNorm=new Set();
+  /* Phonics：同一套里尽量覆盖不同的音。旧实现按难度排序后同一个音
+     (如 a-short) 连出多题，孩子看着就像重复。这里在合并各题源时再做
+     一次「音」去重：每个 soundKey 一套里最多先出一题，库存不够才回退。 */
+  const isPhonics = lessonId==='e-phonics';
+  const usedSound=new Set();
   const take=(raw)=>{
     let n=0;
     (raw||[]).forEach(q=>{
@@ -577,6 +582,10 @@ function freshQuestions(lesson,lessonId,slots,opts){
       normalizeQid(q,lessonId);
       const k=qKey(q), nr=contentKey(q);
       if(!k || isSeenQ(q) || local.has(k) || localNorm.has(nr)) return;
+      if(isPhonics && q.soundKey){
+        if(usedSound.has(q.soundKey)) return;   // 这个音本套已出过
+        usedSound.add(q.soundKey);
+      }
       local.add(k); localNorm.add(nr); picked.push(q); n++;
     });
     return n;
@@ -632,6 +641,28 @@ function freshQuestions(lesson,lessonId,slots,opts){
       ensurePassagePool(opts.level,300,opts.doneIds);
       if(typeof READ_PASSAGES!=='undefined') READ_PASSAGES.forEach(p=>collect(passageBlock(p)));
     }
+    cand.forEach(x=>{
+      if(picked.length>=slots) return;
+      if(isPhonics && x.q.soundKey){
+        if(usedSound.has(x.q.soundKey)) return;   // 兜底也保持音不重复
+        usedSound.add(x.q.soundKey);
+      }
+      local.add(qKey(x.q)); localNorm.add(x.nr); picked.push(x.q);
+    });
+  }
+  /* Phonics 兜底：音不够时放宽「音去重」，但仍必须是没出现过的新题，
+     宁可同一音换个词/换题型，也不能把做过的题或题数不足交给孩子。 */
+  if(isPhonics && picked.length<slots){
+    const cand=[], once=new Set();
+    const collect=(arr)=>(arr||[]).forEach(q=>{
+      if(!q || q.type==='passage') return;
+      normalizeQid(q,lessonId);
+      const k=qKey(q), nr=contentKey(q);
+      if(!k || local.has(k) || once.has(k) || localNorm.has(nr) || isSeenQ(q)) return;
+      once.add(k); cand.push({q,nr});
+    });
+    for(let i=0;i<16;i++) collect(lesson.make(slots,opts));
+    for(let s=6;s<16;s++) collect((typeof Bank!=='undefined'&&Bank.build)?Bank.build(lessonId,level,s):[]);
     cand.forEach(x=>{
       if(picked.length>=slots) return;
       local.add(qKey(x.q)); localNorm.add(x.nr); picked.push(x.q);

@@ -73,40 +73,63 @@ function goBack(){
 
 function setTopTitle(t){ $('#topbarTitle').textContent = t; }
 
-/* ---------- 语音：优先播放本地高清录音，浏览器 TTS 只作兜底 ---------- */
-/* 浏览器自带 TTS 在 iPad 上语速放慢后会含糊；英文词库全部预生成了清晰音频 */
-const PREFERRED_VOICES = [
-  'Google US English','Microsoft Aria Online (Natural) - English (United States)',
-  'Samantha (Enhanced)','Ava (Enhanced)','Allison (Enhanced)',
-  'Samantha','Karen','Daniel','Google UK English Female'
+/* ---------- 语音：全程序锁定「单一、清晰的英文女声」 ----------
+   旧实现从 11 个候选里按加载顺序命中，男声女声混着来、每句音色都可能变。
+   现在：一旦选定一个女声就全程锁定（含中文单独一个），绝不中途换人；
+   语速/音高全程序统一，任何地方读英文都走同一个出口 ttsSpeak()。 */
+const EN_VOICE_PREF = [
+  'Samantha',                       // iOS/macOS 原生清晰女声（首选）
+  'Google US English',              // Chrome 清晰女声
+  'Microsoft Aria Online (Natural) - English (United States)',
+  'Microsoft Aria - English (United States)',
+  'Ava (Enhanced)', 'Ava', 'Allison (Enhanced)', 'Allison',
+  'Samantha (Enhanced)', 'Karen', 'Google UK English Female',
+  'Zira', 'Hazel', 'Jenny'          // 均为女声；绝不选 Daniel/Alex 等男声
 ];
-let _cachedVoice=null, _voicesLoaded=false;
-function bestVoice(){
+const ZH_VOICE_PREF = ['Ting-Ting','Tingting','Google 普通话','Microsoft Huihui','Microsoft Yaoyao'];
+let _enVoice=undefined, _zhVoice=undefined; // undefined=还没挑；null=确定没有可用声音
+function pickVoice(vs, pref, langRe){
+  if(!vs || !vs.length) return undefined;          // 声音还没加载完，等下次
+  for(const name of pref){ const v=vs.find(x=>x.name===name && langRe.test(x.lang)); if(v) return v; }
+  // 兜底也只在女声/自然声里找，绝不退回系统默认的男声
+  const soft=vs.find(x=>langRe.test(x.lang) && /female|natural|samantha|aria|ava|allison|karen|ting|huihui|yaoyao|zira|hazel|jenny|google/i.test(x.name));
+  if(soft) return soft;
+  return vs.find(x=>langRe.test(x.lang)) || null;
+}
+function bestVoice(){                 // 返回锁定的英文女声（供各处复用）
+  if(_enVoice!==undefined) return _enVoice;
   if(!('speechSynthesis' in window)) return null;
-  if(_cachedVoice) return _cachedVoice;
-  const vs=speechSynthesis.getVoices()||[];
-  _voicesLoaded = vs.length>0;
-  for(const name of PREFERRED_VOICES){
-    const v=vs.find(x=>x.name===name && /^en/i.test(x.lang));
-    if(v){ _cachedVoice=v; return v; }
-  }
-  const en=vs.find(x=>/^en[-_]US/i.test(x.lang)) || vs.find(x=>/^en/i.test(x.lang));
-  _cachedVoice=en||null;
-  return _cachedVoice;
+  _enVoice=pickVoice(speechSynthesis.getVoices()||[], EN_VOICE_PREF, /^en/i) || null;
+  return _enVoice;
 }
+function zhVoice(){
+  if(_zhVoice!==undefined) return _zhVoice;
+  if(!('speechSynthesis' in window)) return null;
+  _zhVoice=pickVoice(speechSynthesis.getVoices()||[], ZH_VOICE_PREF, /^zh/i) || null;
+  return _zhVoice;
+}
+/* 声音列表就绪后只补挑一次；已锁定的不会被覆盖，保证全程序同一把嗓子 */
 if('speechSynthesis' in window){
-  speechSynthesis.onvoiceschanged=()=>{ _cachedVoice=null; bestVoice(); };
+  speechSynthesis.onvoiceschanged=()=>{
+    if(_enVoice===undefined) _enVoice=pickVoice(speechSynthesis.getVoices()||[],EN_VOICE_PREF,/^en/i)||null;
+    if(_zhVoice===undefined) _zhVoice=pickVoice(speechSynthesis.getVoices()||[],ZH_VOICE_PREF,/^zh/i)||null;
+  };
 }
-function speak(text,lang){
-  if(!('speechSynthesis' in window)) return;
+/* 全程序唯一 TTS 出口：统一语速/音高/音量，锁定声音 */
+function ttsSpeak(text, lang){
+  if(!('speechSynthesis' in window) || !text) return;
+  const zh=/^zh/i.test(lang||'');
   try{
+    speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text);
-    u.lang=lang||'en-US';
-    u.rate=0.88; u.pitch=1.0;        // 0.7 太慢会拖音含糊，0.88 更清楚
-    const v=bestVoice(); if(v && /^en/i.test(lang||'en-US')) u.voice=v;
-    speechSynthesis.cancel(); speechSynthesis.speak(u);
+    u.lang=zh?'zh-CN':(lang||'en-US');
+    u.rate=zh?0.82:0.86; u.pitch=1.02; u.volume=1;  // 全程序统一，放慢但不拖音
+    const v=zh?zhVoice():bestVoice();
+    if(v) u.voice=v;
+    speechSynthesis.speak(u);
   }catch(e){}
 }
+function speak(text,lang){ ttsSpeak(text,lang); }
 
 /* 首次触摸解锁 iOS Safari 的音频播放权限（自动读题需要在手势之外播放） */
 document.addEventListener('pointerdown', ()=>{
@@ -222,7 +245,62 @@ function tone(freq,t0,dur,type,vol){
   o.connect(g).connect(c.destination);
   o.start(c.currentTime+t0); o.stop(c.currentTime+t0+dur+0.05);
 }
-function sfx(kind){
+/* 噪声爆发（水电火等属性共用）：duration 秒，指数衰减的伪随机噪声 */
+function noiseBurst(t0, dur, vol, filterType, filterFreq){
+  const c=_actx;
+  const len=Math.max(1,Math.floor(c.sampleRate*dur));
+  const buf=c.createBuffer(1,len,c.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,1.6);
+  const s=c.createBufferSource(); s.buffer=buf;
+  let node=s;
+  if(filterType && c.createBiquadFilter){
+    const f=c.createBiquadFilter(); f.type=filterType; f.frequency.value=filterFreq||1000;
+    s.connect(f); node=f;
+  }
+  const g=c.createGain();
+  g.gain.setValueAtTime(0.0001,c.currentTime+t0);
+  g.gain.exponentialRampToValueAtTime(vol||0.12,c.currentTime+t0+Math.min(0.05,dur*0.2));
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+t0+dur);
+  node.connect(g).connect(c.destination);
+  s.start(c.currentTime+t0);
+}
+/* 滑音（蓄力→爆发）：从 f0 扫到 f1 */
+function sweep(t0,dur,f0,f1,type,vol){
+  const c=_actx,t=c.currentTime+t0,o=c.createOscillator(),g=c.createGain();
+  o.type=type||'sawtooth';
+  o.frequency.setValueAtTime(f0,t);
+  o.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(vol||0.14,t+0.06);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g).connect(c.destination); o.start(t); o.stop(t+dur+0.03);
+}
+/* 按属性合成绝招音效：每类音色/节奏都不同 */
+function moveSfx(type){
+  const t=0;
+  switch(type){
+    case 'fire':    sweep(t,0.5,180,900,'sawtooth',0.13); noiseBurst(0.35,0.5,0.13,'lowpass',1400); break;
+    case 'water':   sweep(t,0.35,700,180,'sine',0.14); noiseBurst(0.2,0.55,0.14,'lowpass',900); tone(300,0.5,0.3,'sine',0.08); break;
+    case 'electric':[0,0.08,0.16,0.26].forEach((d,i)=>noiseBurst(d,0.10,0.13,'highpass',2500));
+                    tone(1200,0.1,0.08,'square',0.06); tone(1600,0.28,0.1,'square',0.06); break;
+    case 'grass':   sweep(t,0.4,300,1200,'triangle',0.12); noiseBurst(0.25,0.35,0.10,'bandpass',2000); break;
+    case 'ice':     [1400,1800,2200,2600].forEach((f,i)=>tone(f,i*0.07,0.22,'sine',0.09)); noiseBurst(0.2,0.4,0.08,'highpass',3000); break;
+    case 'psychic': sweep(t,0.6,260,1500,'sine',0.10); [784,988,1319].forEach((f,i)=>tone(f,0.35+i*0.06,0.4,'sine',0.07)); break;
+    case 'fighting':noiseBurst(0.0,0.12,0.18,'lowpass',600); noiseBurst(0.28,0.14,0.18,'lowpass',600); tone(120,0.3,0.2,'square',0.12); break;
+    case 'dragon':  sweep(t,0.7,120,700,'sawtooth',0.12); [392,466,587,784].forEach((f,i)=>tone(f,0.3+i*0.08,0.35,'triangle',0.08)); break;
+    case 'ghost':   sweep(t,0.7,600,140,'sine',0.11); noiseBurst(0.15,0.6,0.10,'lowpass',700); break;
+    case 'ground':
+    case 'rock':    noiseBurst(0.0,0.25,0.16,'lowpass',400); noiseBurst(0.3,0.3,0.16,'lowpass',350); tone(90,0.25,0.35,'triangle',0.14); break;
+    case 'bug':     sweep(t,0.45,500,1400,'triangle',0.10); noiseBurst(0.1,0.4,0.08,'bandpass',2500); break;
+    case 'flying':  sweep(t,0.5,300,1100,'sine',0.10); noiseBurst(0.15,0.5,0.11,'bandpass',800); break;
+    case 'sound':   [659,784,988,784,1047].forEach((f,i)=>tone(f,i*0.11,0.22,'sine',0.10)); break;
+    case 'steel':   [900,1200].forEach((f,i)=>tone(f,i*0.12,0.3,'square',0.07)); noiseBurst(0.1,0.35,0.10,'highpass',2000); break;
+    case 'fairy':   [1047,1319,1568,2093].forEach((f,i)=>tone(f,i*0.08,0.3,'sine',0.08)); break;
+    default:        sweep(t,0.55,160,1400,'sawtooth',0.13); noiseBurst(0.55,0.45,0.12,'lowpass',1200);
+  }
+}
+function sfx(kind, type){
   if(!Store.getSetting('sound')) return;
   try{
     if(!_actx) _actx=new (window.AudioContext||window.webkitAudioContext)();
@@ -244,7 +322,9 @@ function sfx(kind){
       [523,440,349,262,196].forEach((f,i)=>tone(f,i*0.16,0.26,'triangle',0.14));
       tone(98,0.82,0.4,'sawtooth',0.10);
     }
-    /* 必杀技：蓄力低鸣 → 高频光束 + 噪声爆发 */
+    /* 专属绝招：按属性播放不同音色/节奏 */
+    else if(kind==='move'){ moveSfx(type||'normal'); }
+    /* 必杀技（旧版兼容）：蓄力低鸣 → 高频光束 + 噪声爆发 */
     else if(kind==='skill'){
       const c=_actx, t=c.currentTime;
       const o=c.createOscillator(), g=c.createGain();
@@ -1333,7 +1413,7 @@ const SFX_CLIP={ rocket:'audio/sfx/rocket_line.m4a' };   // 火箭队台词（ge
 let _fxDone=null;
 function fxShow(html,caption,cls,dur,onDone){
   const ov=$('#fxOverlay'), stg=$('#fxStage'), cap=$('#fxCaption');
-  stg.className='fx-stage'; stg.innerHTML=html; cap.innerHTML=caption;
+  stg.className='fx-stage'; stg.style.cssText=''; stg.innerHTML=html; cap.innerHTML=caption;
   ov.classList.remove('hidden');
   ov.classList.remove('fx-evo','fx-defeat','fx-skill');
   ov.classList.add(cls);
@@ -1386,15 +1466,25 @@ function showDefeatFx(id, type, onDone){
   setTimeout(()=>playClip(SFX_CLIP.rocket), 700);   // 先听击败音，再放火箭队台词
 }
 
-/* 全对奖励：宝可梦释放技能 */
+/* 全对奖励：宝可梦释放「专属绝招」（按官方设定的招式 + 属性特效） */
 function showSkillFx(id, onDone){
   const info=Store.stageInfo(id);
   const st=info.form;
+  const mv=(typeof MOVES!=='undefined') ? MOVES.moveFor(id) : {name:'Super Move',en:'Super Move',type:'normal',desc:'释放必杀技！'};
+  const fx=(typeof MOVES!=='undefined') ? MOVES.fxFor(mv.type) : {c1:'#b9b0a0',c2:'#efe9df',particles:'⭐💥⭐',word:'SMASH!',sfx:'normal'};
+  const style=`--fx-c1:${fx.c1};--fx-c2:${fx.c2};`;
+  const beam=`<div class="fx-beam fx-beam-${mv.type}"></div>`;
+  const particles=`<div class="fx-burst fx-burst-${mv.type}">${fx.particles}</div>`;
+  const word=`<div class="fx-move-word fx-word-${mv.type}">${fx.word}</div>`;
   fxShow(`<div class="fx-sprite fx-charge">${pokeImgTag(st,'fx-img')}</div>
-      <div class="fx-beam"></div><div class="fx-burst">💥💥💥</div>`,
-    `⚡ <b class="fx-title">${st.name} used a super move!</b> ⚡<br><span class="muted">10 题全对！释放必杀技！</span>`,
-    'fx-skill',2600,onDone);
-  sfx('skill');
+      ${beam}${word}${particles}`,
+    `<b class="fx-title" style="color:${fx.c2}">${st.name} used ${mv.en}!</b><br>
+     <span class="muted">✦ ${mv.name} ✦ ${mv.desc}</span>`,
+    'fx-skill',3000,onDone);
+  // 把属性色注入舞台，供 CSS 变量 --fx-c1/--fx-c2 使用（含背景染色）
+  const stg=$('#fxStage');
+  if(stg) stg.style.cssText=style + `background:radial-gradient(circle at 50% 45%,${fx.c1}33 0%,#08101a 72%);`;
+  sfx('move', fx.sfx);   // 按属性播放不同音效
 }
 
 function showResult(){
@@ -1586,25 +1676,8 @@ function renderParent(){
 const libState = { lang:'zh', level:'all' };
 let reader = { book:null, page:0 };
 
-/* 朗读整句：中文优先 zh-CN 语音，英文用已选好的清晰语音 */
-function sayText(text, lang){
-  if(!('speechSynthesis' in window) || !text) return;
-  try{
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(text);
-    u.lang = lang || 'en-US';
-    u.rate = /^zh/i.test(u.lang) ? 0.86 : 0.82;
-    u.pitch = 1.05;
-    const vs = speechSynthesis.getVoices() || [];
-    if(/^zh/i.test(u.lang)){
-      const v = vs.find(x=>/^zh[-_]CN/i.test(x.lang)) || vs.find(x=>/^zh/i.test(x.lang));
-      if(v) u.voice=v;
-    }else{
-      const v=bestVoice(); if(v) u.voice=v;
-    }
-    speechSynthesis.speak(u);
-  }catch(e){}
-}
+/* 朗读整句：统一走 ttsSpeak，保证与读题同一把嗓子、同一套参数 */
+function sayText(text, lang){ ttsSpeak(text, lang); }
 
 function levelInfo(id){ return BOOK_LEVELS.find(l=>l.id===id) || { label:id, color:'#7A6EF0' }; }
 
