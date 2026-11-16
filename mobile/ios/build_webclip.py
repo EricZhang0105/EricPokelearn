@@ -15,7 +15,7 @@ WORKSPACE = os.path.abspath(os.path.join(ROOT, '..'))
 OUT = os.path.join(WORKSPACE, 'PokeLearnInstallers', 'mobile')
 ICON = os.path.join(ROOT, 'icon-180.png')
 
-CLOUD_URL = 'https://wbapp-ig9wrpabw0v66x4kzqyd6s.app.workbuddy.host/?sharecode=BC3RN7J6A4'
+CLOUD_URL = 'https://wbapp-irsoalbj6c5htbc5ks1cye.app.workbuddy.host/?sharecode=4KAXDGF6AB'
 WEB_URL = 'https://ericzhang0105.github.io/EricPokelearn/'
 
 
