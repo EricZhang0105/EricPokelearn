@@ -422,9 +422,9 @@ const READERS=[
 ];
 
 const ENGLISH=[
-  /* 汇总页：全部 44 个音素按元音/辅音分开 + 字母 A–Z（点读音） */
+  /* 汇总页：全部 45 个美式音素（21 元音 + 24 辅音）+ 字母 A–Z（点读音素本身） */
   { id:'e-ipa', ref:'ipa-chart', title:'Sound Chart', emoji:'🎵',
-    desc:'All 44 phonemes — vowels & consonants · tap any sound to hear it' },
+    desc:'All 45 American phonemes — 21 vowels & 24 consonants · tap any sound to hear it' },
 
   { id:'e-sight', title:'Sight Words', emoji:'👀',
     desc:'See a word and read it (listen & choose)',

@@ -65,7 +65,7 @@ cat dog sun pig cup hat bug pen top map fox bus red box leg sit hot run big
 ball book fish bird cake milk rain tree ship shop duck frog jump help read sing walk
 blue green small happy water apple table chair house school friend orange yellow
 purple animal bicycle teacher garden market rainbow library umbrella morning evening
-picture birthday because together favourite delicious exciting yesterday tomorrow
+picture birthday because together favorite delicious exciting yesterday tomorrow
 playground computer elephant dinosaur butterfly sandwich breakfast bedroom football
 sunshine painting counting writing reading singing dancing swimming running
 adventure calendar chocolate classroom community different discover exercise family
@@ -79,7 +79,7 @@ igloo jungle kitten lemon moonlight noodle palace rabbit silver tiger violet
 winter watermelon electricity imagination celebration thermometer microscope
 photography supermarket engineer wonderful beautiful dangerous comfortable
 kilometres mathematics alphabet aquarium barbecue cucumber firefighter hamburger
-holiday information invitation magazine necklace paragraph quality yogurt
+vacation information invitation magazine necklace paragraph quality yogurt
 banana grape peach lemon mango melon cherry strawberry juice bread butter cheese
 cookie pizza salad soup rice noodle tomato potato carrot onion shirt shoes socks
 dress coat scarf glove jacket pocket button zipper clock watch lamp door floor

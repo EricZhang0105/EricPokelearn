@@ -111,37 +111,49 @@ function renderZhMap(){
 }
 
 /* =========================================================
-   二、英语音标全景（Received Pronunciation 44 音素）
+   二、英语音标全景（American English / General American，21 元音 + 24 辅音）
    ---------------------------------------------------------
-   每个音：音标 + 例词 + 规则提示（全英文）。
-   点格子读第一个例词。
+   全 App 英文一律按美音：符号用美式 GA 写法，录音用同一把美式女声。
+   美式和英式 RP 的差别（孩子会看到的对照）：
+     /ɒ/ → /ɑ/   hot、dog      /əʊ/ → /oʊ/  nose
+     /ɜː/ → /ɝ/   her           /ɑː/ → /ɑr/  car
+     /ɔː/ 并入 /ɑ/（saw）        /ɪə/ → /ɪr/  here
+                                 /eə/ → /ɛr/  hair
+                                 /ʊə/ → /ʊr/  tour
+   另有美音独有的非重读卷舌 /ɚ/（teacher）。
+   注：本库女声是 cot-caught 合并的美式口音，saw 与 hot 元音相同，
+       所以只列一格 /ɑ/，不单列 /ɔ/ —— 免得两格听起来一样却标不同符号。
+   每个音：音标 + 例词 + 规则提示（全英文）。点格子读音素本身，不是读例词。
    ========================================================= */
 const IPA_VOWELS=[
   {g:'Short vowels', items:[
     {ipa:'/ɪ/', k:'v_ih', w:['sit','pig','big'], rule:'The i in sit. Short and relaxed: "ih".'},
-    {ipa:'/e/', k:'v_e', w:['bed','pen','egg'], rule:'The e in bed. Small mouth: "eh".'},
+    {ipa:'/ɛ/', k:'v_e', w:['bed','pen','egg'], rule:'The e in bed. Small mouth: "eh".'},
     {ipa:'/æ/', k:'v_ae', w:['cat','hat','bag'], rule:'The a in cat. Open your mouth wide.'},
     {ipa:'/ʌ/', k:'v_uh', w:['cup','sun','bus'], rule:'The u in cup. Short and relaxed: "uh".'},
-    {ipa:'/ɒ/', k:'v_o', w:['dog','box','top'], rule:'The o in dog. Round mouth, short.'},
+    {ipa:'/ɑ/', k:'v_o', w:['hot','dog','saw'], rule:'The o in hot, the aw in saw. Open mouth, short "ah".'},
     {ipa:'/ʊ/', k:'v_uu', w:['book','look','good'], rule:'The oo in book. Short and soft.'},
     {ipa:'/ə/', k:'v_schwa', w:['about','banana','sofa'], rule:'The weak a in about. Very light "uh".'},
   ]},
-  {g:'Long vowels', items:[
-    {ipa:'/iː/', k:'v_ii', w:['see','tree','bee'], rule:'The ee in see. Long smile: "eeee".'},
-    {ipa:'/ɑː/', k:'v_aa', w:['car','star','far'], rule:'The ar in car. Open wide and hold.'},
-    {ipa:'/ɔː/', k:'v_aw', w:['for','horse','corn'], rule:'The or in for. Round and long.'},
-    {ipa:'/uː/', k:'v_oo', w:['moon','food','zoo'], rule:'The oo in moon. Round lips, hold it.'},
-    {ipa:'/ɜː/', k:'v_er', w:['bird','girl','nurse'], rule:'The ir / ur / er in bird. Long and flat.'},
+  {g:'Long & tense vowels', items:[
+    {ipa:'/i/', k:'v_ii', w:['see','tree','bee'], rule:'The ee in see. Long smile: "eeee".'},
+    {ipa:'/u/', k:'v_oo', w:['moon','food','zoo'], rule:'The oo in moon. Round lips, hold it.'},
+    {ipa:'/ɝ/', k:'v_er', w:['her','bird','nurse'], rule:'The er in her. Curl the tongue while you say "uh".'},
+    {ipa:'/ɚ/', k:'v_schwa_r', w:['teacher','water','doctor'], rule:'The weak er at the end of teacher. A soft curled "er".'},
   ]},
   {g:'Diphthongs', items:[
     {ipa:'/eɪ/', k:'v_ei', w:['cake','name','rain'], rule:'The a in cake, ai in rain. Say the letter name A.'},
     {ipa:'/aɪ/', k:'v_ai', w:['bike','kite','time'], rule:'The i in bike. Say the letter name I.'},
     {ipa:'/ɔɪ/', k:'v_oi', w:['boy','toy','coin'], rule:'The oi in boy. Slide from o to i.'},
     {ipa:'/aʊ/', k:'v_au', w:['house','mouse','cow'], rule:'The ou in house, ow in cow. Slide a to u.'},
-    {ipa:'/əʊ/', k:'v_ou', w:['nose','home','boat'], rule:'The o in nose, oa in boat. Say the letter name O.'},
-    {ipa:'/ɪə/', k:'v_ie', w:['here','ear','near'], rule:'The ear in here. Slide i to a light "uh".'},
-    {ipa:'/eə/', k:'v_ea', w:['hair','chair','bear'], rule:'The air in hair. Slide e to a light "uh".'},
-    {ipa:'/ʊə/', k:'v_ue', w:['tour','sure','poor'], rule:'The ure in tour. Rare sound: slide u to "uh".'},
+    {ipa:'/oʊ/', k:'v_ou', w:['nose','home','boat'], rule:'The o in nose, oa in boat. Say the letter name O.'},
+  ]},
+  {g:'R-colored vowels', items:[
+    {ipa:'/ɑr/', k:'v_aar', w:['car','star','far'], rule:'The ar in car. Open "ah", then curl into r.'},
+    {ipa:'/ɔr/', k:'v_awr', w:['for','horse','corn'], rule:'The or in for. Round "aw", then curl into r.'},
+    {ipa:'/ɪr/', k:'v_ie', w:['here','ear','near'], rule:'The ear in here. Slide i into a curled r.'},
+    {ipa:'/ɛr/', k:'v_ea', w:['hair','chair','bear'], rule:'The air in hair. Slide e into a curled r.'},
+    {ipa:'/ʊr/', k:'v_ue', w:['tour','poor','sure'], rule:'The ure in tour. Slide u into a curled r.'},
   ]},
 ];
 const IPA_CONSONANTS=[
@@ -169,7 +181,7 @@ const IPA_CONSONANTS=[
     {ipa:'/dʒ/', k:'c_j', w:['jam','jump','bridge'], rule:'The j in jam. A ch with your voice.'},
   ]},
   {g:'Nasals', items:[
-    {ipa:'/m/', k:'c_m', w:['man','mum','home'], rule:'The m in man. Lips closed, sound through the nose.'},
+    {ipa:'/m/', k:'c_m', w:['man','mom','home'], rule:'The m in man. Lips closed, sound through the nose.'},
     {ipa:'/n/', k:'c_n', w:['net','nine','sun'], rule:'The n in net. Tongue up, sound through the nose.'},
     {ipa:'/ŋ/', k:'c_ng', w:['sing','long','ring'], rule:'The ng in sing. Back of the mouth, through the nose.'},
   ]},
@@ -180,22 +192,22 @@ const IPA_CONSONANTS=[
     {ipa:'/j/', k:'c_y', w:['yes','yellow','you'], rule:'The y in yes. A quick "y".'},
   ]},
 ];
-/* 字母表：每个字母最常见的读音（对应截图里 A a / B b … 那一列） */
+/* 字母表：每个字母最常见的读音（美式符号，对应截图里 A a / B b … 那一列） */
 const LETTERS=[
   ['A a','/æ/ /eɪ/','apple'],['B b','/b/','bag'],['C c','/k/ /s/','cat'],['D d','/d/','dog'],
-  ['E e','/e/ /iː/','egg'],['F f','/f/','fish'],['G g','/g/ /dʒ/','go'],['H h','/h/','hat'],
+  ['E e','/ɛ/ /i/','egg'],['F f','/f/','fish'],['G g','/g/ /dʒ/','go'],['H h','/h/','hat'],
   ['I i','/ɪ/ /aɪ/','pig'],['J j','/dʒ/','jam'],['K k','/k/','kite'],['L l','/l/','leg'],
-  ['M m','/m/','man'],['N n','/n/','net'],['O o','/ɒ/ /əʊ/','dog'],['P p','/p/','pen'],
+  ['M m','/m/','man'],['N n','/n/','net'],['O o','/ɑ/ /oʊ/','dog'],['P p','/p/','pen'],
   ['Q q','/kw/','queen'],['R r','/r/','red'],['S s','/s/ /z/','sun'],['T t','/t/','ten'],
-  ['U u','/ʌ/ /juː/','cup'],['V v','/v/','van'],['W w','/w/','wet'],['X x','/ks/','box'],
+  ['U u','/ʌ/ /ju/','cup'],['V v','/v/','van'],['W w','/w/','wet'],['X x','/ks/','box'],
   ['Y y','/j/ /aɪ/','yes'],['Z z','/z/','zoo'],
 ];
 
 function ipaTile(it){
-  /* 点格子读音素本身（audio/ipa/<key>.m4a，同一把女声单独录的 44 个音素），
+  /* 点格子读音素本身（audio/ipa/<key>.m4a，美式女声单独录的 46 个音素），
      不是读例词。例词只作为听不到录音时的兜底文本。 */
   const w=it.w[0];
-  return `<button class="rf-ipa" data-clipurl="audio/ipa/${it.k}.m4a?a=1" data-say="${w}">
+  return `<button class="rf-ipa" data-clipurl="audio/ipa/${it.k}.m4a?a=2" data-say="${w}">
     <span class="rf-ipa-sym">${it.ipa}</span>
     <span class="rf-ipa-words">${it.w.join(' · ')}</span>
     <span class="rf-ipa-rule">${it.rule}</span>
@@ -214,7 +226,7 @@ function renderIpa(){
         <span class="rf-let-s">${s}</span>
         <span class="rf-let-w">${w}</span>
       </button>`).join('')}</div>`;
-  return sec('① Vowels','20 vowels',grp(IPA_VOWELS))
+  return sec('① Vowels','21 vowels',grp(IPA_VOWELS))
        + sec('② Consonants','24 consonants',grp(IPA_CONSONANTS))
        + sec('③ Letters &amp; sounds','26 letters',letters);
 }
@@ -283,7 +295,7 @@ const REF_PAGES={
   },
   'ipa-chart':{
     title:'Sound Chart 音标全景', emoji:'🎵', subject:'english', lang:'en-US',
-    hint:'Tap any sound to hear it · 20 vowels + 24 consonants + 26 letters',
+    hint:'Tap any sound to hear it · 21 vowels + 24 consonants + 26 letters',
     render:renderIpa,
   },
   'math-facts':{

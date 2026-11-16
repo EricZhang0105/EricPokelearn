@@ -56,18 +56,20 @@ console.log(`  用到的音频类型：${[...seenClip].join(' / ')}`);
 console.log('== 音标全景 ==');
 const ipaHtml = REF_PAGES['ipa-chart'].render();
 const ipaClips = [...new Set([...ipaHtml.matchAll(/data-clipurl="([^"]*)"/g)].map(m => m[1]))];
-console.log(`  音素格子 ${ipaClips.length} 个`);
-if (ipaClips.length !== 44) bad(`音素格子应为 44 个，实际 ${ipaClips.length} 个`);
+/* 美式音标表固定 45 个音素（21 元音 + 24 辅音）；改表时这里和 ref-pages.js 一起改 */
+const IPA_WANT = 45;
+console.log(`  音素格子 ${ipaClips.length} 个（应为 ${IPA_WANT}：21 元音 + 24 辅音）`);
+if (ipaClips.length !== IPA_WANT) bad(`音素格子应为 ${IPA_WANT} 个，实际 ${ipaClips.length} 个`);
 const missClip = ipaClips.filter(u => !fs.existsSync(path.join(R, u.split('?')[0])));
 if (missClip.length) bad(`缺音素录音：${missClip.slice(0, 5).join(', ')}`);
-else console.log(`  44 段音素录音全部就位`);
+else console.log(`  ${IPA_WANT} 段音素录音全部就位`);
 /* 音素音频文件名必须和卡片上的 key 对应（防止改表时漏了某一条） */
 const keySet = new Set(ipaClips.map(u => (u.match(/audio\/ipa\/([^.]+)\.m4a/) || [])[1]));
 const listSrc = fs.readFileSync(path.join(R, 'js/ipa-audio-list.js'), 'utf8');
 const specKeys = [...listSrc.matchAll(/audio\/ipa\/([^.]+)\.m4a/g)].map(m => m[1]);
 const missKey = specKeys.filter(k => !keySet.has(k));
 if (missKey.length) bad(`这些音素在页面上没有对应格子：${missKey.join(', ')}`);
-else console.log(`  44 个音素 key 与页面一一对应`);
+else console.log(`  ${IPA_WANT} 个音素 key 与页面一一对应`);
 
 /* 字母表仍然读例词，这部分要有本地录音 */
 const letterSays = [...new Set([...ipaHtml.matchAll(/data-say="([^"]*)"/g)].map(m => m[1]))]

@@ -178,7 +178,13 @@ function voiceLabel(){
   if(!en && !zh) return 'voices not loaded yet — open any question, then come back';
   const nm=v=>v?(v.name+' · '+v.lang):'—';
   const hi=(en && /premium|enhanced|natural/i.test(en.name));
-  return 'EN '+nm(en)+'  /  中文 '+nm(zh)+(hi?'':'  ·  tip: Settings › Accessibility › Spoken Content › English → download a natural female voice (Ava / Samantha Enhanced) for even clearer audio');
+  /* 全 App 英文按美音：设备若只有英式/澳式女声，会退到那一把（宁可口音偏也不能出男声），
+     这里明确告诉家长「这台设备没有美式女声」，方便去设置里补装。 */
+  const usEn=(en && /^en[-_]US/i.test(en.lang||''));
+  const tip=(!en || usEn)
+    ? (hi?'':'  ·  tip: Settings › Accessibility › Spoken Content › English (US) → download Ava / Samantha Enhanced for even clearer audio')
+    : '  ·  this device has no American voice — add Settings › Accessibility › Spoken Content › English (US) → Ava / Samantha Enhanced';
+  return 'EN '+nm(en)+'  /  中文 '+nm(zh)+tip;
 }
 
 /* 首次触摸解锁 iOS Safari 的音频播放权限（自动读题需要在手势之外播放） */

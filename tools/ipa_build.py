@@ -1,19 +1,26 @@
 # -*- coding: utf-8 -*-
-"""英语音标发音库生成器（44 个 RP 音素，单一英式女声 en-GB-SoniaNeural）。
+"""英语音标发音库生成器（美式 GA 音标，46 个音素，与全 App 同一把美式女声 en-US-JennyNeural）。
 
 为什么不用 TTS 直接读音标：
   edge-tts 的免费端点不接受 SSML <phoneme alphabet="ipa">（实测 NoAudioReceived），
   把 /ɪ/ 这样的符号交给 TTS 只会念成一段乱码。
   所以做法是：合成一个「目标音素在最前面」的单词，再从音频里把目标段切出来。
 
-为什么用英式女声而不是 Jenny（全 App 其余英文都是 en-US-JennyNeural）：
-  音标表是英式 RP 44 音素，/ɒ/（dog）、/əʊ/（nose）、/ɪə/（here）、/eə/（hair）、
-  /ʊə/（tour）这几个音在美音里根本不存在——用美音读 dog 会变成 "dahg"，
-  和卡片上印的 /ɒ/ 直接对不上。音标示范是独立的教学场景，用一把固定的英式女声，
-  仍然满足「不换人、不出男声」的要求，同时保证音标念对。
+为什么是美式而不是英式（2026-11-16 改）：
+  全 App 英文一律按美音处理 —— 词库 / 短文 / 数学都是 en-US-JennyNeural，
+  音标表如果还用英式 RP，就会出现「表格印 /ɒ/、耳朵听 dahg」的错位。
+  美式（General American）的元音体系是：
+    · 没有 /ɒ/，dog / hot 用 /ɑ/
+    · /əʊ/ 换成 /oʊ/（nose）
+    · /ɜː/ 换成卷舌的 /ɝ/（her），另有非重读卷舌 /ɚ/（teacher）
+    · /ɪə/ /eə/ /ʊə/ 分别换成 /ɪr/ /ɛr/ /ʊr/（here / hair / tour）
+    · /ɑː/ 换成 /ɑr/（car）
+    · /ɔː/ 换成 /ɔ/（saw），or 组合单列 /ɔr/（for）
+  这正是美式音标表的标准写法，也让音标示范和其余英文录音是同一把嗓子。
 
 切法（和中文 zh_tts_build.py 的 vowel_onset 同一套思路）：
   - 元音：找能量最高的连续段（元音核），按短/长元音目标时长取中心或循环延长
+  - 卷舌元音（r_tail）：从元音核起点延到词尾最后一个有声点，把 r 的过渡一起带上
   - 辅音 onset：取词首到元音起点后 35ms —— 教学上读 /b/ 本来就是「b + 极短元音起音」
   - /ŋ/（词尾）：取元音结束到最后一个有声点（不能取到文件尾，尾部静音会把片段拉到 1s+）
 
@@ -23,13 +30,13 @@
     python tools/ipa_build.py            # 只补缺失
     python tools/ipa_build.py --force    # 全部重做
 """
-import asyncio, json, os, subprocess, sys, tempfile, wave
+import asyncio, glob, json, os, subprocess, sys, tempfile, wave
 import numpy as np
 import parselmouth
 import edge_tts
 import imageio_ffmpeg
 
-VOICE = 'en-GB-SoniaNeural'      # 英式女声：与 RP 音标表一致
+VOICE = 'en-US-JennyNeural'      # 美式女声：和其余 515 段英文录音同一把嗓子
 RATE = '-8%'                     # 与词库一致，孩子听着是同一档语速
 SR, BR = 44100, '96k'
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,32 +49,39 @@ FORCE = '--force' in sys.argv
 # key, IPA, 源词, 模式
 #   vowel      元音核（单音节词，取能量最高的连续段）
 #   head_vowel 词首弱元音（about 的 /ə/，取第一个有声段）
-#   onset      词首辅音（取词首到元音起点后 50ms）
+#   r_tail     元音 + 卷舌（car / for / here / hair / tour / her / teacher）
+#   onset      词首辅音（取词首到元音起点后 35ms）
 #   tail       词尾辅音（sing 的 /ŋ/）
 SPEC = [
     # ---- 短元音 ----
     ('v_ih', 'ɪ', 'sit', 'vowel', 0.34),
-    ('v_e', 'e', 'bed', 'vowel', 0.32),
+    ('v_e', 'ɛ', 'bed', 'vowel', 0.32),
     ('v_ae', 'æ', 'cat', 'vowel', 0.36),
     ('v_uh', 'ʌ', 'cup', 'vowel', 0.32),
-    ('v_o', 'ɒ', 'dog', 'vowel', 0.34),
+    ('v_o', 'ɑ', 'hot', 'vowel', 0.34),
     ('v_uu', 'ʊ', 'book', 'vowel', 0.30),
     ('v_schwa', 'ə', 'about', 'head_vowel', 0.20),
-    # ---- 长元音 ----
-    ('v_ii', 'iː', 'see', 'vowel', 0.55),
-    ('v_aa', 'ɑː', 'car', 'vowel', 0.55),
-    ('v_aw', 'ɔː', 'for', 'vowel', 0.55),
-    ('v_oo', 'uː', 'moon', 'vowel', 0.55),
-    ('v_er', 'ɜː', 'bird', 'vowel', 0.55),
+    # ---- 长元音 / 紧元音 ----
+    ('v_ii', 'i', 'see', 'vowel', 0.48),
+    ('v_oo', 'u', 'boot', 'vowel', 0.48),  # 不用 moon：词首 /m/ 是浊鼻音，能量接近 /u/，会被当成最长段切走；
+                                           # 用 boot 是因为 b 的圆唇起音让 /u/ 更靠后（F2 1384，与 /ʊ/ 的 1510 分得开）
+    # 没有单独的 /ɔ/：美式通用口音（含本库女声）已 cot-caught 合并，
+    # saw / dog / hot 的元音实测同为一个 /ɑ/，单列只会出现「两格同音却标不同符号」。
+    # ---- 卷舌元音（美音特有）----
+    ('v_er', 'ɝ', 'her', 'r_tail', 0.50),
+    ('v_schwa_r', 'ɚ', 'teacher', 'r_tail', 0.34),
     # ---- 双元音 ----
     ('v_ei', 'eɪ', 'cake', 'vowel', 0.50),
     ('v_ai', 'aɪ', 'bike', 'vowel', 0.50),
     ('v_oi', 'ɔɪ', 'boy', 'vowel', 0.50),
     ('v_au', 'aʊ', 'house', 'vowel', 0.50),
-    ('v_ou', 'əʊ', 'nose', 'vowel', 0.50),
-    ('v_ie', 'ɪə', 'here', 'vowel', 0.52),
-    ('v_ea', 'eə', 'hair', 'vowel', 0.52),
-    ('v_ue', 'ʊə', 'tour', 'vowel', 0.52),
+    ('v_ou', 'oʊ', 'nose', 'vowel', 0.50),
+    # ---- r 化元音 ----
+    ('v_aar', 'ɑr', 'car', 'r_tail', 0.56),
+    ('v_awr', 'ɔr', 'for', 'r_tail', 0.56),
+    ('v_ie', 'ɪr', 'here', 'r_tail', 0.52),
+    ('v_ea', 'ɛr', 'hair', 'r_tail', 0.52),
+    ('v_ue', 'ʊr', 'tour', 'r_tail', 0.52),
     # ---- 辅音 ----
     ('c_p', 'p', 'pen', 'onset', 0.20),
     ('c_b', 'b', 'bag', 'onset', 0.16),
@@ -165,7 +179,7 @@ def cut(x, sr, mode, target):
         return None, 'no-voiced-span'
     if mode == 'head_vowel':
         # /ə/ 比后面的重读元音低 10dB 以上，阈值一高就会跳过它、抓到 /aʊ/。
-        # 做法：只看词首 0.32s 这段窗口（里面只有 /ə/ 和后面 /b/ 的爆破），取最长的一段。
+        # 做法：只看词首 0.16s 这段窗口（里面只有 /ə/ 和后面 /b/ 的爆破），取最长的一段。
         w = max(1, int(0.16 / 0.01))
         envw = env[:w]
         if not envw.size:
@@ -189,6 +203,17 @@ def cut(x, sr, mode, target):
         a, b = max(spans, key=lambda s: s[1] - s[0])
         a = a + 0.015                     # 跳过起始过渡
         b = b - 0.015                     # 跳过收尾过渡
+    elif mode == 'r_tail':
+        # 卷舌元音：元音核 + 后面的 r 过渡。r 是近音，能量低于元音的一半，
+        # 用 0.45 阈值会在 r 之前断开，所以终点要用低阈值重新找；
+        # 起点取最后一个能量段（/ɚ/ 在 teacher 这种词里就是最后一个峰）。
+        sp = max(spans, key=lambda s: s[1])
+        a = max(0.0, sp[0] - 0.035)
+        nz = np.where(env > env.max() * 0.04)[0]
+        end = (nz[-1] + 1) * 0.01 if nz.size else len(x) / sr
+        b = min(end, len(x) / sr)
+        if b - a > 0.90:                  # 别把后面的辅音一起带进来
+            b = a + 0.90
     elif mode == 'onset':
         a = 0.0
         b = spans[0][0] + 0.035            # 辅音 + 元音起音 35ms（再多就听成 "puh" 了）
@@ -209,12 +234,15 @@ def cut(x, sr, mode, target):
         return None, 'too-short-span'
     seg = x[i0:i1].copy()
 
-    if mode in ('vowel', 'head_vowel'):
+    if mode in ('vowel', 'head_vowel', 'r_tail'):
         if len(seg) > int(target * sr):
-            # 长了取中心（保留稳态部分）
-            mid = len(seg) // 2
-            half = int(target * sr) // 2
-            seg = seg[max(0, mid - half): min(len(seg), mid + half)]
+            # 长了取中心（保留稳态部分）；r_tail 保留头部，卷舌过渡在尾部不能丢
+            if mode == 'r_tail':
+                seg = seg[:int(target * sr)]
+            else:
+                mid = len(seg) // 2
+                half = int(target * sr) // 2
+                seg = seg[max(0, mid - half): min(len(seg), mid + half)]
         else:
             seg = loop_to(seg, sr, target)
 
@@ -251,6 +279,12 @@ def encode(wav, dst):
 
 async def main():
     os.makedirs(OUT, exist_ok=True)
+    keep = {k for k, *_ in SPEC}
+    # 换体系后旧 key（如英式 /ɑː/ 的 v_aa）要清掉，否则会被预缓存清单漏掉却留在仓库里
+    for f in glob.glob(os.path.join(OUT, '*.m4a')):
+        if os.path.splitext(os.path.basename(f))[0] not in keep:
+            os.remove(f)
+            print('  删除过期', os.path.basename(f))
     done, fail, notes = 0, [], []
     for key, ipa, word, mode, target in SPEC:
         dst = os.path.join(OUT, key + '.m4a')
@@ -292,11 +326,11 @@ async def main():
     # 预缓存清单：和中文音频同样玩法，装 PWA 时就落盘，离线也能点名
     items = [k for k, *_ in SPEC if os.path.exists(os.path.join(OUT, k + '.m4a'))]
     js = ('/* 由 tools/ipa_build.py 自动生成，勿手工编辑\n'
-          ' * 英语 44 音素发音片段（同一把女声 en-US-JennyNeural）。\n'
+          f' * 英语 {len(items)} 音素发音片段（美式 GA，同一把女声 en-US-JennyNeural）。\n'
           ' * Service Worker 安装时预缓存，保证离线也能点音标听发音。 */\n'
-          'const IPA_AUDIO_VER = "a=1";\n'
+          'const IPA_AUDIO_VER = "a=2";\n'
           'const IPA_AUDIO_LIST = [\n'
-          + ',\n'.join(f'  "audio/ipa/{k}.m4a?a=1"' for k in items)
+          + ',\n'.join(f'  "audio/ipa/{k}.m4a?a=2"' for k in items)
           + '\n];\n'
           'if (typeof self !== "undefined") { self.IPA_AUDIO_LIST = IPA_AUDIO_LIST; self.IPA_AUDIO_VER = IPA_AUDIO_VER; }\n')
     open(LISTJS, 'w', encoding='utf8').write(js)
