@@ -25,7 +25,15 @@ RATE_NORMAL = "-8%"                  # 比默认稍慢，给 5 岁孩子留反�
 RATE_LONG = "-12%"                   # 长句/短文再慢一点
 RATE_SLOW = "-22%"                   # 拼写题的慢速版
 SR, BR = 44100, "96k"
-AUDIO_VER = "a=3"                    # 改录音就 +1
+AUDIO_VER = "a=4"                    # 改录音就 +1
+# 首尾静音裁剪：edge-tts 每段前后各带 0.2s / 0.9s 静音，不裁的话单词音频长达 1.5s，
+# 数学算式按「数字词 + plus/equals」拼接播放就会慢到像 0.5 倍速（2026-11-16 修）。
+# 只裁首尾，句中的停顿保留（silenceremove 各做一次 + areverse）。
+TRIM = ("silenceremove=start_periods=1:start_duration=0.02:start_threshold=-45dB:detection=peak,"
+        "areverse,"
+        "silenceremove=start_periods=1:start_duration=0.02:start_threshold=-45dB:detection=peak,"
+        "areverse,"
+        "adelay=delays=40:all=1,apad=pad_dur=0.05")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFEST = os.path.join(ROOT, "tools", "voice_manifest.json")
 OUTDIR = os.path.join(ROOT, "audio", "words")
@@ -58,7 +66,7 @@ async def synth(item, sem, stats):
                     raise RuntimeError("audio too small")
                 p = subprocess.run(
                     [FF, "-y", "-v", "error", "-i", "pipe:0",
-                     "-af", "loudnorm=I=-16:TP=-1.5:LRA=11",
+                     "-af", TRIM + ",loudnorm=I=-16:TP=-1.5:LRA=11",
                      "-ac", "1", "-ar", str(SR), "-c:a", "aac", "-b:a", BR, out],
                     input=bytes(buf), capture_output=True, timeout=180)
                 if p.returncode != 0:

@@ -118,66 +118,66 @@ function renderZhMap(){
    ========================================================= */
 const IPA_VOWELS=[
   {g:'Short vowels', items:[
-    {ipa:'/ɪ/', w:['sit','pig','big'], rule:'The i in sit. Short and relaxed: "ih".'},
-    {ipa:'/e/', w:['bed','pen','egg'], rule:'The e in bed. Small mouth: "eh".'},
-    {ipa:'/æ/', w:['cat','hat','bag'], rule:'The a in cat. Open your mouth wide.'},
-    {ipa:'/ʌ/', w:['cup','sun','bus'], rule:'The u in cup. Short and relaxed: "uh".'},
-    {ipa:'/ɒ/', w:['dog','box','top'], rule:'The o in dog. Round mouth, short.'},
-    {ipa:'/ʊ/', w:['book','look','good'], rule:'The oo in book. Short and soft.'},
-    {ipa:'/ə/', w:['about','banana','sofa'], rule:'The weak a in about. Very light "uh".'},
+    {ipa:'/ɪ/', k:'v_ih', w:['sit','pig','big'], rule:'The i in sit. Short and relaxed: "ih".'},
+    {ipa:'/e/', k:'v_e', w:['bed','pen','egg'], rule:'The e in bed. Small mouth: "eh".'},
+    {ipa:'/æ/', k:'v_ae', w:['cat','hat','bag'], rule:'The a in cat. Open your mouth wide.'},
+    {ipa:'/ʌ/', k:'v_uh', w:['cup','sun','bus'], rule:'The u in cup. Short and relaxed: "uh".'},
+    {ipa:'/ɒ/', k:'v_o', w:['dog','box','top'], rule:'The o in dog. Round mouth, short.'},
+    {ipa:'/ʊ/', k:'v_uu', w:['book','look','good'], rule:'The oo in book. Short and soft.'},
+    {ipa:'/ə/', k:'v_schwa', w:['about','banana','sofa'], rule:'The weak a in about. Very light "uh".'},
   ]},
   {g:'Long vowels', items:[
-    {ipa:'/iː/', w:['see','tree','bee'], rule:'The ee in see. Long smile: "eeee".'},
-    {ipa:'/ɑː/', w:['car','star','far'], rule:'The ar in car. Open wide and hold.'},
-    {ipa:'/ɔː/', w:['for','horse','corn'], rule:'The or in for. Round and long.'},
-    {ipa:'/uː/', w:['moon','food','zoo'], rule:'The oo in moon. Round lips, hold it.'},
-    {ipa:'/ɜː/', w:['bird','girl','nurse'], rule:'The ir / ur / er in bird. Long and flat.'},
+    {ipa:'/iː/', k:'v_ii', w:['see','tree','bee'], rule:'The ee in see. Long smile: "eeee".'},
+    {ipa:'/ɑː/', k:'v_aa', w:['car','star','far'], rule:'The ar in car. Open wide and hold.'},
+    {ipa:'/ɔː/', k:'v_aw', w:['for','horse','corn'], rule:'The or in for. Round and long.'},
+    {ipa:'/uː/', k:'v_oo', w:['moon','food','zoo'], rule:'The oo in moon. Round lips, hold it.'},
+    {ipa:'/ɜː/', k:'v_er', w:['bird','girl','nurse'], rule:'The ir / ur / er in bird. Long and flat.'},
   ]},
   {g:'Diphthongs', items:[
-    {ipa:'/eɪ/', w:['cake','name','rain'], rule:'The a in cake, ai in rain. Say the letter name A.'},
-    {ipa:'/aɪ/', w:['bike','kite','time'], rule:'The i in bike. Say the letter name I.'},
-    {ipa:'/ɔɪ/', w:['boy','toy','coin'], rule:'The oi in boy. Slide from o to i.'},
-    {ipa:'/aʊ/', w:['house','mouse','cow'], rule:'The ou in house, ow in cow. Slide a to u.'},
-    {ipa:'/əʊ/', w:['nose','home','boat'], rule:'The o in nose, oa in boat. Say the letter name O.'},
-    {ipa:'/ɪə/', w:['here','ear','near'], rule:'The ear in here. Slide i to a light "uh".'},
-    {ipa:'/eə/', w:['hair','chair','bear'], rule:'The air in hair. Slide e to a light "uh".'},
-    {ipa:'/ʊə/', w:['tour','sure','poor'], rule:'The ure in tour. Rare sound: slide u to "uh".'},
+    {ipa:'/eɪ/', k:'v_ei', w:['cake','name','rain'], rule:'The a in cake, ai in rain. Say the letter name A.'},
+    {ipa:'/aɪ/', k:'v_ai', w:['bike','kite','time'], rule:'The i in bike. Say the letter name I.'},
+    {ipa:'/ɔɪ/', k:'v_oi', w:['boy','toy','coin'], rule:'The oi in boy. Slide from o to i.'},
+    {ipa:'/aʊ/', k:'v_au', w:['house','mouse','cow'], rule:'The ou in house, ow in cow. Slide a to u.'},
+    {ipa:'/əʊ/', k:'v_ou', w:['nose','home','boat'], rule:'The o in nose, oa in boat. Say the letter name O.'},
+    {ipa:'/ɪə/', k:'v_ie', w:['here','ear','near'], rule:'The ear in here. Slide i to a light "uh".'},
+    {ipa:'/eə/', k:'v_ea', w:['hair','chair','bear'], rule:'The air in hair. Slide e to a light "uh".'},
+    {ipa:'/ʊə/', k:'v_ue', w:['tour','sure','poor'], rule:'The ure in tour. Rare sound: slide u to "uh".'},
   ]},
 ];
 const IPA_CONSONANTS=[
   {g:'Plosives', items:[
-    {ipa:'/p/', w:['pen','pig','top'], rule:'The p in pen. No voice, a puff of air.'},
-    {ipa:'/b/', w:['bag','bed','book'], rule:'The b in bag. Same as p, but with your voice.'},
-    {ipa:'/t/', w:['ten','top','cat'], rule:'The t in ten. No voice.'},
-    {ipa:'/d/', w:['dog','dad','red'], rule:'The d in dog. Same as t, but with your voice.'},
-    {ipa:'/k/', w:['kite','cat','key'], rule:'The k in kite, c in cat. Back of the mouth.'},
-    {ipa:'/g/', w:['go','game','big'], rule:'The g in go. Same as k, but with your voice.'},
+    {ipa:'/p/', k:'c_p', w:['pen','pig','top'], rule:'The p in pen. No voice, a puff of air.'},
+    {ipa:'/b/', k:'c_b', w:['bag','bed','book'], rule:'The b in bag. Same as p, but with your voice.'},
+    {ipa:'/t/', k:'c_t', w:['ten','top','cat'], rule:'The t in ten. No voice.'},
+    {ipa:'/d/', k:'c_d', w:['dog','dad','red'], rule:'The d in dog. Same as t, but with your voice.'},
+    {ipa:'/k/', k:'c_k', w:['kite','cat','key'], rule:'The k in kite, c in cat. Back of the mouth.'},
+    {ipa:'/g/', k:'c_g', w:['go','game','big'], rule:'The g in go. Same as k, but with your voice.'},
   ]},
   {g:'Fricatives', items:[
-    {ipa:'/f/', w:['fish','fan','off'], rule:'The f in fish. Teeth on lip, no voice.'},
-    {ipa:'/v/', w:['van','very','five'], rule:'The v in van. Same as f, but with your voice.'},
-    {ipa:'/θ/', w:['three','think','bath'], rule:'The th in three. Tongue between the teeth, no voice.'},
-    {ipa:'/ð/', w:['this','that','mother'], rule:'The th in this. Same, but with your voice.'},
-    {ipa:'/s/', w:['sun','sit','bus'], rule:'The s in sun. A snake sound.'},
-    {ipa:'/z/', w:['zoo','zip','nose'], rule:'The z in zoo. A bee sound, with your voice.'},
-    {ipa:'/ʃ/', w:['ship','fish','shop'], rule:'The sh in ship. "shh", no voice.'},
-    {ipa:'/ʒ/', w:['measure','vision','usual'], rule:'The s in measure. Same as sh, with your voice.'},
-    {ipa:'/h/', w:['hat','hot','hello'], rule:'The h in hat. Just breathe out.'},
+    {ipa:'/f/', k:'c_f', w:['fish','fan','off'], rule:'The f in fish. Teeth on lip, no voice.'},
+    {ipa:'/v/', k:'c_v', w:['van','very','five'], rule:'The v in van. Same as f, but with your voice.'},
+    {ipa:'/θ/', k:'c_th', w:['three','think','bath'], rule:'The th in three. Tongue between the teeth, no voice.'},
+    {ipa:'/ð/', k:'c_dh', w:['this','that','mother'], rule:'The th in this. Same, but with your voice.'},
+    {ipa:'/s/', k:'c_s', w:['sun','sit','bus'], rule:'The s in sun. A snake sound.'},
+    {ipa:'/z/', k:'c_z', w:['zoo','zip','nose'], rule:'The z in zoo. A bee sound, with your voice.'},
+    {ipa:'/ʃ/', k:'c_sh', w:['ship','fish','shop'], rule:'The sh in ship. "shh", no voice.'},
+    {ipa:'/ʒ/', k:'c_zh', w:['measure','vision','usual'], rule:'The s in measure. Same as sh, with your voice.'},
+    {ipa:'/h/', k:'c_h', w:['hat','hot','hello'], rule:'The h in hat. Just breathe out.'},
   ]},
   {g:'Affricates', items:[
-    {ipa:'/tʃ/', w:['chair','cheese','lunch'], rule:'The ch in chair. A t plus sh.'},
-    {ipa:'/dʒ/', w:['jam','jump','bridge'], rule:'The j in jam. A ch with your voice.'},
+    {ipa:'/tʃ/', k:'c_ch', w:['chair','cheese','lunch'], rule:'The ch in chair. A t plus sh.'},
+    {ipa:'/dʒ/', k:'c_j', w:['jam','jump','bridge'], rule:'The j in jam. A ch with your voice.'},
   ]},
   {g:'Nasals', items:[
-    {ipa:'/m/', w:['man','mum','home'], rule:'The m in man. Lips closed, sound through the nose.'},
-    {ipa:'/n/', w:['net','nine','sun'], rule:'The n in net. Tongue up, sound through the nose.'},
-    {ipa:'/ŋ/', w:['sing','long','ring'], rule:'The ng in sing. Back of the mouth, through the nose.'},
+    {ipa:'/m/', k:'c_m', w:['man','mum','home'], rule:'The m in man. Lips closed, sound through the nose.'},
+    {ipa:'/n/', k:'c_n', w:['net','nine','sun'], rule:'The n in net. Tongue up, sound through the nose.'},
+    {ipa:'/ŋ/', k:'c_ng', w:['sing','long','ring'], rule:'The ng in sing. Back of the mouth, through the nose.'},
   ]},
   {g:'Approximants', items:[
-    {ipa:'/l/', w:['leg','lion','ball'], rule:'The l in leg. Tongue touches the top.'},
-    {ipa:'/r/', w:['red','run','car'], rule:'The r in red. Curl the tongue, do not touch.'},
-    {ipa:'/w/', w:['wet','water','white'], rule:'The w in wet. Round your lips and let go.'},
-    {ipa:'/j/', w:['yes','yellow','you'], rule:'The y in yes. A quick "y".'},
+    {ipa:'/l/', k:'c_l', w:['leg','lion','ball'], rule:'The l in leg. Tongue touches the top.'},
+    {ipa:'/r/', k:'c_r', w:['red','run','car'], rule:'The r in red. Curl the tongue, do not touch.'},
+    {ipa:'/w/', k:'c_w', w:['wet','water','white'], rule:'The w in wet. Round your lips and let go.'},
+    {ipa:'/j/', k:'c_y', w:['yes','yellow','you'], rule:'The y in yes. A quick "y".'},
   ]},
 ];
 /* 字母表：每个字母最常见的读音（对应截图里 A a / B b … 那一列） */
@@ -192,8 +192,10 @@ const LETTERS=[
 ];
 
 function ipaTile(it){
+  /* 点格子读音素本身（audio/ipa/<key>.m4a，同一把女声单独录的 44 个音素），
+     不是读例词。例词只作为听不到录音时的兜底文本。 */
   const w=it.w[0];
-  return `<button class="rf-ipa" data-say="${w}">
+  return `<button class="rf-ipa" data-clipurl="audio/ipa/${it.k}.m4a?a=1" data-say="${w}">
     <span class="rf-ipa-sym">${it.ipa}</span>
     <span class="rf-ipa-words">${it.w.join(' · ')}</span>
     <span class="rf-ipa-rule">${it.rule}</span>

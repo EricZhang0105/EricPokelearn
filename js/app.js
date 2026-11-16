@@ -254,7 +254,9 @@ function mathSteps(text){
     if(!p) return null;
     const u=clipFor(p);
     if(!u) return null;                    // 缺任何一段就整句交给 TTS，别读半句
-    steps.push({clip:u, text:p, lang:'en-US', gap:120});
+    /* 段间间隔 70ms：单词录音已裁掉首尾静音（tools/trim_silence.py），
+       留太长会听成一句一顿；70ms 接近自然连读的停顿。 */
+    steps.push({clip:u, text:p, lang:'en-US', gap:70});
   }
   return steps;
 }
@@ -741,8 +743,10 @@ function bindRefTaps(root){
     const lang = root.dataset.lang || 'en-US';
     const text = el.dataset.say;
     const kind = el.dataset.clip, key = el.dataset.key;
-    let clip = null;
-    if(kind && typeof zhClip==='function') clip = zhClip(kind, key);
+    /* data-clipurl：整条 URL 已经写好（英语音素 audio/ipa/<key>.m4a）
+       data-clip + data-key：中文音频按 zhClip(kind,key) 拼 */
+    let clip = el.dataset.clipurl || null;
+    if(!clip && kind && typeof zhClip==='function') clip = zhClip(kind, key);
     if(typeof playSpeak==='function') playSpeak({ clip, text, lang });
     else speak(text, lang);
   });
