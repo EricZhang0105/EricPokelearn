@@ -192,25 +192,59 @@ const IPA_CONSONANTS=[
     {ipa:'/j/', k:'c_y', w:['yes','yellow','you'], rule:'The y in yes. A quick "y".'},
   ]},
 ];
-/* 字母表：每个字母最常见的读音（美式符号，对应截图里 A a / B b … 那一列） */
+/* 字母表：每个字母最常见的读音（美式符号，对应截图里 A a / B b … 那一列）
+   k = 这个字母要播的音素 key（点字母读的是音素，不是例词 apple / bag） */
 const LETTERS=[
-  ['A a','/æ/ /eɪ/','apple'],['B b','/b/','bag'],['C c','/k/ /s/','cat'],['D d','/d/','dog'],
-  ['E e','/ɛ/ /i/','egg'],['F f','/f/','fish'],['G g','/g/ /dʒ/','go'],['H h','/h/','hat'],
-  ['I i','/ɪ/ /aɪ/','pig'],['J j','/dʒ/','jam'],['K k','/k/','kite'],['L l','/l/','leg'],
-  ['M m','/m/','man'],['N n','/n/','net'],['O o','/ɑ/ /oʊ/','dog'],['P p','/p/','pen'],
-  ['Q q','/kw/','queen'],['R r','/r/','red'],['S s','/s/ /z/','sun'],['T t','/t/','ten'],
-  ['U u','/ʌ/ /ju/','cup'],['V v','/v/','van'],['W w','/w/','wet'],['X x','/ks/','box'],
-  ['Y y','/j/ /aɪ/','yes'],['Z z','/z/','zoo'],
+  {l:'A a', s:'/æ/ /eɪ/', w:'apple', k:['v_ae','v_ei']},
+  {l:'B b', s:'/b/',      w:'bag',   k:['c_b']},
+  {l:'C c', s:'/k/ /s/',  w:'cat',   k:['c_k','c_s']},
+  {l:'D d', s:'/d/',      w:'dog',   k:['c_d']},
+  {l:'E e', s:'/ɛ/ /i/',  w:'egg',   k:['v_e','v_ii']},
+  {l:'F f', s:'/f/',      w:'fish',  k:['c_f']},
+  {l:'G g', s:'/g/ /dʒ/', w:'go',    k:['c_g','c_j']},
+  {l:'H h', s:'/h/',      w:'hat',   k:['c_h']},
+  {l:'I i', s:'/ɪ/ /aɪ/', w:'pig',   k:['v_ih','v_ai']},
+  {l:'J j', s:'/dʒ/',     w:'jam',   k:['c_j']},
+  {l:'K k', s:'/k/',      w:'kite',  k:['c_k']},
+  {l:'L l', s:'/l/',      w:'leg',   k:['c_l']},
+  {l:'M m', s:'/m/',      w:'man',   k:['c_m']},
+  {l:'N n', s:'/n/',      w:'net',   k:['c_n']},
+  {l:'O o', s:'/ɑ/ /oʊ/', w:'dog',   k:['v_o','v_ou']},
+  {l:'P p', s:'/p/',      w:'pen',   k:['c_p']},
+  {l:'Q q', s:'/k/ /w/',  w:'queen', k:['c_k','c_w']},
+  {l:'R r', s:'/r/',      w:'red',   k:['c_r']},
+  {l:'S s', s:'/s/ /z/',  w:'sun',   k:['c_s','c_z']},
+  {l:'T t', s:'/t/',      w:'ten',   k:['c_t']},
+  {l:'U u', s:'/ʌ/ /ju/', w:'cup',   k:['v_uh','c_y','v_oo']},
+  {l:'V v', s:'/v/',      w:'van',   k:['c_v']},
+  {l:'W w', s:'/w/',      w:'wet',   k:['c_w']},
+  {l:'X x', s:'/ks/',     w:'box',   k:['c_k','c_s']},
+  {l:'Y y', s:'/j/ /aɪ/', w:'yes',   k:['c_y','v_ai']},
+  {l:'Z z', s:'/z/',      w:'zoo',   k:['c_z']},
 ];
+
+/* 录音加载失败时的兜底念法：读「音」本身，绝不读例词。
+   例词只是卡片上给孩子看的拼写示范，点下去听到的必须是音素。 */
+const IPA_SAY={
+  v_ih:'ih', v_e:'eh', v_ae:'aah', v_uh:'uh', v_o:'ah', v_uu:'oo', v_schwa:'uh',
+  v_ii:'ee', v_oo:'oo', v_er:'er', v_schwa_r:'er',
+  v_ei:'ay', v_ai:'eye', v_oi:'oy', v_au:'ow', v_ou:'oh',
+  v_aar:'ar', v_awr:'or', v_ie:'eer', v_ea:'air', v_ue:'oor',
+  c_p:'puh', c_b:'buh', c_t:'tuh', c_d:'duh', c_k:'kuh', c_g:'guh',
+  c_ch:'chuh', c_j:'juh', c_w:'wuh', c_y:'yuh', c_dh:'thuh',
+  c_f:'fff', c_v:'vvv', c_th:'thhh', c_s:'sss', c_z:'zzz',
+  c_sh:'shhh', c_zh:'zhh', c_h:'hhh',
+  c_m:'mmm', c_n:'nnn', c_ng:'ng', c_l:'lll', c_r:'rrr',
+};
 
 /* 音素音频的版本参数统一从 js/ipa-audio-list.js 取（IPA_AUDIO_VER），
    换素材时只改 tools/ipa_build.py 里的 AUDIO_VER，页面不用跟着改。 */
 const IPAQ = (typeof IPA_AUDIO_VER !== 'undefined' && IPA_AUDIO_VER) ? IPA_AUDIO_VER : 'a=3';
 function ipaTile(it){
   /* 点格子读音素本身（audio/ipa/<key>.m4a，美式女声单独录的 45 个音素），
-     不是读例词。例词只作为听不到录音时的兜底文本。 */
-  const w=it.w[0];
-  return `<button class="rf-ipa" data-clipurl="audio/ipa/${it.k}.m4a?${IPAQ}" data-say="${w}">
+     不是读例词。data-say 也只是录音失败时的兜底念法（IPA_SAY），同样不是例词。 */
+  const say=IPA_SAY[it.k] || it.w[0];
+  return `<button class="rf-ipa" data-clipurl="audio/ipa/${it.k}.m4a?${IPAQ}" data-say="${say}">
     <span class="rf-ipa-sym">${it.ipa}</span>
     <span class="rf-ipa-words">${it.w.join(' · ')}</span>
     <span class="rf-ipa-rule">${it.rule}</span>
@@ -223,15 +257,17 @@ function renderIpa(){
       <div class="rf-gname">${g.g}</div>
       <div class="rf-ipa-grid">${g.items.map(ipaTile).join('')}</div>
     </div>`).join('');
-  const letters=`<div class="rf-let-grid">${LETTERS.map(([l,s,w])=>`
-      <button class="rf-let" data-say="${w}">
-        <span class="rf-let-l">${l}</span>
-        <span class="rf-let-s">${s}</span>
-        <span class="rf-let-w">${w}</span>
+  /* 字母卡：点一下只读音素（A a → /æ/ 再 /eɪ/），不读 apple。
+     data-clipurls 用 | 分隔多个音素，播放器按顺序放。 */
+  const letters=`<div class="rf-let-grid">${LETTERS.map(it=>`
+      <button class="rf-let" data-clipurls="${it.k.map(k=>`audio/ipa/${k}.m4a?${IPAQ}`).join('|')}" data-say="${it.l.split(' ')[0]}">
+        <span class="rf-let-l">${it.l}</span>
+        <span class="rf-let-s">${it.s}</span>
+        <span class="rf-let-w">${it.w}</span>
       </button>`).join('')}</div>`;
   return sec('① Vowels','21 vowels',grp(IPA_VOWELS))
        + sec('② Consonants','24 consonants',grp(IPA_CONSONANTS))
-       + sec('③ Letters &amp; sounds','26 letters',letters);
+       + sec('③ Letters &amp; sounds','26 letters · tap to hear the sounds',letters);
 }
 
 /* =========================================================
@@ -293,7 +329,7 @@ function renderMathFacts(){
 const REF_PAGES={
   'zh-map':{
     title:'拼音全景 Pinyin Map', emoji:'🗺️', subject:'chinese', lang:'zh-CN',
-    hint:'点任意一格听读音 · 声母 23 · 韵母 29 · 整体认读 16 · 四声 4',
+    hint:'点任意一格听读音 · 声母 23 · 韵母 24 · 整体认读 16 · 四声 4',
     render:renderZhMap,
   },
   'ipa-chart':{
@@ -316,7 +352,7 @@ ZH_FINAL_GROUPS.forEach(g=>g.items.forEach(([p,hz])=>REF_ZH_FIN2.push({key:fin2K
 const REF_EN_WORDS=(function(){
   const set=new Set();
   IPA_VOWELS.concat(IPA_CONSONANTS).forEach(g=>g.items.forEach(it=>it.w.forEach(w=>set.add(w))));
-  LETTERS.forEach(([, ,w])=>set.add(w));
+  LETTERS.forEach(it=>set.add(it.w));
   return Array.from(set);
 })();
 

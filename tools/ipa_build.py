@@ -14,16 +14,18 @@
 
 现在的做法（按音的物理性质分三类）：
   1) 持续音（擦音 / 鼻音 / 近音 /h/）：让 TTS 直接发「sss」「mmm」「lll」这类延长写法，
-     取最长的一段，时长统一到 0.28–0.40s。这类音本来就能单独发，效果最干净。
-  2) 塞音 / 塞擦音 / 半元音（/p b t d k g tʃ dʒ w j/）：用 TTS 的「辅音 + 极短元音」
+     取最长的一段，补到 0.44–0.55s。这类音本来就能单独发，效果最干净。
+  2) 塞音 / 塞擦音 / 半元音（/p b t d k g tʃ dʒ w j/）：用 TTS 的「辅音 + 短元音」
      写法（buh / duh / guh / puh / tuh / kuh / chuh / juh / wuh / yuh），
-     截到约 0.22s。这就是课堂里念字母音的方式（「b 说 buh」），短元音只占 0.1s 左右，
-     听感是「b」而不是「buh 这个音节」。
+     截到 0.34–0.44s。这就是课堂里念字母音的方式（「b 说 buh」）。
   3) 元音：仍然从真实单词里切元音核（能保证是自然共振峰），
-     卷舌元音用 r_tail 把 r 过渡带上。
+     再用 WSOLA 拉到 0.34s；卷舌元音用 r_tail 把 r 过渡带上。
+
+语速：合成用 -18%（元音 -25%），比词库慢一档 —— 单念一个音必须留够时间才听得清。
+缓冲：每段前后各补 70ms / 100ms 静音，声音不贴边，听感才不急促。
 
 响度：原来按峰值归一，擦音峰值高、RMS 低 → 在 iPad 上明显比元音小声。
-现在改成按 RMS 归一到同一档（-20 dBFS），并限制峰值不超过 -1.5 dBFS。
+现在改成按 RMS 归一到同一档（-18 dBFS），并限制峰值不超过 -1 dBFS。
 
 用法：
     python tools/ipa_build.py            # 只补缺失
@@ -36,14 +38,19 @@ import edge_tts
 import imageio_ffmpeg
 
 VOICE = 'en-US-JennyNeural'      # 美式女声：和其余 600+ 段英文录音同一把嗓子
-RATE = '-8%'                     # 与词库一致，孩子听着是同一档语速
-RATE_VOWEL = '-20%'              # 元音单独用慢速合成：真实单词里的短元音只有 0.1s，
-                                 # 慢 20% 能把它拉到 0.15–0.2s，且是自然发音不是拼接
+RATE = '-18%'                    # 音素示范比词库更慢：单词里是连着说的，单念一个音要留够时间
+                                 # 才听得清（Eric 反馈「太急促，听不清」就是这个原因）
+RATE_VOWEL = '-25%'              # 元音再慢一档：真实单词里的短元音只有 0.1s，
+                                 # 慢 25% 能把它拉到 0.2s 以上，且是自然发音不是拼接
+
+# 每段声音前后各留一小段静音。片段贴边播放时，iPad 上听感是「刚一响就没了」；
+# 留 70ms 起手、100ms 收尾，孩子听到的是一个从容的单音，而不是被打断的咔哒。
+PAD_PRE, PAD_POST = 0.07, 0.10
 SR, BR = 44100, '96k'
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'audio', 'ipa')
 LISTJS = os.path.join(ROOT, 'js', 'ipa-audio-list.js')
-AUDIO_VER = 'a=3'                # 换素材必须升版本，否则 iPad 还是旧缓存
+AUDIO_VER = 'a=4'                # 换素材必须升版本，否则 iPad 还是旧缓存
 FF = imageio_ffmpeg.get_ffmpeg_exe()
 TMP = tempfile.mkdtemp(prefix='ipa_build_')
 FORCE = '--force' in sys.argv
@@ -57,87 +64,90 @@ FORCE = '--force' in sys.argv
 #   tail       词尾鼻音（sing 的 /ŋ/）
 SPEC = [
     # ---- 短元音 ----
-    ('v_ih', 'ɪ', 'sit', 'vowel', 0.34),
-    ('v_e', 'ɛ', 'bed', 'vowel', 0.32),
-    ('v_ae', 'æ', 'cat', 'vowel', 0.36),
-    ('v_uh', 'ʌ', 'bus', 'vowel', 0.32),
-    ('v_o', 'ɑ', 'hot', 'vowel', 0.34),
-    ('v_uu', 'ʊ', 'book', 'vowel', 0.30),
-    ('v_schwa', 'ə', 'sofa', 'final_vowel', 0.26),
+    ('v_ih', 'ɪ', 'sit', 'vowel', 0.40),
+    ('v_e', 'ɛ', 'bed', 'vowel', 0.38),
+    ('v_ae', 'æ', 'cat', 'vowel', 0.44),
+    ('v_uh', 'ʌ', 'bus', 'vowel', 0.38),
+    ('v_o', 'ɑ', 'hot', 'vowel', 0.40),
+    ('v_uu', 'ʊ', 'book', 'vowel', 0.36),
+    ('v_schwa', 'ə', 'sofa', 'final_vowel', 0.44),
     # ---- 长元音 / 紧元音 ----
-    ('v_ii', 'i', 'see', 'vowel', 0.46),
-    ('v_oo', 'u', 'boot', 'vowel', 0.46),   # 不用 moon：词首 /m/ 是浊鼻音，会被当成元音核切走
+    ('v_ii', 'i', 'see', 'vowel', 0.56),
+    ('v_oo', 'u', 'boot', 'vowel', 0.56),   # 不用 moon：词首 /m/ 是浊鼻音，会被当成元音核切走
     # 没有单独的 /ɔ/：本库女声 cot-caught 合并，saw 与 hot 实测同一个 /ɑ/
     # ---- 卷舌元音 ----
-    ('v_er', 'ɝ', 'her', 'r_tail', 0.48),
-    ('v_schwa_r', 'ɚ', 'teacher', 'r_tail', 0.34),
+    ('v_er', 'ɝ', 'her', 'r_tail', 0.56),
+    ('v_schwa_r', 'ɚ', 'teacher', 'r_tail', 0.44),
     # ---- 双元音 ----
-    ('v_ei', 'eɪ', 'cake', 'vowel', 0.48),
-    ('v_ai', 'aɪ', 'bike', 'vowel', 0.48),
-    ('v_oi', 'ɔɪ', 'boy', 'vowel', 0.48),
-    ('v_au', 'aʊ', 'house', 'vowel', 0.48),
-    ('v_ou', 'oʊ', 'nose', 'vowel', 0.48),
-    ('v_aar', 'ɑr', 'car', 'r_tail', 0.54),
-    ('v_awr', 'ɔr', 'for', 'r_tail', 0.54),
-    ('v_ie', 'ɪr', 'here', 'r_tail', 0.52),
-    ('v_ea', 'ɛr', 'hair', 'r_tail', 0.52),
-    ('v_ue', 'ʊr', 'tour', 'r_tail', 0.52),
-    # ---- 塞音：辅音 + 极短元音（课堂念法 buh / duh …）----
-    ('c_p', 'p', 'puh', 'cv', 0.24),
-    ('c_b', 'b', 'buh', 'cv', 0.24),
-    ('c_t', 't', 'tuh', 'cv', 0.24),
-    ('c_d', 'd', 'duh', 'cv', 0.24),
-    ('c_k', 'k', 'kuh', 'cv', 0.24),
-    ('c_g', 'g', 'guh', 'cv', 0.24),
+    ('v_ei', 'eɪ', 'cake', 'vowel', 0.58),
+    ('v_ai', 'aɪ', 'bike', 'vowel', 0.58),
+    ('v_oi', 'ɔɪ', 'boy', 'vowel', 0.58),
+    ('v_au', 'aʊ', 'house', 'vowel', 0.58),
+    ('v_ou', 'oʊ', 'nose', 'vowel', 0.58),
+    ('v_aar', 'ɑr', 'car', 'r_tail', 0.62),
+    ('v_awr', 'ɔr', 'for', 'r_tail', 0.62),
+    ('v_ie', 'ɪr', 'here', 'r_tail', 0.60),
+    ('v_ea', 'ɛr', 'hair', 'r_tail', 0.60),
+    ('v_ue', 'ʊr', 'tour', 'r_tail', 0.60),
+    # ---- 塞音：辅音 + 短元音（课堂念法 buh / duh …）----
+    # 0.34s：元音部分够长，孩子能听出是「buh」而不是一声咔
+    ('c_p', 'p', 'puh', 'cv', 0.40),
+    ('c_b', 'b', 'buh', 'cv', 0.40),
+    ('c_t', 't', 'tuh', 'cv', 0.40),
+    ('c_d', 'd', 'duh', 'cv', 0.40),
+    ('c_k', 'k', 'kuh', 'cv', 0.40),
+    ('c_g', 'g', 'guh', 'cv', 0.40),
     # ---- 塞擦音 ----
-    ('c_ch', 'tʃ', 'chuh', 'cv', 0.28),
-    ('c_j', 'dʒ', 'juh', 'cv', 0.28),
+    ('c_ch', 'tʃ', 'chuh', 'cv', 0.44),
+    ('c_j', 'dʒ', 'juh', 'cv', 0.44),
     # ---- 半元音 ----
-    ('c_w', 'w', 'wuh', 'cv', 0.24),
-    ('c_y', 'j', 'yuh', 'cv', 0.24),
+    ('c_w', 'w', 'wuh', 'cv', 0.40),
+    ('c_y', 'j', 'yuh', 'cv', 0.40),
     # ---- 擦音：持续音（TTS 的延长写法，能真的拉出气流）----
-    ('c_f', 'f', 'ffff', 'sustain', 0.34),
-    ('c_v', 'v', 'vvv', 'sustain', 0.34),
-    ('c_th', 'θ', 'thhh', 'sustain', 0.30),
-    ('c_dh', 'ð', 'the', 'cv', 0.24),        # 「the」开头就是 /ð/，元音是弱读央元音
-    ('c_s', 's', 'sss', 'sustain', 0.38),
-    ('c_z', 'z', 'zzz', 'sustain', 0.38),
-    ('c_sh', 'ʃ', 'shhh', 'sustain', 0.38),
-    ('c_zh', 'ʒ', 'zhh', 'sustain', 0.32),
-    ('c_h', 'h', 'hhh', 'sustain', 0.30),
+    ('c_f', 'f', 'ffff', 'sustain', 0.48),
+    ('c_v', 'v', 'vvv', 'sustain', 0.48),
+    ('c_th', 'θ', 'thhh', 'sustain', 0.46),
+    ('c_dh', 'ð', 'the', 'cv', 0.40),        # 「the」开头就是 /ð/，元音是弱读央元音
+    ('c_s', 's', 'sss', 'sustain', 0.50),
+    ('c_z', 'z', 'zzz', 'sustain', 0.50),
+    ('c_sh', 'ʃ', 'shhh', 'sustain', 0.50),
+    ('c_zh', 'ʒ', 'zhh', 'sustain', 0.46),
+    ('c_h', 'h', 'hhh', 'sustain', 0.44),
     # ---- 鼻音 / 近音 ----
-    ('c_m', 'm', 'mmm', 'sustain', 0.36),
-    ('c_n', 'n', 'nnn', 'sustain', 0.36),
-    ('c_ng', 'ŋ', 'sing', 'tail', 0.32),
-    ('c_l', 'l', 'lll', 'sustain', 0.34),
-    ('c_r', 'r', 'rrr', 'sustain', 0.34),
+    ('c_m', 'm', 'mmm', 'sustain', 0.50),
+    ('c_n', 'n', 'nnn', 'sustain', 0.50),
+    ('c_ng', 'ŋ', 'sing', 'tail', 0.44),
+    ('c_l', 'l', 'lll', 'sustain', 0.48),
+    ('c_r', 'r', 'rrr', 'sustain', 0.48),
 ]
 
 
 VOWEL_MODES = ('vowel', 'head_vowel', 'final_vowel', 'r_tail', 'tail')
 
 
-def stretch(seg, sr, target=0.20, max_rate=2.0):
+def stretch(seg, sr, target=0.34, max_rate=2.0):
     """元音太短时用 WSOLA（ffmpeg atempo）拉长到 target，不改音高、没有接缝。
-    绝不循环拼接 —— 循环会在接缝造出 20–40ms 的周期抖动，听感就是「卡住拖长」。"""
-    dur = len(seg) / sr
-    if dur >= target:
-        return seg
-    # atempo < 1 是放慢（音频变长），> 1 是加速。要拉长到 target，倍率是 dur/target。
-    factor = max(0.5, dur / target)
-    if factor > 0.92:
-        return seg
-    a = os.path.join(TMP, '_st_in.wav')
-    b = os.path.join(TMP, '_st_out.wav')
-    save(seg, sr, a)
-    try:
-        run([FF, '-y', '-v', 'error', '-i', a, '-filter:a', f'atempo={factor:.3f}',
-             '-ac', '1', '-ar', str(sr), b])
-        y, sr2 = load(b)
-        if len(y) > len(seg):
-            return y
-    except Exception:
-        pass
+    绝不循环拼接 —— 循环会在接缝造出 20–40ms 的周期抖动，听感就是「卡住拖长」。
+
+    atempo 一次最多只能放慢 2 倍（0.5），而慢速合成后 sit 的 /ɪ/ 只有 0.15s，
+    到 0.34s 要 2.3 倍 → 必须分几轮拉，每轮 ≤2 倍，直到够长。"""
+    for _ in range(4):
+        dur = len(seg) / sr
+        if dur >= target * 0.98:
+            break
+        factor = max(1.0 / max_rate, dur / target)
+        a = os.path.join(TMP, '_st_in.wav')
+        b = os.path.join(TMP, '_st_out.wav')
+        save(seg, sr, a)
+        try:
+            run([FF, '-y', '-v', 'error', '-i', a, '-filter:a', f'atempo={factor:.3f}',
+                 '-ac', '1', '-ar', str(sr), b])
+            y, sr2 = load(b)
+            if len(y) <= len(seg):
+                break
+            seg = y
+        except Exception:
+            break
     return seg
 
 
@@ -216,6 +226,14 @@ def loop_to(x, sr, target, fade=0.025):
     return out[:n]
 
 
+def pad(x, sr, pre=PAD_PRE, post=PAD_POST):
+    """声音前后各补一段静音。片段贴边播放在 iPad 上听着「刚一响就没了」，
+    补上起手与收尾的空白，单音才显得从容、听得清。"""
+    a = np.zeros(int(pre * sr), dtype=np.float32)
+    b = np.zeros(int(post * sr), dtype=np.float32)
+    return np.concatenate([a, x, b])
+
+
 def fade(x, sr, fi=0.012, fo=0.022):
     n = len(x)
     a, b = int(fi * sr), int(fo * sr)
@@ -241,24 +259,25 @@ def cut(x, sr, mode, target):
         if len(seg) > int(target * sr):
             mid, half = len(seg) // 2, int(target * sr) // 2
             seg = seg[max(0, mid - half): min(len(seg), mid + half)]
-        elif len(seg) < int(0.16 * sr):
+        elif len(seg) < int(target * 0.92 * sr):
             # 只对稳定噪音做延长，交叉淡化要够长（0.05s），
             # 25ms 的短接缝会形成 40Hz 的周期抖动，听感就是「卡卡的」
-            seg = loop_to(seg, sr, min(target, 0.24), 0.05)
+            seg = loop_to(seg, sr, target, 0.05)
         return seg, 'ok'
 
     if mode == 'cv':
-        # 塞音/塞擦音/半元音：从元音起点前 0.08s 切到后 0.10s。
-        #   · 前 0.08s 装的是爆破 + 送气，**不能从 0 开始** ——
+        # 塞音/塞擦音/半元音：从元音起点前 0.11s 切到后 0.22s。
+        #   · 前 0.11s 装的是爆破 + 送气，**不能从 0 开始** ——
         #     /p/ /t/ /k/ 词首有 40–70ms 的闭塞（纯静音），从 0 切等于先给孩子一段空白，
         #     听起来就是「点了没声，然后咔一下」。
-        #   · 后 0.10s 的元音只够听出辅音的音色，留满一个音节就变成「buh 这个字」了。
+        #   · 后 0.22s 的元音要够长：上一版只留 0.13s，孩子听到的是「buh」被掐断，
+        #     听感急促。留到 0.22s 才是完整的一个短音节。
         sp = spans_of(env, 0.45, 0.03)
         if not sp:
             return None, 'no-vowel-onset'
         onset = sp[0][0] * 0.01
-        a_s = max(0.0, onset - 0.09)
-        b_s = min(len(x) / sr, onset + 0.13)
+        a_s = max(0.0, onset - 0.12)
+        b_s = min(len(x) / sr, onset + 0.28)
         seg = x[int(a_s * sr):int(b_s * sr)].copy()
         # 切完再清一次首部：/p/ /k/ 前面常剩一段 40–60ms 的闭塞（纯静音），
         # 留着就是「点了先没声」。留 5ms 让爆破不要贴边。
@@ -270,8 +289,8 @@ def cut(x, sr, mode, target):
                 seg = seg[i0:]
         if len(seg) > int(target * sr):
             seg = seg[-int(target * sr):]     # 宁可吃掉一点前段，也要留住元音起音
-        if len(seg) < int(0.12 * sr):
-            return None, 'too-short'
+        if len(seg) < int(0.20 * sr):
+            return None, f'cv-too-short({len(seg)/sr:.2f}s)'
         return seg, 'ok'
 
     # 元音核：阈值压到 0.32 并合并 50ms 内的小凹陷，
@@ -301,7 +320,7 @@ def cut(x, sr, mode, target):
         a_s, b_s = max(0.0, a * 0.01 - 0.03), b * 0.01
     elif mode == 'vowel':
         a, b = max(sp, key=lambda s: s[1] - s[0])
-        a_s, b_s = a * 0.01 + 0.015, b * 0.01 - 0.015
+        a_s, b_s = a * 0.01 + 0.006, b * 0.01 - 0.006
     elif mode == 'r_tail':
         s = max(sp, key=lambda s: s[1])
         a_s = max(0.0, s[0] * 0.01 - 0.035)
@@ -340,9 +359,10 @@ def cut(x, sr, mode, target):
     return seg, 'ok'
 
 
-def normalize(x, rms_db=-20.0, ceil_db=-1.5, max_gain_db=24.0):
+def normalize(x, rms_db=-18.0, ceil_db=-1.0, max_gain_db=24.0):
     """按 RMS 归一到同一档响度。原来按峰值归一：擦音峰值高、RMS 低，
-    在 iPad 上明显比元音小声，听起来像「没读出来」。"""
+    在 iPad 上明显比元音小声，听起来像「没读出来」。
+    -18dBFS 比上一版（-20）再响 2dB：单音本来就短，宁可比单词略亮一点。"""
     rms = float(np.sqrt(np.mean(x ** 2))) if x.size else 0.0
     if rms <= 1e-6:
         return x
@@ -408,9 +428,10 @@ async def main():
                 fail.append(f'{key}({ipa}) {text}: {why}')
                 continue
             if mode in VOWEL_MODES:
-                seg = stretch(seg, sr, 0.20)
+                seg = stretch(seg, sr, 0.34)
             seg = normalize(seg)
-            seg = fade(seg, sr, 0.002 if mode == 'cv' else 0.012, 0.022)
+            seg = fade(seg, sr, 0.008, 0.05)
+            seg = pad(seg, sr)          # 最后补前后静音，不参与淡入淡出
             outw = os.path.join(TMP, key + '_out.wav')
             save(seg, sr, outw)
             encode(outw, dst)

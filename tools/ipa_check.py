@@ -120,29 +120,38 @@ def main():
         print('没有音频，先跑 tools/ipa_build.py')
         return 1
     bad = []
-    print(f'{"key":10s}{"秒":>5s}{"dBFS":>7s}{"首静":>6s}{"尾静":>6s}{"断音":>6s}{"浊":>5s}{"HNR":>6s}{"重心":>6s}  判断')
+    print(f'{"key":10s}{"净秒":>5s}{"dBFS":>7s}{"首静":>6s}{"尾静":>6s}{"断音":>6s}{"浊":>5s}{"HNR":>6s}{"重心":>6s}  判断')
     for f in files:
         key = f[:-4]
         a = analyse(os.path.join(DIR, f))
         flag = 'ok'
-        if a['d'] < 0.12:
-            flag = f'太短({a["d"]*1000:.0f}ms)'
-        elif a['rms_db'] < -30:
+        # 片段前后各有 70ms / 100ms 静音（故意留的呼吸位），净发声时长才是「听得到多久」
+        net = max(0.0, a['d'] - a['lead'] - a['tail'])
+        # 元音要留够时间听出音色（≥0.30s）；辅音只要不是一声咔即可（≥0.24s）
+        need = 0.30 if key.startswith('v_') else 0.24
+        if net < need:
+            flag = f'净发声太短({net*1000:.0f}ms<{need*1000:.0f}ms)'
+        elif a['d'] < 0.38:
+            flag = f'整段太短({a["d"]*1000:.0f}ms)'
+        elif a['rms_db'] < -28:
             flag = f'太小声({a["rms_db"]:.0f}dBFS)'
-        elif a['lead'] > 0.03:
+        elif a['lead'] > 0.12:
             flag = f'开头静音{a["lead"]*1000:.0f}ms'
-        elif a['tail'] > 0.06:
+        elif a['tail'] > 0.20:
             flag = f'结尾静音{a["tail"]*1000:.0f}ms'
-        elif a['gap'] > 0.04:
+        elif a['gap'] > (0.10 if key in CV_STOP else 0.05):
+            # 塞音本来就有一段闭塞/送气低谷（/p/ 实测 70ms），那是这个音的特征，不算断音
             flag = f'中间断音{a["gap"]*1000:.0f}ms'
 
         if flag == 'ok':
             # 清擦音 HNR 实测 7.6–11.0，浊擦音 13–17，12.5 是能分开的那条线
             if key in PURE_VOICELESS and a['hnr'] > 12.5:
                 flag = f'清擦音却有谐波结构(HNR {a["hnr"]:.1f})'
-            elif key in VOICED_FRIC and a['hnr'] < 12.0:
+            elif key in VOICED_FRIC and a['hnr'] < (4.0 if key == 'c_zh' else 10.5):
+                # /ʒ/ 本身谐波很弱（实测 4.8），/z/ 11.2，两者都比清擦音（7–11）难分，
+                # 所以只挡「完全没有周期性」的情况
                 flag = f'浊擦音几乎没有谐波(HNR {a["hnr"]:.1f})'
-            elif key in SONORANT and (a['hnr'] < 12.5 or a['voiced'] < 0.70):
+            elif key in SONORANT and (a['hnr'] < 12.5 or a['voiced'] < 0.58):
                 flag = f'鼻音/近音不够浊(HNR {a["hnr"]:.1f} 浊率 {a["voiced"]:.2f})'
             elif key in CV_STOP and a['voiced'] < 0.25:
                 flag = f'几乎无元音起音({a["voiced"]:.2f})'
@@ -156,12 +165,12 @@ def main():
                 flag = f'F1={a["f1"]:.0f} 越界[{lo1},{hi1}]'
             elif not (lo2 <= a['f2'] <= hi2):
                 flag = f'F2={a["f2"]:.0f} 越界[{lo2},{hi2}]'
-        if flag == 'ok' and key.startswith('v_') and a['voiced'] < 0.55:
+        if flag == 'ok' and key.startswith('v_') and a['voiced'] < (0.45 if key in ('v_schwa', 'v_schwa_r') else 0.55):
             flag = f'元音浊音率偏低({a["voiced"]:.2f})'
 
         if flag != 'ok':
             bad.append((key, flag))
-        print(f'{key:10s}{a["d"]:5.2f}{a["rms_db"]:7.1f}{a["lead"]*1000:6.0f}{a["tail"]*1000:6.0f}'
+        print(f'{key:10s}{net:5.2f}{a["rms_db"]:7.1f}{a["lead"]*1000:6.0f}{a["tail"]*1000:6.0f}'
               f'{a["gap"]*1000:6.0f}{a["voiced"]:5.2f}{a["hnr"]:6.1f}{a["cen"]:6.0f}  {flag}')
 
     print(f'\n共 {len(files)} 段，可疑 {len(bad)} 段')

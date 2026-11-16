@@ -71,13 +71,21 @@ const missKey = specKeys.filter(k => !keySet.has(k));
 if (missKey.length) bad(`这些音素在页面上没有对应格子：${missKey.join(', ')}`);
 else console.log(`  ${IPA_WANT} 个音素 key 与页面一一对应`);
 
-/* 字母表仍然读例词，这部分要有本地录音 */
-const letterSays = [...new Set([...ipaHtml.matchAll(/data-say="([^"]*)"/g)].map(m => m[1]))]
-  .filter(w => ![...ipaClips].some(u => u.includes(w)));
-const shownSays = [...ipaHtml.matchAll(/data-say="([^"]*)"/g)].map(m => m[1]);
-const missWord = [...new Set(shownSays)].filter(w => !AUDIO_MAP[String(w).toLowerCase()]);
-if (missWord.length) bad(`字母卡例词没有本地录音：${missWord.join(', ')}`);
-else console.log(`  字母卡例词 ${new Set(shownSays).size} 个全部有本地录音`);
+/* 字母卡现在读的是音素（A a → /æ/ 再 /eɪ/），不是例词：
+   每个 data-clipurls 里的音标录音都必须存在，且兜底文本不能是例词 */
+const letUrls = [...ipaHtml.matchAll(/data-clipurls="([^"]*)"/g)]
+  .flatMap(m => m[1].split('|')).filter(Boolean);
+const missLet = [...new Set(letUrls)].filter(u => !fs.existsSync(path.join(R, u.split('?')[0])));
+if (missLet.length) bad(`字母卡音素录音缺失：${missLet.slice(0, 5).join(', ')}`);
+else console.log(`  字母卡 ${letUrls.length} 段音素引用全部就位（读音素，不读例词）`);
+const IPA_SAY_SET = new Set(['ih','eh','aah','uh','ah','oo','ee','er','ay','eye','oy','ow','oh',
+  'ar','or','eer','air','oor','thuh','puh','buh','tuh','duh','kuh','guh','fff','vvv','thhh','sss','zzz',
+  'shhh','zhh','hhh','chuh','juh','mmm','nnn','ng','lll','rrr','wuh','yuh']);
+const ipaSays = [...ipaHtml.matchAll(/data-say="([^"]*)"/g)].map(m => m[1]);
+const exampleWord = [...new Set(ipaSays)].filter(w =>
+  AUDIO_MAP[String(w).toLowerCase()] && !IPA_SAY_SET.has(w) && !/^[A-Z]$/.test(w));
+if (exampleWord.length) bad(`音标卡还在用例词兜底：${exampleWord.slice(0, 5).join(', ')}`);
+else console.log(`  音标/字母卡 ${new Set(ipaSays).size} 个兜底文本全部是念法，没有例词`);
 
 /* ---- 4. 数学口诀 ---- */
 console.log('== 10 以内口诀 ==');

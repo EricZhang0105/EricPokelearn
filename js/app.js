@@ -748,6 +748,12 @@ function bindRefTaps(root){
     el.classList.remove('tap'); void el.offsetWidth; el.classList.add('tap');
     const lang = root.dataset.lang || 'en-US';
     const text = el.dataset.say;
+    /* data-clipurls：一个格子要连读多个音素（字母卡 A a → /æ/ 再 /eɪ/），| 分隔 */
+    const urls = el.dataset.clipurls;
+    if(urls){
+      const seq = urls.split('|').filter(Boolean).map(u=>({clip:u, text:'', lang, gap:180}));
+      if(seq.length && typeof playSpeak==='function'){ playSpeak({seq, lang}); return; }
+    }
     const kind = el.dataset.clip, key = el.dataset.key;
     /* data-clipurl：整条 URL 已经写好（英语音素 audio/ipa/<key>.m4a）
        data-clip + data-key：中文音频按 zhClip(kind,key) 拼 */

@@ -243,15 +243,11 @@
   <script>
     /* 自动更新：同一个链接永远跑最新版
        · 回到前台 / 切回标签页就检查一次新版本
-       · 新版本接管后自动刷新一次（首装不刷新，避免闪烁） */
+       · **不做自动刷新**：以前 controllerchange 时会 location.reload()，
+         孩子答到一半（进度刚自动保存）页面会突然跳回首页。
+         现在只更新缓存，下一次打开 App 自然就是新版本
+         —— HTML/JS/CSS 在 sw.js 里是网络优先，冷启动必定拿最新。 */
     if('serviceWorker' in navigator){
-      const hadController = !!navigator.serviceWorker.controller;
-      let reloading = false;
-      navigator.serviceWorker.addEventListener('controllerchange',()=>{
-        if(!hadController || reloading) return;
-        reloading = true;
-        location.reload();
-      });
       window.addEventListener('load',()=>{
         navigator.serviceWorker.register('sw.js').then(reg=>{
           const check=()=>{ reg.update().catch(()=>{}); };
