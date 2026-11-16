@@ -1,6 +1,6 @@
 {
  "voiceNote": "单一普通话女声，禁止变声/变调；每段只读一遍",
- "count": 288,
+ "count": 283,
  "items": [
   {
    "id": "initial_b",
@@ -1711,6 +1711,13 @@
    "file": "fin2_ei.m4a"
   },
   {
+   "id": "fin2_ui",
+   "kind": "fin2",
+   "key": "ui",
+   "text": "威。",
+   "file": "fin2_ui.m4a"
+  },
+  {
    "id": "fin2_ao",
    "kind": "fin2",
    "key": "ao",
@@ -1725,11 +1732,11 @@
    "file": "fin2_ou.m4a"
   },
   {
-   "id": "fin2_ia",
+   "id": "fin2_iu",
    "kind": "fin2",
-   "key": "ia",
-   "text": "呀。",
-   "file": "fin2_ia.m4a"
+   "key": "iu",
+   "text": "优。",
+   "file": "fin2_iu.m4a"
   },
   {
    "id": "fin2_ie",
@@ -1739,20 +1746,6 @@
    "file": "fin2_ie.m4a"
   },
   {
-   "id": "fin2_ua",
-   "kind": "fin2",
-   "key": "ua",
-   "text": "蛙。",
-   "file": "fin2_ua.m4a"
-  },
-  {
-   "id": "fin2_uo",
-   "kind": "fin2",
-   "key": "uo",
-   "text": "窝。",
-   "file": "fin2_uo.m4a"
-  },
-  {
    "id": "fin2_ve",
    "kind": "fin2",
    "key": "ve",
@@ -1760,32 +1753,11 @@
    "file": "fin2_ve.m4a"
   },
   {
-   "id": "fin2_iao",
+   "id": "fin2_er",
    "kind": "fin2",
-   "key": "iao",
-   "text": "腰。",
-   "file": "fin2_iao.m4a"
-  },
-  {
-   "id": "fin2_iou",
-   "kind": "fin2",
-   "key": "iou",
-   "text": "优。",
-   "file": "fin2_iou.m4a"
-  },
-  {
-   "id": "fin2_uai",
-   "kind": "fin2",
-   "key": "uai",
-   "text": "歪。",
-   "file": "fin2_uai.m4a"
-  },
-  {
-   "id": "fin2_uei",
-   "kind": "fin2",
-   "key": "uei",
-   "text": "威。",
-   "file": "fin2_uei.m4a"
+   "key": "er",
+   "text": "儿。",
+   "file": "fin2_er.m4a"
   },
   {
    "id": "fin2_an",
@@ -1826,7 +1798,7 @@
    "id": "fin2_ang",
    "kind": "fin2",
    "key": "ang",
-   "text": "昂。",
+   "text": "肮。",
    "file": "fin2_ang.m4a"
   },
   {
@@ -1849,13 +1821,6 @@
    "key": "ong",
    "text": "翁。",
    "file": "fin2_ong.m4a"
-  },
-  {
-   "id": "fin2_iong",
-   "kind": "fin2",
-   "key": "iong",
-   "text": "雍。",
-   "file": "fin2_iong.m4a"
   },
   {
    "id": "tonefin_a_1",

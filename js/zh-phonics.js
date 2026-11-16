@@ -208,7 +208,7 @@ function zhToneClip(base,t){ return zhClip('tone', base+'_'+t); }
 function zhToneFinClip(fin,t){ return zhClip('tonefin', fin+'_'+t); }
 
 /* ---------------- 工具 ---------------- */
-function zhClip(kind, key){ return 'audio/zh/'+kind+'_'+key+'.m4a?a=3'; }
+function zhClip(kind, key){ return 'audio/zh/'+kind+'_'+key+'.m4a?a=4'; }
 function zhInitial(p){ return ZH_INITIALS.find(x=>x.p===p); }
 function zhFinal(p){ return ZH_FINALS.find(x=>x.p===p); }
 function zhWhole(p){ return ZH_WHOLES.find(x=>x.p===p); }

@@ -33,16 +33,23 @@ const ZH_INITIAL_GROUPS=[
   {name:'半元音 / 隔音字母', items:[['y','衣'],['w','乌']], note:'拼音体系里常与声母一起起首'},
 ];
 
-/* 韵母：29 个教学常用韵母（单 6 + 复 13 + 前鼻 5 + 后鼻 5）。
+/* 韵母：严格按人教版《汉语拼音》韵母表 24 个
+   （单 6 + 复 8 + 特殊 er 1 + 前鼻 5 + 后鼻 4）。
+   —— 2026-11-16 修正：上一版按「汉语拼音方案 35 韵母」把 ia / ua / uo / iao /
+      iou / uai / uei / iong 也当成复韵母列了出来，那些是介音拼合，不是小学韵母表
+      的条目；ui / iu 才是 uei / iou 的省写形式。已全部删除，补回 ui / iu / er。
    呼读音用汉字标（a 读「啊」、ai 读「哀」），和声母的教法一致。
+   ong 没有零声母音节，例字取近似音「翁」；er 是特殊韵母，不与声母相拼
+   （这些是教学惯例，不是随手编的）。
    音频 key 统一走 fin2_<韵母>，与题库用的 final_* 分开，互不影响。 */
 const ZH_FINAL_GROUPS=[
   {name:'单韵母（6）', items:[['a','啊'],['o','喔'],['e','鹅'],['i','衣'],['u','乌'],['ü','迂']]},
-  {name:'复韵母（13）', items:[['ai','哀'],['ei','诶'],['ao','熬'],['ou','欧'],
-    ['ia','呀'],['ie','耶'],['ua','蛙'],['uo','窝'],['üe','约'],
-    ['iao','腰'],['iou','优'],['uai','歪'],['uei','威']]},
+  {name:'复韵母（8）', items:[['ai','哀'],['ei','诶'],['ui','威'],['ao','熬'],
+    ['ou','欧'],['iu','优'],['ie','耶'],['üe','约']]},
+  {name:'特殊韵母（1）', items:[['er','儿']], note:'不与声母相拼，自成音节'},
   {name:'前鼻韵母（5）', items:[['an','安'],['en','恩'],['in','因'],['un','温'],['ün','晕']]},
-  {name:'后鼻韵母（5）', items:[['ang','昂'],['eng','鞥'],['ing','英'],['ong','翁'],['iong','雍']]},
+  {name:'后鼻韵母（4）', items:[['ang','肮'],['eng','鞥'],['ing','英'],['ong','翁']],
+    note:'ong 没有零声母音节，例字取近似音'},
 ];
 
 /* 整体认读音节 16 个：看到就读，不用拼 */
@@ -78,7 +85,7 @@ function renderZhMap(){
     </div>`).join('');
 
   const fin=ZH_FINAL_GROUPS.map(g=>`<div class="rf-group">
-      <div class="rf-gname">${g.name}</div>
+      <div class="rf-gname">${g.name}${g.note?`<span class="rf-note">${g.note}</span>`:''}</div>
       <div class="rf-row">${g.items.map(([p,hz])=>zhTile(p,hz,'fin2',fin2Key(p))).join('')}</div>
     </div>`).join('');
 
@@ -98,7 +105,7 @@ function renderZhMap(){
     </div>`;
 
   return sec('① 声母','21 个辅音声母 + y / w',ini)
-       + sec('② 韵母','29 个',fin)
+       + sec('② 韵母','24 个 · 单 6 / 复 8 / 特殊 1 / 前鼻 5 / 后鼻 4',fin)
        + sec('③ 整体认读音节','16 个 · 不用拼，直接读',whole)
        + sec('④ 四声调','4 个基本声调 + 轻声',tones);
 }

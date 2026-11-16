@@ -53,10 +53,10 @@ CHARS.forEach((ch,i)=>add('char',String(i),`${ch.c}。`));
 /* 四声辨调（8 组 × 4 声）：只读一遍 */
 ZH_TONES.forEach(g=>g.hz.forEach((hz,i)=>add('tone',g.base+'_'+(i+1),`${hz}。`)));
 
-/* 韵母全景页（js/ref-pages.js 的 29 个教学韵母）：
+/* 韵母全景页（js/ref-pages.js 的 24 个韵母，人教版韵母表）：
  * 与题库的 final_* 分开，key 用 fin2_<韵母>，课文读音不受影响。
- * ü / ia / ie / ua / uo / üe / iao / iou / uai / uei / in / un / ün / iong
- * 这几条旧库没有录音，不补的话点格子只能走设备 TTS（音色会变）。 */
+ * ü / üe / ün / ui / iu / er / ie / uo… 里旧库没有录音的会在这里补齐，
+ * 不补的话点格子只能走设备 TTS（音色会变）。 */
 REF_ZH_FIN2.forEach(t=>add('fin2',t.key,`${t.hz}。`));
 
 /* 带调韵母：按题库实际用到的「韵母 × 声调」组合生成 */

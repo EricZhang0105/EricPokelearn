@@ -10,6 +10,8 @@
   2) 每段只读一遍
   3) 带调韵母单独录音；一声用「取平直段 + 整段循环延长」做成真正的平调
      （TTS 单独读纯元音会自然下坠，和四声几乎一样 → 必须处理）
+  4) 声母/韵母单念要是一声平调：edge-tts 每个单音节都会掉 50–70Hz（ai 听起来像 ài），
+     统一用 PSOLA 去掉线性降调（flatten_trend），保留自然微起伏
 
 用法：
   python tools/zh_tts_build.py             # 只补缺的
@@ -22,6 +24,7 @@ import numpy as np
 import imageio_ffmpeg
 import edge_tts
 import parselmouth
+from parselmouth.praat import call
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'audio', 'zh')
@@ -32,7 +35,7 @@ MANIFEST = os.path.join(ROOT, 'tools', 'zh_manifest.json')
 VOICE = 'zh-CN-XiaoxiaoNeural'   # 唯一音色：普通话女声
 SR = 44100
 BR = '96k'
-AUDIO_VER = 'a=3'                # 换音色/重录后必须 +1，顶掉设备上的旧音频缓存
+AUDIO_VER = 'a=4'                # 换音色/重录后必须 +1，顶掉设备上的旧音频缓存
 FORCE = '--force' in sys.argv
 VERIFY_ONLY = '--verify' in sys.argv
 
@@ -214,6 +217,36 @@ def cut_initial(src, dst):
     save(out, sr, dst)
 
 
+def flatten_trend(src, dst):
+    """去掉句尾降调（声母/韵母单念必须是一声平调）。
+
+    实测 edge-tts 读单个音节一定会掉 50–70Hz（哀 266→210、啊 286→217），
+    听感接近四声 —— ai 会被听成 ài，这就是「读音不对劲」的根因。
+    做法：只削掉基频的线性下滑（拟合直线后减掉），保留自然微起伏，
+    再把有声段平均音高拉回中位数；PSOLA 重合成，不动音色、不动时长。
+    """
+    snd = parselmouth.Sound(src)
+    man = call(snd, 'To Manipulation', 0.01, 75, 600)
+    pt = call(man, 'Extract pitch tier')
+    n = int(call(pt, 'Get number of points'))
+    if n < 3:
+        raise RuntimeError('音高点太少')
+    ts = [float(call(pt, 'Get time from index', i)) for i in range(1, n + 1)]
+    fs = [float(call(pt, 'Get value at index', i)) for i in range(1, n + 1)]
+    a, b = np.polyfit(ts, fs, 1)
+    med = float(np.median(fs))
+    call(pt, 'Remove points between', snd.xmin - 1, snd.xmax + 1)
+    for t, f in zip(ts, fs):
+        # 去线性趋势后，再把偏离中位的幅度限制在 ±0.8 半音：
+        # ou / en 这类结尾是鼻音或滑动收尾，降调不是直线，线性去趋势压不干净。
+        semi = 12 * np.log2(max(f - (a * t + b) + med, 1e-3) / med)
+        semi = float(np.clip(semi, -0.8, 0.8))
+        call(pt, 'Add point', t, float(np.clip(med * 2 ** (semi / 12), 90, 500)))
+    call([man, pt], 'Replace pitch tier')
+    out = call(man, 'Get resynthesis (overlap-add)')
+    out.save(dst, 'WAV')
+
+
 async def synth(item, sem, stats, tmp):
     dst = os.path.join(OUT, item['file'])
     if not FORCE and os.path.exists(dst) and os.path.getsize(dst) > 1200:
@@ -240,6 +273,15 @@ async def synth(item, sem, stats, tmp):
                         trim(wav, out_wav, 0.6)
                 else:
                     trim(wav, out_wav, 0.85 if item['kind'] == 'blend' else 0.7)
+                # 声母/韵母单念要是一声平调：去掉 TTS 自带的句尾降调
+                # （er 本身是二声「儿」，去趋势会读错，单独放过）
+                if item['kind'] in ('initial', 'final', 'fin2') and item.get('key') != 'er':
+                    flat = os.path.join(tmp, item['id'] + '_f.wav')
+                    try:
+                        flatten_trend(out_wav, flat)
+                        out_wav = flat
+                    except Exception as e:
+                        stats['flat_fallback'].append(f"{item['id']}: {e}")
                 encode(out_wav, dst)
                 stats['ok'] += 1
                 break
@@ -252,7 +294,7 @@ async def synth(item, sem, stats, tmp):
 def verify():
     rep = []
     print('== 校验：每段只读一遍 + 带调韵母调型 ==')
-    multi, missing, bad_tone = [], [], []
+    multi, missing, bad_tone, flat_bad = [], [], [], []
     for it in items:
         p = os.path.join(OUT, it['file'])
         if not os.path.exists(p):
@@ -261,6 +303,13 @@ def verify():
         segs = voice_segments(p)
         if len(segs) > 2:      # 一句话最多一次微停顿
             multi.append(f"{it['id']}({len(segs)}段)")
+        # 声母/韵母：单念必须平（一句里首尾差 < 1.5 半音）
+        if it['kind'] in ('initial', 'final', 'fin2') and it.get('key') != 'er':
+            st0 = pitch_contour(p)
+            if st0 is not None:
+                sl = float(st0[2] - st0[0])
+                if abs(sl) >= 1.5:
+                    flat_bad.append(f"{it['id']}({it['text']}) 首尾差{sl:+.2f}")
         if it['kind'] != 'tonefin':
             continue
         st = pitch_contour(p)
@@ -284,26 +333,28 @@ def verify():
         print(f"  {it['key']:9s} {it['text']:3s} 声调{tone} {st[0]:+6.2f}{st[1]:+7.2f}{st[2]:+7.2f} "
               f"{slope:+6.2f} {'OK' if ok else '需修'}")
     json.dump(rep, open(REPORT, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
-    print(f"\n缺文件 {len(missing)}；读多段（>2）{len(multi)}；调型不合规 {len(bad_tone)}")
-    for x in (missing[:6] + multi[:6] + bad_tone[:6]):
+    print(f"\n缺文件 {len(missing)}；读多段（>2）{len(multi)}；调型不合规 {len(bad_tone)}；声母/韵母不平稳 {len(flat_bad)}")
+    for x in (missing[:6] + multi[:6] + bad_tone[:6] + flat_bad[:6]):
         print('  -', x)
-    return not (missing or multi or bad_tone)
+    return not (missing or multi or bad_tone or flat_bad)
 
 
 async def main():
     if not VERIFY_ONLY:
         os.makedirs(OUT, exist_ok=True)
         sem = asyncio.Semaphore(6)
-        stats = {'ok': 0, 'skip': 0, 'fail': [], 'level_fallback': []}
+        stats = {'ok': 0, 'skip': 0, 'fail': [], 'level_fallback': [], 'flat_fallback': []}
         tmp = tempfile.mkdtemp(prefix='zh_tts_')
         await asyncio.gather(*[synth(it, sem, stats, tmp) for it in items])
         shutil.rmtree(tmp, ignore_errors=True)
         print(f"新录 {stats['ok']}，跳过 {stats['skip']}，失败 {len(stats['fail'])}，"
-              f"一声回退 {len(stats['level_fallback'])}")
+              f"一声回退 {len(stats['level_fallback'])}，去降调失败 {len(stats['flat_fallback'])}")
         for x in stats['fail'][:10]:
             print('  FAIL', x)
         for x in stats['level_fallback'][:10]:
             print('  一声未能平直（保留自然版）:', x)
+        for x in stats['flat_fallback'][:10]:
+            print('  去降调失败（保留原版）:', x)
 
     # 音频清单（Service Worker 预缓存用）
     files = sorted(f for f in os.listdir(OUT) if f.endswith('.m4a'))
