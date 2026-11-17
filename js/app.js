@@ -504,16 +504,21 @@ function fmtArchiveTime(ts){
 function updateArchiveUI(){
   const info=$('#archiveInfo'), loadBtn=$('#loadArchiveBtn');
   if(!info) return;
+  /* 「读取存档」从打开软件起就一直在，不随有没有存档而隐藏：
+     登录云同步版时还能选「其他设备最后一次存档」。 */
+  if(loadBtn) loadBtn.classList.remove('hidden');
   const a=Store.manualArchive();
   const b=Store.backupArchive();
+  const cs=(typeof CloudSync!=='undefined' && CloudSync.status) ? CloudSync.status() : null;
   if(a){
-    info.textContent=`存档：${fmtArchiveTime(a.savedAt)} · 已进化 ${a.evolved||0} 只 / 累计 ${a.stages||0} 阶`;
-    loadBtn.classList.remove('hidden');
+    info.textContent=`本机存档：${fmtArchiveTime(a.savedAt)} · 已进化 ${a.evolved||0} 只 / 累计 ${a.stages||0} 阶`
+      + (cs && cs.signedIn ? '（登录后点「读取存档」可选云端版本）' : '');
+  }else if(cs && cs.signedIn){
+    info.textContent='☁️ 已登录：点「读取存档」选本机存档，或其他设备最后一次同步的云端进度';
   }else{
     info.textContent = b
       ? `还没有手动存档（自动备份：已进化 ${b.evolved||0} 只）`
-      : '点「保存进度」把现在的进化进度存下来，换版本也不怕';
-    loadBtn.classList.add('hidden');
+      : '点「保存进度」存一份；点「读取存档」从存档接回进度';
   }
 }
 function bindArchiveButtons(){
@@ -524,14 +529,76 @@ function bindArchiveButtons(){
     updateArchiveUI(); sfx('good');
     toastMsg(`💾 进度已存档：${a.evolved} 只宝可梦 · ${a.stages} 阶`);
   };
-  if(loadBtn) loadBtn.onclick=()=>{
-    const a=Store.manualArchive();
-    if(!a){ toastMsg('还没有存档'); return; }
-    if(!confirm(`读取 ${fmtArchiveTime(a.savedAt)} 保存的进度？\n（已进化 ${a.evolved||0} 只 / 累计 ${a.stages||0} 阶，只会往前接，不会倒退）`)) return;
+  if(loadBtn) loadBtn.onclick=()=>openLoadArchivePicker();
+}
+
+/* ---------- 读取存档：本机存档 + （登录后）云端存档 二选一 ---------- */
+async function openLoadArchivePicker(){
+  const local=Store.manualArchive();
+  const backup=Store.backupArchive();
+  const cs=(typeof CloudSync!=='undefined' && CloudSync.status) ? CloudSync.status() : null;
+
+  /* 云端摘要需要异步读取，先探测；失败就只给本机选项，不阻塞 */
+  let cloud=null;
+  if(cs && cs.signedIn && typeof CloudSync.peekRemoteArchive==='function'){
+    try{ cloud=await CloudSync.peekRemoteArchive(); }catch(e){ cloud=null; }
+  }
+
+  const opts=[];
+  if(local) opts.push({kind:'manual', a:local,
+    label:`本机存档 · ${fmtArchiveTime(local.savedAt)}`,
+    detail:`已进化 ${local.evolved||0} 只 / 累计 ${local.stages||0} 阶`});
+  if(cloud && cloud.found){
+    const when=cloud.updatedAt ? fmtArchiveTime(new Date(cloud.updatedAt).getTime()) : '最近';
+    opts.push({kind:'cloud', c:cloud,
+      label:`☁️ 云端存档 · ${when}`,
+      detail:`其他设备最后一次同步 · 已进化 ${cloud.evolved||0} 只 / 累计 ${cloud.stages||0} 阶`});
+  }
+  if(!opts.length && backup){
+    opts.push({kind:'backup', a:backup,
+      label:`自动备份 · ${fmtArchiveTime(backup.savedAt)}`,
+      detail:`已进化 ${backup.evolved||0} 只 / 累计 ${backup.stages||0} 阶`});
+  }
+  if(!opts.length){
+    toastMsg('还没有存档：先在别的设备登录同一账号同步一次，或点「保存进度」存一份');
+    return;
+  }
+
+  const apply=(opt)=>{
+    if(opt.kind==='cloud'){
+      if(!confirm(`读取云端（其他设备最后一次）的进度？\n${opt.detail}\n只会往前接，不会让本机进度倒退。`)) return;
+      /* 云端存档是完整 Schema 存档，用云端拉取合并（取更高 + 记录并集），不倒退 */
+      if(typeof CloudSync!=='undefined' && CloudSync.syncNow) CloudSync.syncNow(true);
+      return;
+    }
+    const a=opt.a;
+    if(!confirm(`读取 ${opt.label} 保存的进度？\n（${opt.detail}，只会往前接，不会倒退）`)) return;
     const r=Store.applyArchive(a);
     updateCompanion(); renderHome();
     toastMsg(r ? `📂 已读取存档（${r.upgraded} 只更新）` : '当前进度已经比存档更靠前了');
   };
+
+  if(opts.length===1){ apply(opts[0]); return; }
+
+  /* 多个来源 → 弹选择器 */
+  let m=$('#loadArchiveModal');
+  if(!m){
+    m=document.createElement('div');
+    m.id='loadArchiveModal'; m.className='modal hidden';
+    m.innerHTML='<div class="modal-card"><button class="modal-x" id="loadArchiveX" aria-label="关闭">✕</button>'
+      +'<h2>📂 读取存档</h2><p class="muted">选择要读取的存档，进度只会往前接、不会倒退。</p>'
+      +'<div id="loadArchiveChoices"></div></div>';
+    document.body.appendChild(m);
+    $('#loadArchiveX').onclick=()=>m.classList.add('hidden');
+    m.onclick=e=>{ if(e.target===m) m.classList.add('hidden'); };
+  }
+  const box=$('#loadArchiveChoices');
+  box.innerHTML=opts.map((o,i)=>`<button class="btn-load load-choice" data-i="${i}" style="display:block;width:100%;margin:10px 0;text-align:left;white-space:normal;line-height:1.5">`
+    +`<b>${o.label}</b><br><span class="muted" style="font-size:13px">${o.detail}</span></button>`).join('');
+  box.querySelectorAll('.load-choice').forEach(b=>{
+    b.onclick=()=>{ m.classList.add('hidden'); apply(opts[Number(b.dataset.i)]); };
+  });
+  m.classList.remove('hidden');
 }
 
 /* ---------- 存档状态提示 ---------- */
@@ -618,11 +685,13 @@ function renderCollection(){
    伊布每攒满 100 能量按固定顺序拿一颗石头，变成下一种形态；变过的不会再出现。
    整条路线一次铺开给孩子看，已经走过的打勾，当前的高亮，后面的上锁。 */
 function renderSequentialFamily(pk,info){
+  const chain=pk.stages;                       // 顺序链的每一阶（伊布 9 阶、走路草/蚊香蝌蚪/拉鲁拉丝 4 阶）
+  const stones=chain.length-1;
   $('#familyTitle').textContent=`${pk.emoji} ${pk.cn} · ${pk.name}`;
-  $('#familyHint').innerHTML=`<b>伊布有自己的能量石路线</b> 🪨<br>
+  $('#familyHint').innerHTML=`<b>${pk.cn}有自己的能量石路线</b> 🪨<br>
     每攒满 <b>${ENERGY_PER_STAGE}</b> 点能量就得到下一颗石头、按固定顺序变身；变过的形态不会再出现。`;
   let h='<div class="fam-seq">';
-  EEVEE_CHAIN.forEach((f,i)=>{
+  chain.forEach((f,i)=>{
     const done=i<info.stage, cur=i===info.stage, locked=i>info.stage;
     const tag = cur ? '<div class="fam-tag now">⭐ 现在这个</div>'
               : done ? '<div class="fam-tag ok">✔ 已获得</div>'
@@ -632,16 +701,16 @@ function renderSequentialFamily(pk,info){
         <div class="fam-face">${pokeImgTag(f,'fam-img')}</div>
         <div class="fam-nm">${f.name}</div>
         <div class="fam-cn">${f.cn}</div>
-        <div class="fam-evo">${i===0?'最初形态':f.evo}</div>
+        <div class="fam-evo">${i===0?'最初形态':(f.evo||'按顺序进化')}</div>
         ${tag}
       </div>`;
-    if(i<EEVEE_CHAIN.length-1) h+='<div class="fam-seq-arrow">➜</div>';
+    if(i<chain.length-1) h+='<div class="fam-seq-arrow">➜</div>';
   });
   h+='</div>';
   h+=`<div class="fam-foot">${info.maxed
-      ? '🏆 8 颗能量石全收集齐啦！伊布已经走完整条路线～'
+      ? `🏆 ${stones} 颗能量石全收集齐啦！${pk.cn}已经走完整条路线～`
       : `答对 +${ENERGY_PER_ANSWER} ⚡ / 答错 −${ENERGY_PER_ANSWER} ⚡ · 再攒 <b>${Math.max(0,info.need-info.intoStage)}</b> 点能量就能拿到第 ${info.stage+1} 颗石头<br>
-         伊布不会退化，已经变过的形态不会重复出现`}</div>`;
+         ${pk.cn}不会退化，已经变过的形态不会重复出现`}</div>`;
   $('#familyBody').innerHTML=h;
   bindPokeImages($('#familyBody'));
   $('#familyModal').classList.remove('hidden');
@@ -1875,6 +1944,31 @@ function renderBlendLib(){
   });
 }
 
+/* 底部「同步录音到云端」旁的同步状态：读云端只读统计，显示已同步/待同步段数。
+   manual=true 表示用户主动点「🔄 刷新」，会给完成提示。 */
+async function renderBlendSyncStatus(manual){
+  const el=$('#blendSyncStatus');
+  if(!el) return;
+  if(typeof BlendCloud==='undefined'){ el.textContent='云同步组件未加载'; return; }
+  if(!BlendCloud.signedIn()){
+    el.innerHTML='☁️ 未登录。点右上角 <b>👤</b> 登录同一账号后，即可在多台 iPad / 手机间共享家长录音。';
+    return;
+  }
+  el.textContent='🔄 正在读取云端同步状态…';
+  const r=await BlendCloud.status();
+  if(!r || !r.ok){
+    el.textContent='⚠️ 同步状态读取失败：'+((r&&r.reason)||'网络异常');
+    if(manual) toastMsg('🔄 刷新失败：'+((r&&r.reason)||'网络异常'));
+    return;
+  }
+  const t=r.lastSyncAt ? new Date(r.lastSyncAt).toLocaleString() : '尚未同步';
+  el.innerHTML=`本机录音 <b>${r.local}</b> 段 · 云端 <b>${r.remote}</b> 段 · `
+    +`已同步 <b style="color:#1e8e5a">${r.synced}</b> 段 · `
+    +`待上传 <b style="color:#d07a00">${r.toPush}</b> 段 · 待下载 <b style="color:#d07a00">${r.toPull}</b> 段<br>`
+    +`<span style="font-size:12px;color:#7a8fa3">上次同步：${t}${r.toPush||r.toPull?' · 点「同步录音到云端」完成同步':''}</span>`;
+  if(manual) toastMsg(`🔄 已同步 ${r.synced} 段，待上传 ${r.toPush} 段、待下载 ${r.toPull} 段`);
+}
+
 function blendItem(syl){ return document.querySelector('#blendLib .blend-item[data-syl="'+syl+'"]'); }
 function blendSay(syl,msg){ const el=blendItem(syl); const s=el&&el.querySelector('.blend-status'); if(s) s.textContent=msg||''; }
 
@@ -2038,8 +2132,10 @@ function renderParent(){
       <div id="blendLib" class="blend-lib"></div>
       <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn-secondary" id="blendSyncBtn">☁️ 同步录音到云端</button>
+        <button class="btn-load" id="blendRefreshBtn">🔄 刷新同步状态</button>
         <button class="btn-danger" id="blendClearBtn">🗑️ 清空全部录音</button>
       </div>
+      <div id="blendSyncStatus" class="blend-sync-status" style="font-size:13px;line-height:1.6;margin-top:10px;padding:10px 12px;background:#f4f8fc;border-radius:10px;color:#33506b"></div>
     </div>
 
     <div class="parent-block">
@@ -2077,10 +2173,23 @@ function renderParent(){
       const pb=ParentBlendBank;
       const all=pb.list().slice();
       pb.clear().then(()=>{
-        if(typeof BlendCloud!=='undefined') all.forEach(s=>BlendCloud.removeRemote(s).catch(()=>{}));
-        renderBlendLib();
+        if(typeof BlendCloud!=='undefined'){
+          all.forEach(s=>BlendCloud.removeRemote(s).catch(()=>{}));
+          BlendCloud.clearLedger();          // 清掉同步指纹，避免下次同步误判为「已同步」
+        }
+        renderBlendLib(); renderBlendSyncStatus();
       });
     }
+  };
+  renderBlendSyncStatus();                 // 一进家长页就显示当前同步状态
+  $('#blendRefreshBtn').onclick=async()=>{
+    if(typeof BlendCloud==='undefined'){ toastMsg('云同步组件未加载'); return; }
+    if(!BlendCloud.signedIn()){
+      toastMsg('请先登录账号（点右上角 👤）');
+      if(typeof CloudSync!=='undefined' && CloudSync.openModal) CloudSync.openModal();
+      return;
+    }
+    await renderBlendSyncStatus(true);
   };
   $('#blendSyncBtn').onclick=async()=>{
     const btn=$('#blendSyncBtn');
@@ -2091,11 +2200,15 @@ function renderParent(){
       return;
     }
     btn.disabled=true; btn.textContent='⏳ 同步中…';
-    const r=await BlendCloud.syncAll();
+    const r=await BlendCloud.syncAll({
+      onProgress:(phase,n)=>{ btn.textContent=`⏳ ${phase==='pull'?'拉取':'上传'} ${n} 段…`; }
+    });
     btn.disabled=false; btn.textContent='☁️ 同步录音到云端';
-    renderBlendLib();
+    renderBlendLib(); renderBlendSyncStatus();
     if(r && r.ok){
-      toastMsg(`☁️ 同步完成：拉取 ${r.pulled} 段、上传 ${r.pushed} 段` + (r.failed?`（失败 ${r.failed}）`:''));
+      const skipped=r.skipped||0;
+      toastMsg(`☁️ 同步完成：拉取 ${r.pulled} 段、上传 ${r.pushed} 段`
+        + (skipped?`（已同步 ${skipped} 段自动跳过）`:'') + (r.failed?`（失败 ${r.failed}）`:''));
     }else{
       toastMsg('☁️ 同步失败：'+((r&&r.reason)||'网络异常'));
     }

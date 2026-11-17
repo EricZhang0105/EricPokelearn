@@ -27,6 +27,15 @@ const ARCHIVE_KEY    = 'pokeLearnProgressArchive_v1';
 const AUTOBACKUP_KEY = 'pokeLearnProgressBackup_v1';
 const ARCHIVE_VERSION = 1;
 
+/* 从「分支进化」升级成「伊布式顺序进化」的宝可梦：
+   id + 旧分支阶 stage。旧存档若在 stage=branchStage 且有 branch 选择，
+   迁移到顺序链的 stage=branchStage+branch（见 load()/sanitize()）。 */
+const SEQ_BRANCH_LEGACY = [
+  {id:'oddish',  branchStage:2},
+  {id:'poliwag', branchStage:2},
+  {id:'ralts',   branchStage:2},
+];
+
 function testStorage(){
   try{
     const k='__pl_probe__';
@@ -92,6 +101,16 @@ const Store = {
       ev.stage=Math.max(1, Math.min(8, ev.branch+1));
       ev.branch=null;
     }
+    /* 走路草/蚊香蝌蚪/拉鲁拉丝旧存档：stage=2 + branch(0..1) 表示在分支阶选了第 branch 种形态。
+       新版改成和伊布一样的 4 阶顺序链，stage=2+branch，做到进度和形象都不丢。 */
+    SEQ_BRANCH_LEGACY.forEach(item=>{
+      const m=p[item.id];
+      if(m && Number.isInteger(m.branch) && m.stage===item.branchStage){
+        const max=Math.max(0,(POKEMON.find(pk=>pk.id===item.id)||{stages:[]}).stages.length-1);
+        m.stage=Math.max(0, Math.min(max, item.branchStage + m.branch));
+        m.branch=null;
+      }
+    });
     // ---- schema 4：每阶 60 → 100 点，按比例折算已攒能量，进度不倒退 ----
     if(prevSchema < 4){
       Object.keys(p).forEach(id=>{
@@ -136,6 +155,14 @@ const Store = {
       ev.stage=Math.max(1, Math.min(8, ev.branch+1));
       ev.branch=null;
     }
+    SEQ_BRANCH_LEGACY.forEach(item=>{
+      const m=p[item.id];
+      if(m && Number.isInteger(m.branch) && m.stage===item.branchStage){
+        const max=Math.max(0,(POKEMON.find(pk=>pk.id===item.id)||{stages:[]}).stages.length-1);
+        m.stage=Math.max(0, Math.min(max, item.branchStage + m.branch));
+        m.branch=null;
+      }
+    });
     // 导入的是 v3 存档（60 点/阶）→ 折算成 100 点/阶
     if(prevSchema < 4){
       Object.keys(p).forEach(id=>{

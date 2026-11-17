@@ -63,9 +63,11 @@ const POKEMON = [
     S('Igglybuff','宝宝丁','🎀',174), S('Jigglypuff','胖丁','🎈',39), S('Wigglytuff','胖可丁','🌸',40)]),
   C('zubat','Zubat','超音蝠','#8E8BC4','🦇',[
     S('Zubat','超音蝠','🦇',41), S('Golbat','大嘴蝠','🦇',42), S('Crobat','叉字蝠','💜',169)]),
+  /* 走路草 / 蚊香蝌蚪 / 拉鲁拉丝：和伊布一样按固定顺序拿石头进化，
+     摊平成连续链，变过的形态不再出现、答错也不回头。 */
   C('oddish','Oddish','走路草','#79C77A','🌱',[
     S('Oddish','走路草','🌱',43), S('Gloom','臭臭花','🌼',44),
-    [S('Vileplume','霸王花','🌺',45,'叶之石'), S('Bellossom','美丽花','💃',182,'日之石')]]),
+    S('Vileplume','霸王花','🌺',45,'叶之石'), S('Bellossom','美丽花','💃',182,'日之石')], { sequential:true }),
   C('diglett','Diglett','地鼠','#C69B6D','🕳️',[
     S('Diglett','地鼠','🕳️',50), S('Dugtrio','三地鼠','🕳️',51)]),
   /* ★ 喵喵（火箭队那只） */
@@ -77,7 +79,7 @@ const POKEMON = [
     S('Growlithe','卡蒂狗','🐶',58), S('Arcanine','风速狗','🔥',59)]),
   C('poliwag','Poliwag','蚊香蝌蚪','#6FA8DC','💧',[
     S('Poliwag','蚊香蝌蚪','💧',60), S('Poliwhirl','蚊香君','🌀',61),
-    [S('Poliwrath','蚊香泳士','🥊',62,'水之石'), S('Politoed','蚊香蛙皇','👑',186,'王者之证')]]),
+    S('Poliwrath','蚊香泳士','🥊',62,'水之石'), S('Politoed','蚊香蛙皇','👑',186,'王者之证')], { sequential:true }),
   C('abra','Abra','凯西','#E3B36B','🧘',[
     S('Abra','凯西','🧘',63), S('Kadabra','勇基拉','🥄',64), S('Alakazam','胡地','🔮',65)]),
   C('machop','Machop','腕力','#C98C6B','💪',[
@@ -137,7 +139,7 @@ const POKEMON = [
     S('Mudkip','水跃鱼','💧',258), S('Marshtomp','沼跃鱼','🌊',259), S('Swampert','巨沼怪','🏞️',260)]),
   C('ralts','Ralts','拉鲁拉丝','#A7D7C5','🌸',[
     S('Ralts','拉鲁拉丝','🌸',280), S('Kirlia','奇鲁莉安','💃',281),
-    [S('Gardevoir','沙奈朵','✨',282,'等级 30'), S('Gallade','艾路雷朵','⚔️',475,'觉醒之石（雄性）')]]),
+    S('Gardevoir','沙奈朵','✨',282,'等级 30'), S('Gallade','艾路雷朵','⚔️',475,'觉醒之石（雄性）')], { sequential:true }),
   C('beldum','Beldum','铁哑铃','#8FA8BF','🔩',[
     S('Beldum','铁哑铃','🔩',374), S('Metang','金属怪','⚙️',375), S('Metagross','巨金怪','🤖',376)]),
   C('bagon','Bagon','宝贝龙','#7BA7D0','🐲',[

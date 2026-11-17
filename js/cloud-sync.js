@@ -376,7 +376,27 @@ function boot(){
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
 else boot();
 
-window.CloudSync={ syncNow, openModal,
+/* 供首页「📂 读取存档」查看云端最后一次存档的摘要（不合并、不改动本地）。
+   返回 {found, updatedAt, evolved, stages, savedAt}；未登录/非云域名返回 null。 */
+async function peekRemoteArchive(){
+  if(!ON_CLOUD_HOST || !cloud || !(await sessionGate())) return null;
+  try{
+    const {data,error}=await cloud.database.from('pokelearn_saves')
+      .select('save_json,updated_at').maybeSingle();
+    if(error || !data || !data.save_json) return null;
+    const save=JSON.parse(data.save_json);
+    let evolved=0, stages=0;
+    Object.keys(save.pokemon||{}).forEach(id=>{
+      const m=save.pokemon[id]||{};
+      const st=Math.max(0, Number(m.stage)||0);
+      stages+=st; if(st>0) evolved++;
+    });
+    return { found:true, updatedAt:data.updated_at||null,
+             savedAt:save.savedAt||null, evolved, stages };
+  }catch(e){ return null; }
+}
+
+window.CloudSync={ syncNow, openModal, peekRemoteArchive,
   /* BlendCloud 用：拿共享 cloud 客户端与当前会话（未登录/非云域名时 session 为 null） */
   client:()=>({ cloud, session:session||null }),
   status:()=>({onCloudHost:ON_CLOUD_HOST, signedIn:!!session, lastSyncAt}) };
