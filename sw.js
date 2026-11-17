@@ -68,7 +68,7 @@
  * v40（2026-11-16 语音统一）：所有音频 URL 带 ?a=2 版本参数，旧缓存（Flo 时代发闷的
  *   录音 + 63 只宝可梦的多音色鼓励语）不会再被复用；鼓励语改为统一女声 TTS。
  */
-const CACHE = 'pokelearn-v61';
+const CACHE = 'pokelearn-v62';
 const SHELL = [
   './',
   './index.html',
@@ -80,6 +80,7 @@ const SHELL = [
   './js/data.js',
   './js/audio-denoise.js',
   './js/parent-blend.js',
+  './js/blend-cloud.js',
   './js/question-bank.js',
   './js/question-engine.js',
   './js/read-passages.js',

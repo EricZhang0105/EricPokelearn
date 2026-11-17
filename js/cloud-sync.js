@@ -326,6 +326,8 @@ async function syncNow(manual){
 async function afterLogin(showModal){
   await syncNow(false);
   if(showModal) toast('☁️ 已登录，进度自动同步');
+  /* 家长拼读录音的跨设备同步（BlendCloud），失败不影响进度同步 */
+  try{ if(typeof window.__blendCloudPull==='function') window.__blendCloudPull(); }catch(e){}
 }
 function schedulePush(){
   if(suppressPush || !ON_CLOUD_HOST || !cloud || !session) return;
@@ -374,5 +376,8 @@ function boot(){
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
 else boot();
 
-window.CloudSync={ syncNow, openModal, status:()=>({onCloudHost:ON_CLOUD_HOST, signedIn:!!session, lastSyncAt}) };
+window.CloudSync={ syncNow, openModal,
+  /* BlendCloud 用：拿共享 cloud 客户端与当前会话（未登录/非云域名时 session 为 null） */
+  client:()=>({ cloud, session:session||null }),
+  status:()=>({onCloudHost:ON_CLOUD_HOST, signedIn:!!session, lastSyncAt}) };
 })();

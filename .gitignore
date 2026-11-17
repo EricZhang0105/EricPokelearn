@@ -24,6 +24,7 @@ __pycache__/
 *.pyc
 
 # 本地测试/发布临时产物，不进公开仓库
+_pk_*_cookie.txt
 _denoise_cookie.txt
 .wbapp_*.genie
 _denoise_test_site/

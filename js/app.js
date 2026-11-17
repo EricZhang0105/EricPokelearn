@@ -1947,6 +1947,13 @@ async function blendRecord(syl){
           await pb.save(s,use,{dur:0,denoised});
           renderBlendLib();
           toastMsg(denoised?'✅ 已降噪保存，小朋友端可用了':'✅ 已保存（原音），小朋友端可用了');
+          /* 登录状态下自动同步到云端（跨设备共享），失败不影响本地使用 */
+          if(typeof BlendCloud!=='undefined'){
+            BlendCloud.pushOne(s).then(r=>{
+              if(r && r.ok) toastMsg('☁️ 已同步到云端，其他设备登录同一账号可用');
+              else if(r && r.reason!=='unavailable') toastMsg('☁️ 云端同步失败：'+(r.reason||'')+'（录音仍在本机可用）');
+            }).catch(()=>{});
+          }
         }catch(e){ blendSay(s,'保存失败：'+e.message); btn.disabled=false; btn.textContent='✅ 保存'; }
       };
     };
@@ -1967,10 +1974,14 @@ function blendStop(){
 }
 
 async function blendDelete(syl){
-  if(!confirm('删除「'+syl+'」的录音？该字会退出小朋友拼读题库。')) return;
+  if(!confirm('删除「'+syl+'」的录音？该字会退出小朋友拼读题库（云端备份也一并删除）。')) return;
   const pb=(typeof ParentBlendBank!=='undefined')?ParentBlendBank:null;
   if(!pb) return;
-  try{ await pb.remove(syl); renderBlendLib(); toastMsg('🗑️ 已删除'); }
+  try{
+    await pb.remove(syl);
+    if(typeof BlendCloud!=='undefined') BlendCloud.removeRemote(syl).catch(()=>{});
+    renderBlendLib(); toastMsg('🗑️ 已删除');
+  }
   catch(e){ toastMsg('删除失败：'+e.message); }
 }
 
@@ -2022,10 +2033,11 @@ function renderParent(){
 
     <div class="parent-block" id="blendBlock">
       <h3>🎙️ 拼读题库（家长真人录音）</h3>
-      <p class="muted" style="font-size:13px;line-height:1.6">给每个字录一段<b>真人四步连读</b>：韵母 → 带调韵母 → 声母拉长连读 → 完整音节（像老师那样一口气拼出来）。<b>只有录过的字才会出现在小朋友的拼读练习里</b>。录音只存这台设备，字节数大，不随存档导出。</p>
+      <p class="muted" style="font-size:13px;line-height:1.6">给每个字录一段<b>真人四步连读</b>：韵母 → 带调韵母 → 声母拉长连读 → 完整音节（像老师那样一口气拼出来）。<b>只有录过的字才会出现在小朋友的拼读练习里</b>。<br>☁️ <b>跨设备共享</b>：登录账号后，保存的录音会自动传到云端；在另一台 iPad / 手机上用<b>同一个账号</b>登录，点下面的「☁️ 同步录音到云端」即可把录音拉过来。未登录时录音只存本机。</p>
       <div id="blendStat" class="blend-stat"></div>
       <div id="blendLib" class="blend-lib"></div>
-      <div style="margin-top:10px">
+      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-secondary" id="blendSyncBtn">☁️ 同步录音到云端</button>
         <button class="btn-danger" id="blendClearBtn">🗑️ 清空全部录音</button>
       </div>
     </div>
@@ -2061,8 +2073,31 @@ function renderParent(){
   // 家长真人录音题库
   renderBlendLib();
   $('#blendClearBtn').onclick=()=>{
-    if(confirm('清空所有已录制的拼读？小朋友端的拼读题会随之变回预录合成音。此操作不可撤销。')){
-      if(typeof ParentBlendBank!=='undefined') ParentBlendBank.clear().then(()=>renderBlendLib());
+    if(confirm('清空所有已录制的拼读？小朋友端的拼读题会随之变回预录合成音，云端备份也会一并删除。此操作不可撤销。')){
+      const pb=ParentBlendBank;
+      const all=pb.list().slice();
+      pb.clear().then(()=>{
+        if(typeof BlendCloud!=='undefined') all.forEach(s=>BlendCloud.removeRemote(s).catch(()=>{}));
+        renderBlendLib();
+      });
+    }
+  };
+  $('#blendSyncBtn').onclick=async()=>{
+    const btn=$('#blendSyncBtn');
+    if(typeof BlendCloud==='undefined'){ toastMsg('云同步组件未加载'); return; }
+    if(!BlendCloud.signedIn()){
+      toastMsg('请先登录账号（点右上角 👤）');
+      if(typeof CloudSync!=='undefined' && CloudSync.openModal) CloudSync.openModal();
+      return;
+    }
+    btn.disabled=true; btn.textContent='⏳ 同步中…';
+    const r=await BlendCloud.syncAll();
+    btn.disabled=false; btn.textContent='☁️ 同步录音到云端';
+    renderBlendLib();
+    if(r && r.ok){
+      toastMsg(`☁️ 同步完成：拉取 ${r.pulled} 段、上传 ${r.pushed} 段` + (r.failed?`（失败 ${r.failed}）`:''));
+    }else{
+      toastMsg('☁️ 同步失败：'+((r&&r.reason)||'网络异常'));
     }
   };
   $('#optAutoread').onchange=e=>Store.setSetting('autoread', e.target.checked);

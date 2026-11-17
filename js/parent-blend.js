@@ -77,7 +77,8 @@ const ParentBlendBank = {
   async save(syl,blob,meta){
     meta=meta||{};
     if(this.has(syl)){ try{ URL.revokeObjectURL(this.map[syl].url); }catch(e){} }
-    const rec={ syl, blob, dur:meta.dur||0, ts:Date.now(), mime:blob.type||'audio/webm' };
+    /* ts 优先用调用方给的（云端下载要保留云端时间戳，冲突按新者胜） */
+    const rec={ syl, blob, dur:meta.dur||0, ts:meta.ts||Date.now(), mime:blob.type||'audio/webm' };
     if(this.db){
       await new Promise((resolve,reject)=>{
         const tx=this.db.transaction(this.STORE,'readwrite');
