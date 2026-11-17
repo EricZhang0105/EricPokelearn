@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>v53 试听校验 · 字母名 / 音标 / 中文拼读</title>
+<style>
+  :root{--bg:#f4f6fb;--card:#fff;--ink:#1b2340;--sub:#66708c;--line:#e3e8f5;--hi:#4361ee}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Roboto,sans-serif;padding:18px}
+  h1{font-size:20px;margin:0 0 4px}
+  .lead{color:var(--sub);font-size:13px;margin:0 0 16px;line-height:1.6}
+  .grp{margin-bottom:20px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .grp h2{font-size:15px;margin:0 0 4px}
+  .grp .note{font-size:12px;color:var(--sub);margin:0 0 12px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+  .grid.zh{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+  .t{background:#fafbff;border:1px solid var(--line);border-radius:10px;padding:9px;text-align:left;cursor:pointer;transition:.12s}
+  .t:hover{border-color:var(--hi);background:#eef2ff}
+  .t.playing{border-color:var(--hi);background:#e0e7ff}
+  .big{font-size:20px;font-weight:700;line-height:1.1}
+  .small{font-size:11px;color:var(--sub);margin-top:4px}
+  .step{font-size:11px;color:var(--hi);margin-top:3px}
+</style>
+</head>
+<body>
+<h1>v53 试听校验</h1>
+<p class="lead">三项修复：①字母卡读字母名（A="ei"）②音标仍是标准美音真人音 ③中文拼读第4步＝声母拉长+带调韵母；háng 已改读"航"。<br>点任意格试听。</p>
+<div id="root"></div>
+<script>
+let audio=null;
+function stop(){if(audio){audio.pause();audio=null;}document.querySelectorAll('.t.playing').forEach(e=>e.classList.remove('playing'));}
+function play(url,btn){stop();if(btn)btn.classList.add('playing');audio=new Audio(url);
+  audio.onended=()=>{if(btn)btn.classList.remove('playing');audio=null;};
+  audio.onerror=()=>{if(btn)btn.classList.remove('playing');console.error('fail',url);audio=null;};
+  audio.play().catch(()=>{});}
+function card(big,small,url,step){
+  const b=document.createElement('button');b.className='t';
+  b.innerHTML=`<div class="big">${big}</div><div class="small">${small}</div>`+(step?`<div class="step">${step}</div>`:'');
+  b.onclick=()=>play(url,b);return b;}
+function grp(title,note,items,cls){
+  const box=document.createElement('div');box.className='grp';
+  box.innerHTML=`<h2>${title}</h2><p class="note">${note}</p>`;
+  const g=document.createElement('div');g.className='grid'+(cls?' '+cls:'');
+  items.forEach(it=>g.appendChild(it));box.appendChild(g);document.getElementById('root').appendChild(box);}
+
+/* ① 字母名 */
+const letterNames={A:'ei',B:'bi',C:'si',D:'di',E:'i',F:'ef',G:'ji',H:'eich',I:'ai',J:'jei',K:'kei',L:'el',M:'em',N:'en',O:'o',P:'pi',Q:'kiu',R:'ar',S:'es',T:'ti',U:'iu',V:'vi',W:'double-u',X:'eks',Y:'wai',Z:'zi'};
+grp('① 字母名 · 26 letters','点字母听字母名读音（Jenny 统一女声，非音素）',
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(c=>card(c,letterNames[c],`../audio/ipa/letter_${c}.m4a?a=9`)));
+
+/* ② 音标抽样 */
+const ipas=[['/p/','c_p'],['/b/','c_b'],['/f/','c_f'],['/θ/','c_th'],['/ʃ/','c_sh'],['/tʃ/','c_ch'],['/ɪ/','v_ih'],['/ɑ/','v_o'],['/ɝ/','v_er'],['/eɪ/','v_ei']];
+grp('② 音标 · 抽样','标准美音真人音（B站视频），确认仍正确',
+  ipas.map(([s,k])=>card(s,k,`../audio/ipa/${k}.m4a?a=9`)));
+
+/* ③ 中文拼读第4步 + háng */
+const py=[['háng','hang','航','韵母ang→áng→声母h→h~~~~áng'],
+          ['bù','bu','不','u→ù→b→b~~~~ù'],
+          ['mā','ma','妈','a→ā→m→m~~~~ā'],
+          ['dà','da','大','a→à→d→d~~~~à']];
+grp('③ 中文拼读第4步 · 拼读过渡音','听第4步是否是"声母拉长+带调韵母"的拼读过程',
+  py.map(([s,k,hz,st])=>card(s,hz,`../audio/zh/py_${k}.m4a?a=5`,st)),'zh');
+
+grp('③ háng 修复验证','旧的 syl_hang 读成 xíng，已改读"航"=háng',
+  [card('syl_hang','航 háng（重录）','../audio/zh/syl_hang.m4a?a=5'),
+   card('blend_hang','航。航行。','../audio/zh/blend_hang.m4a?a=5')],'zh');
+</script>
+</body>
+</html>

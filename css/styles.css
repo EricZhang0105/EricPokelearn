@@ -312,6 +312,25 @@ body.kb-open #screen-lesson{padding-bottom:250px;}   /* 键盘约 220px，留出
 .setting-row input[type=checkbox]{width:22px;height:22px;accent-color:#FF8A3D;}
 .backup-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
 
+/* 家长真人录音题库（🎙️ 拼读题库） */
+.blend-stat{margin:6px 0 12px;}
+.blend-lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:12px;}
+.blend-item{border:2px solid #EAD7A8;border-radius:14px;padding:10px;background:#FFFDF6;display:flex;flex-direction:column;gap:6px;}
+.blend-item.done{border-color:#7CCB9B;background:#F3FCF6;}
+.blend-hz{display:flex;align-items:baseline;gap:10px;}
+.blend-big{font-size:30px;font-weight:800;line-height:1;}
+.blend-py{font-size:18px;color:#1c7a4f;font-weight:700;}
+.blend-hint{font-size:12px;color:#888;line-height:1.4;min-height:32px;}
+.blend-acts{display:flex;gap:6px;flex-wrap:wrap;}
+.blend-btn{flex:1;min-width:56px;border:1.5px solid #FFB15C;background:#FFF6E8;color:#a85a12;
+  border-radius:10px;padding:8px 6px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;}
+.blend-btn:active{transform:scale(.96);}
+.blend-btn.play{border-color:#7CCB9B;background:#EAF8EF;color:#1c7a4f;}
+.blend-btn.rec{border-color:#7FA8E8;background:#EAF1FC;color:#235aa8;}
+.blend-btn.save{border-color:#5FC08A;background:#DFF5E8;color:#137a45;}
+.blend-btn.del{border-color:#E8A0A0;background:#FCEAEA;color:#b53434;flex:0 0 44px;}
+.blend-status{font-size:12px;color:#c0392b;min-height:16px;line-height:1.3;}
+
 /* v3：中文副名、宝可梦搜索、分支选择 */
 .poke-chip .cn,.poke-opt .cn{font-size:11px;color:var(--muted);font-weight:600;line-height:1.2;}
 .poke-search{width:100%;box-sizing:border-box;padding:10px 14px;border:2px solid #EAD7A8;
@@ -501,6 +520,22 @@ body.kb-open #screen-lesson{padding-bottom:250px;}   /* 键盘约 220px，留出
 .fam-card[data-branch]:active{transform:scale(.97);}
 .fam-foot{font-size:13px;color:var(--muted);text-align:center;margin-top:4px;line-height:1.5;}
 @media(max-width:560px){.fam-forms{grid-template-columns:repeat(3,minmax(0,1fr));}}
+
+/* 伊布专用 · 能量石顺序进化路线（和普通「多选一分支」分开显示） */
+.fam-seq{display:flex;flex-wrap:wrap;align-items:center;gap:6px 2px;}
+.fam-seq-node{position:relative;flex:0 0 88px;background:#fff;border:3px solid transparent;
+  border-radius:14px;padding:8px 6px;text-align:center;box-shadow:var(--shadow);}
+.fam-seq-node .fam-face{height:60px;display:flex;align-items:center;justify-content:center;}
+.fam-seq-node .fam-img{width:60px;height:60px;object-fit:contain;}
+.fam-seq-no{font-size:9px;font-weight:800;letter-spacing:.4px;color:#A08F74;}
+.fam-seq-arrow{align-self:center;font-size:14px;font-weight:800;color:#C9A66B;}
+.fam-seq-node.is-cur{border-color:#FFB15C;background:#FFF7EB;}
+.fam-seq-node.owned{opacity:.92;}
+.fam-seq-node.locked{opacity:.55;}
+@media(max-width:560px){
+  .fam-seq-node{flex:0 0 calc(33.33% - 6px);}
+  .fam-seq-arrow{display:none;}
+}
 
 /* =========================================================
    v11：返回上一级菜单 / 取消选宝可梦

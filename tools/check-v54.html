@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>v56 试听校验 · 中文拼读五步 · háng</title>
+<style>
+  :root{--bg:#f7f8fa;--card:#fff;--ink:#1f2430;--sub:#6b7280;--hi:#2563eb;--ok:#059669;--line:#e5e7eb}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:20px;max-width:900px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 6px}
+  .lead{color:var(--sub);font-size:13px;line-height:1.7;margin:0 0 18px}
+  .grp{margin:0 0 22px}
+  .grp h2{font-size:15px;margin:0 0 4px;color:var(--ink)}
+  .grp p{margin:0 0 10px;color:var(--sub);font-size:12px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .t{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:120px;cursor:pointer;text-align:left;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:.15s}
+  .t:hover{border-color:var(--hi);transform:translateY(-1px)}
+  .t.playing{border-color:var(--ok);background:#ecfdf5}
+  .big{font-size:22px;font-weight:800}
+  .small{font-size:12px;color:var(--sub);margin-top:2px}
+  .step{font-size:11px;color:var(--hi);margin-top:4px}
+  .num{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--hi);color:#fff;font-size:12px;align-items:center;justify-content:center;margin-right:5px}
+  .seqbar{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:20px}
+  .seqbar button{background:var(--hi);color:#fff;border:0;border-radius:9px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer}
+  .seqbar button:disabled{opacity:.5;cursor:default}
+  .seqbar .chain{font-size:13px;color:var(--sub);margin-top:10px;line-height:1.9}
+  .seqbar .chain b{color:var(--ink)}
+</style>
+</head>
+<body>
+<h1>v56 试听校验 · 中文拼读五步（háng / 航）</h1>
+<p class="lead">
+板书规则：<b>ang → áng → h → h~áng → háng</b>。本次修复两点：
+① <b>去卡顿</b>——v56：修复第4步开头电流声。根因=波形重复产生0.83强周期性(给噪声加了51Hz音高=蜂鸣)。改为随机循环移位重复，周期性降到0.14(自然h水平0.18)，并把开头淡入加长到12ms消除click；
+② <b>声母真拉长</b>——旧公式 clamp 到 1.0 没拉长，现用 atempo 链式把 h 拉到 ~0.42s；
+③ 末尾新增第 5 步完整音节 háng。点任意格可单听，点绿色按钮听完整五步连播。
+</p>
+
+<div class="seqbar">
+  <button id="playAll">▶ 播放完整五步连播</button>
+  <div class="chain" id="chain"></div>
+</div>
+
+<div class="grp" id="g1">
+  <h2>完整五步 · 逐段单听（点顺序播放）</h2>
+  <p>每段只读一遍；这是孩子实际听到的顺序与间隔。</p>
+  <div class="row" id="row"></div>
+</div>
+
+<script>
+const A='../audio/zh/';
+const steps=[
+  {n:1,big:'ang',small:'韵母 ang',url:A+'final_ang.m4a?a=8',step:'第1步 · 韵母'},
+  {n:2,big:'áng',small:'带调韵母 áng（第二声）',url:A+'tonefin_ang_2.m4a?a=8',step:'第2步 · 加声调'},
+  {n:3,big:'h',small:'声母 h',url:A+'initial_h.m4a?a=8',step:'第3步 · 声母'},
+  {n:4,big:'h~áng',small:'h 拉长 + áng（去卡顿）',url:A+'py_hang.m4a?a=8',step:'第4步 · 拼读过渡'},
+  {n:5,big:'háng',small:'完整音节 · 航',url:A+'syl_hang.m4a?a=8',step:'第5步 · 完整读音'},
+];
+let cur=null;
+function stop(){ if(cur){cur.pause();cur.currentTime=0;cur=null;} document.querySelectorAll('.t').forEach(e=>e.classList.remove('playing')); }
+function play(url,el,gap,cb){
+  stop(); const a=new Audio(url); cur=a;
+  if(el)el.classList.add('playing');
+  a.onended=()=>{ if(el)el.classList.remove('playing'); if(cb)setTimeout(cb,gap||0); };
+  a.onerror=()=>{ if(el)el.classList.remove('playing'); if(cb)setTimeout(cb,gap||0); };
+  a.play().catch(()=>{ if(cb)setTimeout(cb,gap||0); });
+}
+const row=document.getElementById('row');
+steps.forEach(s=>{
+  const b=document.createElement('button');b.className='t';
+  b.innerHTML=`<div class="big"><span class="num">${s.n}</span>${s.big}</div><div class="small">${s.small}</div><div class="step">${s.step}</div>`;
+  b.onclick=()=>play(s.url,b); row.appendChild(b);
+});
+document.getElementById('chain').innerHTML=steps.map(s=>`<b>${s.big}</b> <span style="color:#9ca3af">(${s.step})</span>`).join(' → ');
+const btn=document.getElementById('playAll');
+btn.onclick=()=>{
+  btn.disabled=true; let i=0;
+  const next=()=>{ if(i>=steps.length){btn.disabled=false;btn.textContent='▶ 播放完整五步连播';return;} btn.textContent='▶ 播放中 '+i+'/5'; const s=steps[i++]; play(s.url,row.children[s.n-1],380,next); };
+  next();
+};
+</script>
+</body>
+</html>

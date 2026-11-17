@@ -4,7 +4,7 @@
  * 断言：
  *   1) 三个 ref 课程卡都挂在 CURRICULUM 里，ref id 与 REF_PAGES 对得上
  *   2) 拼音页每一个格子都有预录音频（audio/zh/<kind>_<key>.m4a 存在）
- *   3) 音标页每一个例词都在 AUDIO_MAP 里（同一把女声的本地录音）
+ *   3) 音标页 45 个音素都有对应录音，且音标/字母卡不设 TTS 兜底文本（避免念错音）
  *   4) 数学口诀的每个词（数字词 + plus/minus/equals）都有录音 → 能拆段朗读
  *   5) 英文页 / 数学页不出现中文字符（项目硬规则）
  */
@@ -55,7 +55,10 @@ console.log(`  用到的音频类型：${[...seenClip].join(' / ')}`);
 /* ---- 3. 音标发音（点音标读的是音素本身，不是例词） ---- */
 console.log('== 音标全景 ==');
 const ipaHtml = REF_PAGES['ipa-chart'].render();
-const ipaClips = [...new Set([...ipaHtml.matchAll(/data-clipurl="([^"]*)"/g)].map(m => m[1]))];
+/* 音素格用 .rf-ipa（data-clipurl），字母卡用 .rf-let（读 letter_*）。
+   v52 起字母卡改成读字母名（A="ei"），不再读音素，所以必须按 class 分开数。 */
+const ipaBtn = [...ipaHtml.matchAll(/<button class="rf-ipa"[^>]*data-clipurl="([^"]*)"/g)].map(m => m[1]);
+const ipaClips = [...new Set(ipaBtn)];
 /* 美式音标表固定 45 个音素（21 元音 + 24 辅音）；改表时这里和 ref-pages.js 一起改 */
 const IPA_WANT = 45;
 console.log(`  音素格子 ${ipaClips.length} 个（应为 ${IPA_WANT}：21 元音 + 24 辅音）`);
@@ -66,26 +69,30 @@ else console.log(`  ${IPA_WANT} 段音素录音全部就位`);
 /* 音素音频文件名必须和卡片上的 key 对应（防止改表时漏了某一条） */
 const keySet = new Set(ipaClips.map(u => (u.match(/audio\/ipa\/([^.]+)\.m4a/) || [])[1]));
 const listSrc = fs.readFileSync(path.join(R, 'js/ipa-audio-list.js'), 'utf8');
-const specKeys = [...listSrc.matchAll(/audio\/ipa\/([^.]+)\.m4a/g)].map(m => m[1]);
+const specKeys = [...listSrc.matchAll(/audio\/ipa\/([^.]+)\.m4a/g)].map(m => m[1])
+  .filter(k => !/^letter_/.test(k));   // 字母音单独校验
 const missKey = specKeys.filter(k => !keySet.has(k));
 if (missKey.length) bad(`这些音素在页面上没有对应格子：${missKey.join(', ')}`);
 else console.log(`  ${IPA_WANT} 个音素 key 与页面一一对应`);
 
-/* 字母卡现在读的是音素（A a → /æ/ 再 /eɪ/），不是例词：
-   每个 data-clipurls 里的音标录音都必须存在，且兜底文本不能是例词 */
-const letUrls = [...ipaHtml.matchAll(/data-clipurls="([^"]*)"/g)]
-  .flatMap(m => m[1].split('|')).filter(Boolean);
-const missLet = [...new Set(letUrls)].filter(u => !fs.existsSync(path.join(R, u.split('?')[0])));
-if (missLet.length) bad(`字母卡音素录音缺失：${missLet.slice(0, 5).join(', ')}`);
-else console.log(`  字母卡 ${letUrls.length} 段音素引用全部就位（读音素，不读例词）`);
-const IPA_SAY_SET = new Set(['ih','eh','aah','uh','ah','oo','ee','er','ay','eye','oy','ow','oh',
-  'ar','or','eer','air','oor','thuh','puh','buh','tuh','duh','kuh','guh','fff','vvv','thhh','sss','zzz',
-  'shhh','zhh','hhh','chuh','juh','mmm','nnn','ng','lll','rrr','wuh','yuh']);
-const ipaSays = [...ipaHtml.matchAll(/data-say="([^"]*)"/g)].map(m => m[1]);
-const exampleWord = [...new Set(ipaSays)].filter(w =>
-  AUDIO_MAP[String(w).toLowerCase()] && !IPA_SAY_SET.has(w) && !/^[A-Z]$/.test(w));
-if (exampleWord.length) bad(`音标卡还在用例词兜底：${exampleWord.slice(0, 5).join(', ')}`);
-else console.log(`  音标/字母卡 ${new Set(ipaSays).size} 个兜底文本全部是念法，没有例词`);
+/* 字母卡（v52 起）：点一下读【字母名】letter_A..Z，不是音素、不是例词。
+   26 张卡各自引用一个 letter_*.m4a，文件必须存在且兜底文本为空。 */
+const letUrls = [...ipaHtml.matchAll(/<button class="rf-let"[^>]*data-clipurl="([^"]*)"/g)].map(m => m[1]);
+const LET_WANT = 26;
+console.log(`  字母卡 ${letUrls.length} 张（应为 ${LET_WANT}：A–Z 读字母名）`);
+if (letUrls.length !== LET_WANT) bad(`字母卡应为 ${LET_WANT} 张，实际 ${letUrls.length} 张`);
+const letLetters = letUrls.map(u => (u.match(/letter_([A-Z])\.m4a/) || [])[1]).filter(Boolean);
+if (new Set(letLetters).size !== 26) bad(`字母卡未覆盖 A–Z：${letLetters.join('')}`);
+const missLet = letUrls.filter(u => !fs.existsSync(path.join(R, u.split('?')[0])));
+if (missLet.length) bad(`字母名录音缺失：${missLet.slice(0, 5).join(', ')}`);
+else console.log(`  26 段字母名录音全部就位（Jenny 女声，A="ei"…）`);
+/* 音标卡 / 字母卡的兜底文本必须为空：
+   录音一旦加载失败，宁可安静，也不能让设备 TTS 去念 "zhh" / "ng" 或示例词。
+   所以这里断言：Sound Chart 里出现的每一个 data-say 都必须是空串。 */
+const ipaSays = [...new Set([...ipaHtml.matchAll(/data-say="([^"]*)"/g)].map(m => m[1]))];
+const nonEmptySay = ipaSays.filter(s => s !== '');
+if (nonEmptySay.length) bad(`音标/字母卡兜底文本必须为空，实际有：${nonEmptySay.slice(0, 5).join(', ')}`);
+else console.log(`  音标/字母卡 ${ipaSays.length} 种 data-say 全部为空（失败时不退回 TTS）`);
 
 /* ---- 4. 数学口诀 ---- */
 console.log('== 10 以内口诀 ==');

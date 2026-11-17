@@ -602,35 +602,58 @@ const CHINESE=[
     }},
 
   { id:'c-blend', title:'Blending 拼读练习', emoji:'🧩',
-    desc:'四步拼读法：韵母 → 加声调 → 声母 → 拼出音节',
+    desc:'四步拼读法：韵母 → 带调韵母 → 声母拉长音+带调韵母拼读 → 完整音节',
     make(){
-      return shuffle(ZH_BLENDS).slice(0,10).map(it=>{
+      /* 家长真人录制题库：只出「家长已录制」的题，播放真人连读整段。
+         家长还没录任何题时，回退到原来的预录合成音，保证课程不会白屏。
+         ParentBlendBank 加载完成(ready)且至少录了 1 题 → 进入家长题库模式。 */
+      const pb = (typeof ParentBlendBank!=='undefined') ? ParentBlendBank : null;
+      const parentMode = pb && pb.ready && pb.count()>0;
+      const pool = parentMode
+        ? ZH_BLENDS.filter(it=>pb.has(it.syl))
+        : ZH_BLENDS;
+      return shuffle(pool).slice(0,10).map(it=>{
         const finT = zhToneMark(it.fin, it.tone);   // 韵母带调号，拼读时看得清是第几声
         const sylT = zhToneMark(it.syl, it.tone);   // 拼出来的音节同样带调号
         const tName = zhToneName(it.tone);
-        /* 轻声（tone=0）不标调，也就没有「加声调」这一步：
-           硬塞四步会让第 1、2 步播同一段音频（等于又读两遍）。
-           轻声只走三段：韵母 → 声母 → 拼出音节。 */
+        /* 家长已录制的题：整段真人 4 步连读，一个 clip 读完，音色/连读都达标。 */
+        if(parentMode && pb.has(it.syl)){
+          return {
+            type:'choice', prompt:`拼一拼：${it.ini} + ${finT} = ?`,
+            sub: `🔊 听真人老师拼读：韵母 ${it.fin} → 带调韵母 ${finT}（${tName}）→ ${it.ini}~${finT} 连读 → 完整读 ${sylT}`,
+            speak:{ lang:'zh-CN', autoplay:true, clip:pb.url(it.syl) },
+            options:shuffle([sylT,...zhBlendDecoysToned(it)]), answer:sylT,
+            explain:`${it.ini} + ${finT} = ${sylT}（${tName}）。例如「${it.word}」的「${it.hz}」。`
+          };
+        }
+        /* 轻声（tone=0）不标调，也就没有「加声调」这一步；轻声仍走三段。 */
         const soft = !(it.tone>=1 && it.tone<=4);
+        /* 四步拼读法（Eric 2026-11-17 按视频最终定稿）：
+           ① 韵母 → ② 带调韵母 → ③ 声母拉长音+带调韵母一起拼读 → ④ 完整音节。
+           第 ③ 步不再单独干读声母，拉长音就含在拼读过渡音里。
+           hang 用 Eric 提供的真人视频原声（realhang_*，无合成蜂鸣）；其余题用预录合成音。 */
+        const real = it.syl === 'hang';
+        const R = n => 'audio/zh/realhang_'+n+'.m4a?a=12';
         const seq = soft ? [
           {clip:zhClip('final',it.fin),   text:it.fin, gap:420},
           {clip:zhClip('initial',it.ini), text:it.ini, gap:420},
           {clip:zhClip('syl',it.syl),     text:sylT}
+        ] : real ? [
+          {clip:R('1ang'),    text:it.fin, gap:420},
+          {clip:R('2ang2'),   text:finT, gap:420},
+          {clip:R('4hblend'), text:sylT, gap:150},
+          {clip:R('5hang'),   text:sylT}
         ] : [
           {clip:zhClip('final',it.fin),   text:it.fin, gap:420},
           {clip:zhToneFinClip(it.fin,it.tone), text:finT, gap:420},
-          {clip:zhClip('initial',it.ini), text:it.ini, gap:420},
+          {clip:zhPyClip(it.syl),         text:sylT, gap:300},
           {clip:zhClip('syl',it.syl),     text:sylT}
         ];
         return {
           type:'choice', prompt:`拼一拼：${it.ini} + ${finT} = ?`,
           sub: soft
             ? `🔊 听顺序：韵母 ${it.fin} → 声母 ${it.ini} → 拼出来 ${sylT}（${tName}，不标调）`
-            : `🔊 听顺序：韵母 ${it.fin} → 加声调 ${finT}（${tName}）→ 声母 ${it.ini} → 拼出来 ${sylT}`,
-          /* 四步拼读法（Eric 指定的顺序）：韵母 → 带调韵母 → 声母 → 拼出音节。
-             每段只读一遍，段间留 0.4 秒让孩子跟读。
-             四段全部走预录音频：带调韵母若交给设备 TTS，设备会忽略调号，
-             第四声会被读成第一声（2026-11-16 修复）。 */
+            : `🔊 听顺序：韵母 ${it.fin} → 带调韵母 ${finT}（${tName}）→ ${it.ini}~${finT} 拼读 → 完整读 ${sylT}`,
           speak:{ lang:'zh-CN', autoplay:true, seq },
           options:shuffle([sylT,...zhBlendDecoysToned(it)]), answer:sylT,
           explain:`${it.ini} + ${finT} = ${sylT}（${tName}）。例如「${it.word}」的「${it.hz}」。`

@@ -6,6 +6,10 @@ const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
 
 Store.load();
+/* 家长录音降噪力度：Eric 2026-11-17 试听后定档 = 强力 strong */
+try{ window.POKELEARN_DENOISE_LEVEL = localStorage.getItem('pokelearn-denoise-level') || 'strong'; }catch(e){ window.POKELEARN_DENOISE_LEVEL = 'strong'; }
+/* 家长真人录制的拼读题库：异步从 IndexedDB 加载（加载完前 c-blend 用预录兜底） */
+if(typeof ParentBlendBank!=='undefined') ParentBlendBank.init();
 /* 题库自动扩容：把上次自动生成、已存进存档的新短文注册回阅读题库 */
 if(typeof QEngine!=='undefined' && QEngine.bootExtraPassages) QEngine.bootExtraPassages();
 
@@ -57,6 +61,9 @@ function goBack(){
   if(cur==='screen-lesson'){
     const inLesson = state.idx < state.total;
     if(inLesson && !confirm('Leave this lesson? The questions in this lesson will not be saved.')) return;
+    cancelSpeech();
+    state.pendingExplain=false;
+    state.explainToken=(state.explainToken||0)+1;   // 作废「讲解读完切题」的定时器
     if(state.subject) openSubject(state.subject); else show('screen-home');
     return;
   }
@@ -142,13 +149,20 @@ if('speechSynthesis' in window){
   /* iOS 的声音列表是异步回来的，多探几次确保第一句就用对嗓子 */
   setTimeout(refreshVoices,300); setTimeout(refreshVoices,1200);
 }
-/* 全程序唯一 TTS 出口：锁定声音，统一语速/音高/音量 */
-function ttsSpeak(text, lang){
-  if(!('speechSynthesis' in window)) return;
+/* 全程序唯一 TTS 出口：锁定声音，统一语速/音高/音量。
+   onEnd 只在「这句话确实读完」时触发（部分浏览器不派 onend，用按时长估算的保险计时兜底）。
+   读完后才切下一题 —— 数学解题思路很长，固定 3 秒定时器会把它和下一题的读题撞在一起。 */
+let _ttsToken=0;
+function ttsSpeak(text, lang, onEnd){
+  if(!('speechSynthesis' in window)){ if(onEnd) setTimeout(onEnd,50); return; }
   const t=String(text==null?'':text);
-  if(!t.trim()) return;
+  if(!t.trim()){ if(onEnd) setTimeout(onEnd,50); return; }
   const zh=/^zh/i.test(lang||'');
+  const my=++_ttsToken;
+  let finished=false;
+  const done=()=>{ if(finished||my!==_ttsToken) return; finished=true; if(onEnd) onEnd(); };
   const play=()=>{
+    if(my!==_ttsToken) return;
     try{
       speechSynthesis.cancel();
       const u=new SpeechSynthesisUtterance(t);
@@ -159,9 +173,12 @@ function ttsSpeak(text, lang){
       u.rate=zh?0.82:(long?0.80:0.86);
       u.pitch=1; u.volume=1;
       if(v) u.voice=v;
+      u.onend=done; u.onerror=done;
+      /* 保险：Safari 偶尔吞 onend。按词数估一个上限，读完就不重复触发（done 里有去重） */
+      if(onEnd) setTimeout(done, 2200 + t.split(/\s+/).length*520 + t.length*(zh?150:35));
       /* iOS：cancel() 与 speak() 挤在同一个事件循环里会被吞掉，隔一帧再播 */
-      setTimeout(()=>{ try{ speechSynthesis.speak(u); }catch(e){} },20);
-    }catch(e){}
+      setTimeout(()=>{ if(my===_ttsToken){ try{ speechSynthesis.speak(u); }catch(e){ done(); } } },20);
+    }catch(e){ done(); }
   };
   if(zh?zhVoice():bestVoice()){ play(); return; }
   /* 声音还没加载出来：等一次 voiceschanged（最多 600ms），再照常播 */
@@ -170,7 +187,13 @@ function ttsSpeak(text, lang){
   try{ speechSynthesis.addEventListener('voiceschanged',go,{once:true}); }catch(e){}
   setTimeout(go,600);
 }
-function speak(text,lang){ ttsSpeak(text,lang); }
+function speak(text,lang,onEnd){ ttsSpeak(text,lang,onEnd); }
+/* 切题 / 退出课程时把上一段声音彻底掐掉，连它挂着的回调一起作废 */
+function cancelSpeech(){
+  ++_ttsToken; ++_audioToken; ++_autoSpeakToken;
+  try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){}
+  try{ if(_audio){ _audio.onended=null; _audio.onerror=null; _audio.pause(); } }catch(e){}
+}
 /* 家长端自检用：显示当前锁定的两把嗓子，方便确认设备有没有装到高清女声 */
 function voiceLabel(){
   if(!('speechSynthesis' in window)) return 'This browser has no speech synthesis';
@@ -285,11 +308,12 @@ function playSpeak(s, onEnd){
       const st=s.seq[i++];
       const stepDone=()=>setTimeout(next, st.gap!=null?st.gap:400);
       const fail=()=>{
-        if(st.text) speak(st.text, st.lang||lang);
-        setTimeout(next, 1000);
+        /* TTS 兜底也要等这段读完再进下一段，不然拼音四步会叠在一起 */
+        if(st.text) speak(st.text, st.lang||lang, ()=>setTimeout(next, st.gap!=null?st.gap:120));
+        else setTimeout(next, 100);
       };
       if(st.clip && playClip(st.clip,stepDone,fail)) return;
-      if(st.text){ speak(st.text, st.lang||lang); setTimeout(next, 1000); return; }
+      if(st.text){ fail(); return; }
       stepDone();
     };
     next();
@@ -298,8 +322,10 @@ function playSpeak(s, onEnd){
   let fellBack=false;
   const fallback=()=>{
     if(fellBack) return; fellBack=true;
-    speak(s.text, s.lang);
-    if(onEnd) setTimeout(onEnd, 1200);
+    /* 只有确实有兜底文本才出声。音素格故意把 data-say 留空：
+       宁可安静，也不要让设备 TTS 把 "zhh" / "ng" 这类拼法念成乱七八糟的音。 */
+    if(s.text){ speak(s.text, s.lang, onEnd ? ()=>setTimeout(onEnd,120) : null); return; }
+    if(onEnd) setTimeout(onEnd, 200);
   };
   if(s.clip && playClip(s.clip,onEnd,fallback)) return;
   const url=clipFor(s.text);
@@ -572,19 +598,53 @@ function renderCollection(){
     const st=info.form;
     const chip=document.createElement('div');
     chip.className='poke-chip';
-    // 有多选一分支的（伊布 8 种、臭臭花 2 种…）在头像上直接标出来，点开能看全部形态
+    /* 伊布是「按顺序拿石头」的独立路线，用石头图标区分；其它多选一分支仍用 🧬 */
     const badge = info.chainBranch>1
-      ? `<div class="chip-branch">🧬 ×${info.chainBranch}</div>` : '';
+      ? `<div class="chip-branch">${info.sequential?'🪨':'🧬'} ×${info.chainBranch}</div>` : '';
     chip.innerHTML=`<div class="face">${pokeImgTag(st,'chip-img')}</div>
       <div class="nm">${st.name}</div>
       <div class="cn">${st.cn}</div>
       <div class="ebar"><i style="width:${Math.round(info.progress*100)}%"></i></div>
       <div class="est">${info.maxed?'🏆 MAX!':`Lv${info.stage+1} · ${Math.round(info.intoStage)}/${info.need}`}</div>${badge}`;
-    chip.title=`看 ${pk.cn} 的进化家族`;
+    chip.title=info.sequential?`看 ${pk.cn} 的能量石进化路线`:`看 ${pk.cn} 的进化家族`;
     chip.onclick=()=>openFamily(pk.id);
     box.appendChild(chip);
   });
   bindPokeImages(box);
+}
+
+/* ---------- 伊布专属：能量石顺序进化路线 ----------
+   和其他宝可梦的「一次进化 + 多选一」完全不同：
+   伊布每攒满 100 能量按固定顺序拿一颗石头，变成下一种形态；变过的不会再出现。
+   整条路线一次铺开给孩子看，已经走过的打勾，当前的高亮，后面的上锁。 */
+function renderSequentialFamily(pk,info){
+  $('#familyTitle').textContent=`${pk.emoji} ${pk.cn} · ${pk.name}`;
+  $('#familyHint').innerHTML=`<b>伊布有自己的能量石路线</b> 🪨<br>
+    每攒满 <b>${ENERGY_PER_STAGE}</b> 点能量就得到下一颗石头、按固定顺序变身；变过的形态不会再出现。`;
+  let h='<div class="fam-seq">';
+  EEVEE_CHAIN.forEach((f,i)=>{
+    const done=i<info.stage, cur=i===info.stage, locked=i>info.stage;
+    const tag = cur ? '<div class="fam-tag now">⭐ 现在这个</div>'
+              : done ? '<div class="fam-tag ok">✔ 已获得</div>'
+              : '<div class="fam-tag lock">🔒 还没拿到石头</div>';
+    h+=`<div class="fam-seq-node ${cur?'is-cur':''} ${done?'owned':''} ${locked?'locked':''}">
+        <div class="fam-seq-no">${i===0?'START':'STONE '+i}</div>
+        <div class="fam-face">${pokeImgTag(f,'fam-img')}</div>
+        <div class="fam-nm">${f.name}</div>
+        <div class="fam-cn">${f.cn}</div>
+        <div class="fam-evo">${i===0?'最初形态':f.evo}</div>
+        ${tag}
+      </div>`;
+    if(i<EEVEE_CHAIN.length-1) h+='<div class="fam-seq-arrow">➜</div>';
+  });
+  h+='</div>';
+  h+=`<div class="fam-foot">${info.maxed
+      ? '🏆 8 颗能量石全收集齐啦！伊布已经走完整条路线～'
+      : `答对 +${ENERGY_PER_ANSWER} ⚡ / 答错 −${ENERGY_PER_ANSWER} ⚡ · 再攒 <b>${Math.max(0,info.need-info.intoStage)}</b> 点能量就能拿到第 ${info.stage+1} 颗石头<br>
+         伊布不会退化，已经变过的形态不会重复出现`}</div>`;
+  $('#familyBody').innerHTML=h;
+  bindPokeImages($('#familyBody'));
+  $('#familyModal').classList.remove('hidden');
 }
 
 /* ---------- 进化家族图鉴 ----------
@@ -594,6 +654,7 @@ function renderCollection(){
 function openFamily(id){
   const pk=POKEMON.find(p=>p.id===id); if(!pk) return;
   const info=Store.stageInfo(id);
+  if(info.sequential){ renderSequentialFamily(pk,info); return; }
   const bIdx=branchStages(pk);
   const multi=bIdx.length ? branchOptions(pk,bIdx[0]).length : 0;
   const branchStageNo=bIdx.length ? bIdx[0]+1 : 0;
@@ -900,6 +961,9 @@ function beginSession(subject,lessonId){
   state.subject=subject; state.lessonId=lessonId; state.reviewDone=false;
   state.animQueue=[];          // 本套题里发生的进化/退化/死亡动画，在题目切换时播放
   state.delta=0;               // 本套题净能量变化，用于结果页展示
+  cancelSpeech();              // 上一节课的讲解/读题一律停掉
+  state.pendingExplain=false;
+  state.explainToken=(state.explainToken||0)+1;
 
   updateCompanion();
   show('screen-lesson');
@@ -926,7 +990,10 @@ function stopSpeechInput(){
 /* ---------- 渲染题目 ---------- */
 function renderQuestion(){
   stopSpeechInput();
+  cancelSpeech();                // 掐掉上一题残留的讲解/读题声音与回调
   ++_autoSpeakToken;             // 作废上一题尚未触发的自动播报定时器
+  state.pendingExplain=false;    // 讲解已结束（或被打断），不再等它切题
+  state.explainToken=(state.explainToken||0)+1;
   hideKeyboard();               // 切到下一题先把屏幕键盘收起，非打字题不会残留
   const item=state.questions[state.idx];
   const q=item.q;
@@ -1473,9 +1540,29 @@ function onCorrect(item){
     if(st.done===st.total) toastMsg('🏆 所有阅读题都答对啦！每周一还会上新 5 篇');
   }
   awardEnergy(ENERGY_PER_ANSWER);
-  // 语法题等带完整句的题：答对后自动播报完整句子（晚于答对音效，避免被盖住）
+  /* 语法题 / 数学题答对后自动播报完整句或解题思路（晚于答对音效，避免被盖住）。
+     关键：讲解读完才允许切下一题。以前用固定 3 秒定时器，遇到长句会和下一题
+     的自动读题叠在一起，孩子只能听到两团糊在一起的声音。
+     句子建构题（build）自己有「读完再切题」的流程，不要再插一段。 */
   const full = item && item.q && item.q.answerSpeak;
-  if(full) setTimeout(()=>playSpeak(full), 260);
+  if(full && item.q.type!=='build'){
+    const my=(state.explainToken=(state.explainToken||0)+1);
+    state.pendingExplain=true;
+    /* 超时保险：音频彻底加载失败/浏览器吞掉 onend 时也要往前走，不能卡死在反馈页 */
+    const guard=setTimeout(()=>{
+      if(my!==state.explainToken || !state.pendingExplain) return;
+      state.pendingExplain=false; nextQuestion();
+    }, 16000);
+    setTimeout(()=>{
+      if(my!==state.explainToken) return;
+      playSpeak(full, ()=>{
+        clearTimeout(guard);
+        if(my!==state.explainToken || !state.pendingExplain) return;
+        state.pendingExplain=false;
+        nextQuestion();
+      });
+    }, 260);
+  }
 }
 /* 每道题的能量结算：答对 +2 / 答错 −2。
  * 进化/退化/死亡动画先排进队列，在切题（或课程结束）时播放，不打断答题节奏。 */
@@ -1496,7 +1583,8 @@ function showFeedback(good,explain,autoNext,onWrong,stay,delay){
   fb.className='feedback '+(good?'good':'bad');
   fb.innerHTML = (good?'🎉 Awesome!':'💡 Try again') + (explain?`<br><span style="font-size:15px">${explain}</span>`:'');
   if(good && autoNext){
-    setTimeout(nextQuestion, delay||950);
+    /* 有解题思路语音时由 onCorrect 的 onend 负责切题，这里不能再开定时器 */
+    if(!state.pendingExplain) setTimeout(nextQuestion, delay||950);
   }else if(!good){
     const btn=document.createElement('button');
     btn.className='btn-secondary'; btn.style.marginTop='10px';
@@ -1534,6 +1622,9 @@ function nextQuestion(){
  * 流程：先放本套题里攒下的进化/退化/死亡动画（通常已在切题时播完），
  * 全对的话播放宝可梦释放技能动画，最后进入结果页。 */
 function finishLesson(){
+  cancelSpeech();
+  state.pendingExplain=false;
+  state.explainToken=(state.explainToken||0)+1;
   const id=state.selectedPokemon;
   Store.markLesson(state.subject,state.lessonId);
   const graded=state.questions.filter(x=>x.q.type!=='passage').length;
@@ -1619,8 +1710,10 @@ function showEvolveFx(id, toStage, onDone){
     fxShow(`<div class="fx-sprite fx-flash">${pokeImgTag(prev,'fx-img')}</div>`,
       `✨⚡ ✨⚡ ✨<br><span class="muted">什么在发光…</span>`,'fx-evo',1500,()=>{
         // 第二段：新形态诞生
+        const stone = (pk && isSequentialChain(pk) && st.evo)
+          ? `<br><span class="muted">🪨 ${st.evo}</span>` : '';
         fxShow(`<div class="fx-sprite fx-born">${pokeImgTag(st,'fx-img')}</div><div class="fx-burst">✨✨✨</div>`,
-          `<b class="fx-title">${prev.name} → ${st.name}</b><br><span class="muted">${prev.cn} → ${st.cn}</span>`,
+          `<b class="fx-title">${prev.name} → ${st.name}</b><br><span class="muted">${prev.cn} → ${st.cn}</span>${stone}`,
           'fx-evo',2600,onDone);
         sfx('evolveUp');
       });
@@ -1737,6 +1830,150 @@ function startPractice(m){
 }
 
 /* ---------- 家长端 ---------- */
+/* =========================================================
+   家长真人录音题库（🎙️ 拼读题库）
+   每个汉字录一段「四步连读」真人音频；只有录过的字才进小朋友题库。
+   录音存 ParentBlendBank（IndexedDB），不进主存档/云同步。
+   ========================================================= */
+let blendRecorder=null, blendStream=null, blendChunks=[], blendActiveSyl=null, blendTimer=null;
+
+function renderBlendLib(){
+  const stat=$('#blendStat'), lib=$('#blendLib');
+  if(!stat || !lib) return;
+  const pb=(typeof ParentBlendBank!=='undefined')?ParentBlendBank:null;
+  if(!pb){ stat.textContent='录音组件未加载'; return; }
+  const done=pb.count(), total=(typeof ZH_BLENDS!=='undefined')?ZH_BLENDS.length:63;
+  stat.innerHTML=`<div style="font-size:14px;margin:6px 0 12px">
+    已录制 <b style="color:#1e8e5a">${done}</b> / ${total} 字　
+    <span style="color:#888">${done===0?'（未录音时小朋友端沿用预录合成音）':pb.available?'':'⚠️ 本机存储不可用'}</span></div>
+    <div style="height:8px;background:#e8edf3;border-radius:6px;overflow:hidden">
+      <div style="height:100%;width:${Math.round(done/total*100)}%;background:#1e8e5a"></div></div>`;
+
+  lib.innerHTML=ZH_BLENDS.map(it=>{
+    const on=pb.has(it.syl);
+    const p=zhToneMark(it.syl,it.tone);
+    const hint=`${it.fin} → ${zhToneMark(it.fin,it.tone)} → ${it.ini}~${zhToneMark(it.fin,it.tone)} → ${p}`;
+    return `<div class="blend-item ${on?'done':''}" data-syl="${it.syl}">
+      <div class="blend-hz"><span class="blend-big">${it.hz}</span><span class="blend-py">${p}</span></div>
+      <div class="blend-hint">${hint}</div>
+      <div class="blend-acts">
+        ${on?`<button class="blend-btn play" data-act="play" data-syl="${it.syl}">▶️ 试听</button>`:''}
+        <button class="blend-btn rec" data-act="rec" data-syl="${it.syl}">${on?'🎙️ 重录':'🎙️ 录制'}</button>
+        ${on?`<button class="blend-btn del" data-act="del" data-syl="${it.syl}">🗑️</button>`:''}
+      </div>
+      <div class="blend-status"></div>
+    </div>`;
+  }).join('');
+
+  lib.querySelectorAll('.blend-btn').forEach(b=>{
+    b.onclick=()=>{
+      const syl=b.dataset.syl, act=b.dataset.act;
+      if(act==='rec') blendRecord(syl);
+      else if(act==='play') blendPlay(syl);
+      else if(act==='del') blendDelete(syl);
+    };
+  });
+}
+
+function blendItem(syl){ return document.querySelector('#blendLib .blend-item[data-syl="'+syl+'"]'); }
+function blendSay(syl,msg){ const el=blendItem(syl); const s=el&&el.querySelector('.blend-status'); if(s) s.textContent=msg||''; }
+
+function blendPlay(syl){
+  const url=(typeof ParentBlendBank!=='undefined')?ParentBlendBank.url(syl):null;
+  if(!url){ toastMsg('还没有录音'); return; }
+  const a=new Audio(url);
+  a.play().then(()=>blendSay(syl,'🔊 播放中…')).catch(()=>blendSay(syl,'播放失败'));
+  a.onended=()=>blendSay(syl,'');
+}
+
+async function blendRecord(syl){
+  const pb=(typeof ParentBlendBank!=='undefined')?ParentBlendBank:null;
+  if(!pb) return;
+  // 同一时间只能录一段
+  if(blendRecorder && blendRecorder.state==='recording'){ blendStop(); return; }
+  const md=navigator.mediaDevices;
+  if(!md || !md.getUserMedia || !window.MediaRecorder){ toastMsg('这台设备不支持录音'); return; }
+  try{
+    blendStream=await md.getUserMedia({audio:true});
+    const mime=(typeof parentBlendMime==='function')?parentBlendMime():'';
+    const opts=mime?{mimeType:mime}:undefined;
+    blendChunks=[]; blendActiveSyl=syl;
+    blendRecorder=new MediaRecorder(blendStream, opts);
+    blendRecorder.ondataavailable=e=>{ if(e.data && e.data.size) blendChunks.push(e.data); };
+    blendRecorder.onstop=()=>{
+      try{ blendStream && blendStream.getTracks().forEach(t=>t.stop()); }catch(e){}
+      blendStream=null;
+      if(blendTimer){ clearTimeout(blendTimer); blendTimer=null; }
+      const chunks=blendChunks, s=blendActiveSyl;
+      blendRecorder=null; blendActiveSyl=null; blendChunks=[];
+      if(!chunks.length){ blendSay(s,'没录到声音'); return; }
+      const blob=new Blob(chunks,{type:(mime||'audio/webm')});
+      // 试听 + 保存/重录
+      const url=URL.createObjectURL(blob);
+      const a=new Audio(url);
+      blendSay(s,'录好了，点试听 → 满意点 ✅保存');
+      const row=blendItem(s); if(!row){ URL.revokeObjectURL(url); return; }
+      const acts=row.querySelector('.blend-acts');
+      acts.innerHTML=`<button class="blend-btn play" id="bprev">▶️ 原音</button>
+        <button class="blend-btn play" id="bden">🎧 降噪试听</button>
+        <button class="blend-btn save" id="bsave">✅ 保存</button>
+        <button class="blend-btn del" id="bcancel">✖ 取消</button>`;
+      $('#bprev').onclick=()=>a.play().catch(()=>{});
+      let denCache=null; // 降噪结果缓存，试听/保存复用，不重复处理
+      const denLevel=()=>window.POKELEARN_DENOISE_LEVEL||'normal';
+      $('#bden').onclick=async()=>{
+        const db=$('#bden');
+        if(denCache){ try{ new Audio(URL.createObjectURL(denCache)).play(); }catch(e){} return; }
+        if(typeof AudioDenoise==='undefined'){ blendSay(s,'降噪组件未加载'); return; }
+        db.disabled=true; db.textContent='⏳ 处理中…';
+        try{
+          denCache=await AudioDenoise.denoise(blob,denLevel());
+          const dp=new Audio(URL.createObjectURL(denCache));
+          dp.onended=()=>blendSay(s,'🎧 上面是降噪后 · 满意请点保存');
+          await dp.play();
+        }catch(e){ blendSay(s,'降噪失败：'+e.message); }
+        db.disabled=false; db.textContent='🎧 降噪试听';
+      };
+      $('#bcancel').onclick=()=>{ URL.revokeObjectURL(url); renderBlendLib(); };
+      $('#bsave').onclick=async()=>{
+        const btn=$('#bsave'); btn.disabled=true; btn.textContent='⏳ 降噪中…';
+        let use=blob, denoised=false;
+        try{
+          if(!denCache && typeof AudioDenoise!=='undefined'){
+            try{ denCache=await AudioDenoise.denoise(blob,denLevel()); }
+            catch(de){ console.warn('降噪失败，降级用原音',de); }
+          }
+          if(denCache){ use=denCache; denoised=true; }
+          await pb.save(s,use,{dur:0,denoised});
+          renderBlendLib();
+          toastMsg(denoised?'✅ 已降噪保存，小朋友端可用了':'✅ 已保存（原音），小朋友端可用了');
+        }catch(e){ blendSay(s,'保存失败：'+e.message); btn.disabled=false; btn.textContent='✅ 保存'; }
+      };
+    };
+    blendRecorder.start();
+    blendSay(syl,'🎙️ 录音中… 现在读四步连读（最多12秒，再点一次结束）');
+    const btn=blendItem(syl).querySelector('[data-act="rec"]');
+    if(btn) btn.textContent='⏹ 结束录音';
+    blendTimer=setTimeout(()=>{ if(blendRecorder && blendRecorder.state==='recording') blendStop(); }, 12000);
+  }catch(e){
+    blendSay(syl,'麦克风打不开：'+e.message);
+    try{ blendStream && blendStream.getTracks().forEach(t=>t.stop()); }catch(_){}
+    blendStream=null; blendRecorder=null;
+  }
+}
+
+function blendStop(){
+  if(blendRecorder && blendRecorder.state==='recording') blendRecorder.stop();
+}
+
+async function blendDelete(syl){
+  if(!confirm('删除「'+syl+'」的录音？该字会退出小朋友拼读题库。')) return;
+  const pb=(typeof ParentBlendBank!=='undefined')?ParentBlendBank:null;
+  if(!pb) return;
+  try{ await pb.remove(syl); renderBlendLib(); toastMsg('🗑️ 已删除'); }
+  catch(e){ toastMsg('删除失败：'+e.message); }
+}
+
 function renderParent(){
   setTopTitle('Parents');
   const ov=Store.overallStats();
@@ -1783,6 +2020,16 @@ function renderParent(){
       ${tr}
     </div>
 
+    <div class="parent-block" id="blendBlock">
+      <h3>🎙️ 拼读题库（家长真人录音）</h3>
+      <p class="muted" style="font-size:13px;line-height:1.6">给每个字录一段<b>真人四步连读</b>：韵母 → 带调韵母 → 声母拉长连读 → 完整音节（像老师那样一口气拼出来）。<b>只有录过的字才会出现在小朋友的拼读练习里</b>。录音只存这台设备，字节数大，不随存档导出。</p>
+      <div id="blendStat" class="blend-stat"></div>
+      <div id="blendLib" class="blend-lib"></div>
+      <div style="margin-top:10px">
+        <button class="btn-danger" id="blendClearBtn">🗑️ 清空全部录音</button>
+      </div>
+    </div>
+
     <div class="parent-block">
       <h3>Settings</h3>
       <label class="setting-row"><input type="checkbox" id="optAutoread" ${Store.getSetting('autoread')?'checked':''}/> 🔊 Auto read questions aloud（自动读题，使用高清录音）</label>
@@ -1811,6 +2058,13 @@ function renderParent(){
       <span style="font-size:11px">Voice — ${voiceLabel()}</span></p>`;
 
   $('#parentHomeBtn').onclick=()=>show('screen-home');
+  // 家长真人录音题库
+  renderBlendLib();
+  $('#blendClearBtn').onclick=()=>{
+    if(confirm('清空所有已录制的拼读？小朋友端的拼读题会随之变回预录合成音。此操作不可撤销。')){
+      if(typeof ParentBlendBank!=='undefined') ParentBlendBank.clear().then(()=>renderBlendLib());
+    }
+  };
   $('#optAutoread').onchange=e=>Store.setSetting('autoread', e.target.checked);
   $('#optSound').onchange=e=>Store.setSetting('sound', e.target.checked);
   $('#optZhread').onchange=e=>Store.setSetting('zhread', e.target.checked);

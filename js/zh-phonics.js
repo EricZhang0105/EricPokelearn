@@ -149,7 +149,7 @@ const ZH_BLENDS = [
   {ini:'h',fin:'u',  syl:'hu',   tone:3, hz:'虎', word:'老虎'},
   {ini:'h',fin:'an', syl:'han',  tone:3, hz:'喊', word:'大喊'},
   {ini:'h',fin:'en', syl:'hen',  tone:3, hz:'很', word:'很好'},
-  {ini:'h',fin:'ang',syl:'hang', tone:2, hz:'行', word:'银行'},
+  {ini:'h',fin:'ang',syl:'hang', tone:2, hz:'航', word:'航行'},
 ];
 
 /* ---------------- 声调标注（题目/选项显示用） ----------------
@@ -208,7 +208,9 @@ function zhToneClip(base,t){ return zhClip('tone', base+'_'+t); }
 function zhToneFinClip(fin,t){ return zhClip('tonefin', fin+'_'+t); }
 
 /* ---------------- 工具 ---------------- */
-function zhClip(kind, key){ return 'audio/zh/'+kind+'_'+key+'.m4a?a=4'; }
+function zhClip(kind, key){ return 'audio/zh/'+kind+'_'+key+'.m4a?a=8'; }
+/* 拼读第4步的过渡音：声母拉长 + 带调韵母（b~~~~ù 连读），tools/zh_pinyin_blend.py 生成 */
+function zhPyClip(syl){ return 'audio/zh/py_'+syl+'.m4a?a=8'; }
 function zhInitial(p){ return ZH_INITIALS.find(x=>x.p===p); }
 function zhFinal(p){ return ZH_FINALS.find(x=>x.p===p); }
 function zhWhole(p){ return ZH_WHOLES.find(x=>x.p===p); }

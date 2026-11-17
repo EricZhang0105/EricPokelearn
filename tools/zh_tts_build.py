@@ -35,7 +35,7 @@ MANIFEST = os.path.join(ROOT, 'tools', 'zh_manifest.json')
 VOICE = 'zh-CN-XiaoxiaoNeural'   # 唯一音色：普通话女声
 SR = 44100
 BR = '96k'
-AUDIO_VER = 'a=4'                # 换音色/重录后必须 +1，顶掉设备上的旧音频缓存
+AUDIO_VER = 'a=5'                # 换音色/重录后必须 +1，顶掉设备上的旧音频缓存
 FORCE = '--force' in sys.argv
 VERIFY_ONLY = '--verify' in sys.argv
 
@@ -359,12 +359,16 @@ async def main():
     # 音频清单（Service Worker 预缓存用）
     files = sorted(f for f in os.listdir(OUT) if f.endswith('.m4a'))
     keep = {it['file'] for it in items}
-    orphans = [f for f in files if f not in keep]
+    # realhang_* 是 Eric 提供的真人视频原声（非 TTS），版本号单独走 a=12，
+    # 与 data.js 里 zhClip/a=8 + 真人 a=12 的引用保持一致；不参与孤儿清理。
+    real_files = {f for f in files if f.startswith('realhang_')}
+    orphans = [f for f in files if f not in keep and f not in real_files]
     lines = ['/* 由 tools/zh_tts_build.py 自动生成，勿手工编辑 */',
              'self.ZH_AUDIO_LIST = [']
     for i, f in enumerate(files):
         comma = ',' if i < len(files) - 1 else ''
-        lines.append(f'  "audio/zh/{f}?{AUDIO_VER}"{comma}')
+        ver = 'a=12' if f.startswith('realhang_') else AUDIO_VER
+        lines.append(f'  "audio/zh/{f}?{ver}"{comma}')
     lines.append('];')
     open(LIST_JS, 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
     total = sum(os.path.getsize(os.path.join(OUT, f)) for f in files) / 1024 / 1024

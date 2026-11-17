@@ -818,7 +818,7 @@
    "id": "blend_hang",
    "kind": "blend",
    "key": "hang",
-   "text": "行。银行。",
+   "text": "航。航行。",
    "file": "blend_hang.m4a"
   },
   {
@@ -1259,7 +1259,7 @@
    "id": "syl_hang",
    "kind": "syl",
    "key": "hang",
-   "text": "行。",
+   "text": "航。",
    "file": "syl_hang.m4a"
   },
   {

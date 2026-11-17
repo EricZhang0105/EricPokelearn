@@ -15,7 +15,7 @@ function pokeImg(id){ return 'img/pokemon/'+id+'.webp'; }
 
 /* evo = 官方进化条件（石頭 / 亲密度 / 时间…），只用于给孩子看的说明 */
 const S = (name,cn,emoji,imgId,evo)=>({name,cn,emoji,imgId,evo});
-const C = (id,name,cn,color,emoji,stages)=>({id,name,cn,color,emoji,stages});
+const C = (id,name,cn,color,emoji,stages,opt)=>({id,name,cn,color,emoji,stages,...(opt||{})});
 
 /* 分支形态：伊布 8 种进化（官方：全部由「进化石 / 亲密度 + 时间 / 地点 / 妖精招」决定） */
 const EEVEELUTIONS = [
@@ -28,6 +28,11 @@ const EEVEELUTIONS = [
   S('Glaceon','冰伊布','❄️',471,'冰之石'),
   S('Sylveon','仙子伊布','🎀',700,'妖精招 + 高亲密度')
 ];
+/* 伊布的进化路线和普通宝可梦不一样：
+   普通宝可梦是「1 条固定链，分支阶选 1 种」；伊布是「按固定顺序一颗一颗拿石头，
+   每满 100 能量就变身成下一种，变过的不再出现」。所以这里把它摊平成 9 个连续阶段，
+   stage=0 是伊布本身，stage=1..8 对应 EEVEELUTIONS[0..7]。 */
+const EEVEE_CHAIN = [S('Eevee','伊布','⭐',133), ...EEVEELUTIONS];
 
 const POKEMON = [
   /* ---------- 关都 Kanto ---------- */
@@ -93,9 +98,8 @@ const POKEMON = [
     S('Horsea','墨海马','🌊',116), S('Seadra','海刺龙','🐉',117), S('Kingdra','刺龙王','👑',230)]),
   C('magikarp','Magikarp','鲤鱼王','#F19A5C','🐟',[
     S('Magikarp','鲤鱼王','🐟',129), S('Gyarados','暴鲤龙','🐲',130)]),
-  /* ★ 伊布：8 种分支进化，进化那一刻由小朋友选 */
-  C('eevee','Eevee','伊布','#C9A66B','⭐',[
-    S('Eevee','伊布','⭐',133), EEVEELUTIONS]),
+  /* ★ 伊布：独立的「能量石顺序进化」链，不走下方 select-one 分支逻辑 */
+  C('eevee','Eevee','伊布','#C9A66B','⭐',EEVEE_CHAIN,{ sequential:true }),
   C('porygon','Porygon','多边兽','#E28AA8','💠',[
     S('Porygon','多边兽','💠',137), S('Porygon2','多边兽Ⅱ','🔷',233), S('Porygon-Z','多边兽Ｚ','🟣',474)]),
   C('dratini','Dratini','迷你龙','#F2A65A','🐉',[
@@ -184,6 +188,8 @@ function formOf(pk, stage, branch){
   if(!Array.isArray(s)) return s;
   return s[Math.max(0, Math.min(branch||0, s.length-1))];
 }
+/* 伊布：按顺序解锁、变过的形态不再出现，和普通「多选一分支」是两套逻辑 */
+function isSequentialChain(pk){ return !!(pk && pk.sequential); }
 /* 这一阶是否有多个可选进化形态 */
 function isBranchStage(pk, stage){ return Array.isArray(pk.stages[stage]); }
 function branchOptions(pk, stage){ return isBranchStage(pk,stage) ? pk.stages[stage] : []; }
@@ -191,5 +197,6 @@ function branchOptions(pk, stage){ return isBranchStage(pk,stage) ? pk.stages[st
 function branchStages(pk){ return pk.stages.map((s,i)=>Array.isArray(s)?i:-1).filter(i=>i>=0); }
 /* 整条链里最多的分支形态数（伊布 8、臭臭花 2…），用于头像角标 */
 function chainBranchCount(pk){
+  if(isSequentialChain(pk)) return Math.max(0, pk.stages.length-1);
   return branchStages(pk).reduce((m,i)=>Math.max(m, branchOptions(pk,i).length), 0);
 }

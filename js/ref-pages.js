@@ -223,28 +223,15 @@ const LETTERS=[
   {l:'Z z', s:'/z/',      w:'zoo',   k:['c_z']},
 ];
 
-/* 录音加载失败时的兜底念法：读「音」本身，绝不读例词。
-   例词只是卡片上给孩子看的拼写示范，点下去听到的必须是音素。 */
-const IPA_SAY={
-  v_ih:'ih', v_e:'eh', v_ae:'aah', v_uh:'uh', v_o:'ah', v_uu:'oo', v_schwa:'uh',
-  v_ii:'ee', v_oo:'oo', v_er:'er', v_schwa_r:'er',
-  v_ei:'ay', v_ai:'eye', v_oi:'oy', v_au:'ow', v_ou:'oh',
-  v_aar:'ar', v_awr:'or', v_ie:'eer', v_ea:'air', v_ue:'oor',
-  c_p:'puh', c_b:'buh', c_t:'tuh', c_d:'duh', c_k:'kuh', c_g:'guh',
-  c_ch:'chuh', c_j:'juh', c_w:'wuh', c_y:'yuh', c_dh:'thuh',
-  c_f:'fff', c_v:'vvv', c_th:'thhh', c_s:'sss', c_z:'zzz',
-  c_sh:'shhh', c_zh:'zhh', c_h:'hhh',
-  c_m:'mmm', c_n:'nnn', c_ng:'ng', c_l:'lll', c_r:'rrr',
-};
-
 /* 音素音频的版本参数统一从 js/ipa-audio-list.js 取（IPA_AUDIO_VER），
-   换素材时只改 tools/ipa_build.py 里的 AUDIO_VER，页面不用跟着改。 */
-const IPAQ = (typeof IPA_AUDIO_VER !== 'undefined' && IPA_AUDIO_VER) ? IPA_AUDIO_VER : 'a=3';
+   换素材时只改 tools/ipa_write_list.py 里的 VER，页面不用跟着改。 */
+const IPAQ = (typeof IPA_AUDIO_VER !== 'undefined' && IPA_AUDIO_VER) ? IPA_AUDIO_VER : 'a=9';
 function ipaTile(it){
-  /* 点格子读音素本身（audio/ipa/<key>.m4a，美式女声单独录的 45 个音素），
-     不是读例词。data-say 也只是录音失败时的兜底念法（IPA_SAY），同样不是例词。 */
-  const say=IPA_SAY[it.k] || it.w[0];
-  return `<button class="rf-ipa" data-clipurl="audio/ipa/${it.k}.m4a?${IPAQ}" data-say="${say}">
+  /* 点格子读的是 audio/ipa/<key>.m4a 里那段真人音素录音，不读例词。
+     这些片段随 App 打包并由 Service Worker 预缓存，正常不会加载失败；
+     万一失败就保持安静 —— 旧版会退回 TTS 念 "zhh" / "ng" 这类拼法，
+     设备念出来是乱码音，宁可不响也不能出错音。 */
+  return `<button class="rf-ipa" data-clipurl="audio/ipa/${it.k}.m4a?${IPAQ}" data-say="">
     <span class="rf-ipa-sym">${it.ipa}</span>
     <span class="rf-ipa-words">${it.w.join(' · ')}</span>
     <span class="rf-ipa-rule">${it.rule}</span>
@@ -257,14 +244,16 @@ function renderIpa(){
       <div class="rf-gname">${g.g}</div>
       <div class="rf-ipa-grid">${g.items.map(ipaTile).join('')}</div>
     </div>`).join('');
-  /* 字母卡：点一下只读音素（A a → /æ/ 再 /eɪ/），不读 apple。
-     data-clipurls 用 | 分隔多个音素，播放器按顺序放。 */
-  const letters=`<div class="rf-let-grid">${LETTERS.map(it=>`
-      <button class="rf-let" data-clipurls="${it.k.map(k=>`audio/ipa/${k}.m4a?${IPAQ}`).join('|')}" data-say="${it.l.split(' ')[0]}">
+  /* 字母卡：点一下读【字母名】（A a → "ei"、B b → "bi"…），用 audio/ipa/letter_<大写>.m4a。
+     统一 Jenny 女声、美式字母名。旧版读音素（A→/æ//eɪ/）已被 Eric 否定。 */
+  const letters=`<div class="rf-let-grid">${LETTERS.map(it=>{
+      const letter=it.l.trim().split(/\s+/)[0];
+      return `
+      <button class="rf-let" data-clipurl="audio/ipa/letter_${letter}.m4a?${IPAQ}" data-say="">
         <span class="rf-let-l">${it.l}</span>
         <span class="rf-let-s">${it.s}</span>
         <span class="rf-let-w">${it.w}</span>
-      </button>`).join('')}</div>`;
+      </button>`;}).join('')}</div>`;
   return sec('① Vowels','21 vowels',grp(IPA_VOWELS))
        + sec('② Consonants','24 consonants',grp(IPA_CONSONANTS))
        + sec('③ Letters &amp; sounds','26 letters · tap to hear the sounds',letters);

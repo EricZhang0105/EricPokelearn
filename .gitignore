@@ -22,3 +22,16 @@ mobile/*.idsig
 # Python 构建脚本缓存
 __pycache__/
 *.pyc
+
+# 本地测试/发布临时产物，不进公开仓库
+_denoise_cookie.txt
+.wbapp_*.genie
+_denoise_test_site/
+_record_test_site/
+_video_frames/
+ab_compare.html
+hang_real.html
+test_blend.html
+test_denoise.html
+audio/zh/test_*.m4a
+tools/_make_test_blend.py

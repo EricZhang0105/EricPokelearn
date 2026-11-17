@@ -85,6 +85,13 @@ const Store = {
       }
     });
     this.data.pokemon = p;
+    /* 伊布旧存档：stage=1 + branch(0..7) 表示「已进化成第 branch 种形态」。
+       新版改成顺序链 stage=1..8，这里把旧形态映射过去，进度和形象都不丢。 */
+    const ev=p.eevee;
+    if(ev && Number.isInteger(ev.branch) && ev.stage===1){
+      ev.stage=Math.max(1, Math.min(8, ev.branch+1));
+      ev.branch=null;
+    }
     // ---- schema 4：每阶 60 → 100 点，按比例折算已攒能量，进度不倒退 ----
     if(prevSchema < 4){
       Object.keys(p).forEach(id=>{
@@ -124,6 +131,11 @@ const Store = {
             deadUntil:(typeof o.deadUntil==='string' && o.deadUntil) ? o.deadUntil : null }
         : this.freshMon();
     });
+    const ev=p.eevee;
+    if(ev && Number.isInteger(ev.branch) && ev.stage===1){
+      ev.stage=Math.max(1, Math.min(8, ev.branch+1));
+      ev.branch=null;
+    }
     // 导入的是 v3 存档（60 点/阶）→ 折算成 100 点/阶
     if(prevSchema < 4){
       Object.keys(p).forEach(id=>{
@@ -361,10 +373,17 @@ const Store = {
    * - 已经昏倒的：本日忽略一切能量变化。 */
   addEnergy(id,amt){
     const m=this.ensureMon(id);
+    const pk=POKEMON.find(p=>p.id===id);
+    const seq=isSequentialChain(pk);
     const res={evolved:false,devolved:false,died:false,from:m.stage,to:m.stage};
     if(m.deadUntil){ this.save(); return res; }        // 昏睡中：不结算
     const max=this.maxStage(id);
     if(m.stage>=max){ m.energy=0; this.save(); return res; }  // 最终形态：MAX，免疫
+    /* 伊布：每满 100 能量拿下一颗石头、按固定顺序变身。已经变过的形态不再出现，
+       所以 stage 只增不减（普通宝可梦答错会退化，伊布不会走回头路）。 */
+    if(seq && !Array.isArray(m.evoHistory)){
+      m.evoHistory=Array.from({length:m.stage},(_,i)=>i+1);
+    }
     res.from=m.stage;
     m.energy += amt;
     if(m.energy >= ENERGY_PER_STAGE){
@@ -372,9 +391,12 @@ const Store = {
       m.stage  = Math.min(m.stage+1, max);
       m.branch = null;
       res.evolved = true;
+      if(seq && m.evoHistory.indexOf(m.stage)<0) m.evoHistory.push(m.stage);
     }
     if(m.energy < 0){
-      if(m.stage>0){                                    // 退化一阶，负余额结转
+      if(m.stage>0 && seq){                             // 伊布不退化：能量见底就归零
+        m.energy=0;
+      }else if(m.stage>0){                              // 普通宝可梦：退化一阶，负余额结转
         m.stage  = m.stage-1;
         m.energy = ENERGY_PER_STAGE + m.energy;         // 例：-2 → 98/100
         m.branch = null;
@@ -414,6 +436,8 @@ const Store = {
              progress: maxed ? 1 : m.energy/ENERGY_PER_STAGE,
              dead: !!m.deadUntil, deadUntil: m.deadUntil||null,
              isBranch:isBranchStage(pk,stage),
+             sequential:isSequentialChain(pk),
+             evoHistory:Array.isArray(m.evoHistory)?m.evoHistory.slice():[],
              curOptions, nextOptions,
              branchCount:(curOptions||nextOptions||[]).length,
              chainBranch:chainBranchCount(pk) };

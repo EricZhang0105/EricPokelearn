@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sound Chart Audition — a=8</title>
+<style>
+  :root{--bg:#f4f6fb;--card:#fff;--ink:#1b2340;--sub:#66708c;--line:#e3e8f5;--hi:#4361ee}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Roboto,sans-serif;padding:20px}
+  h1{font-size:20px;margin:0 0 4px}
+  .lead{color:var(--sub);font-size:13px;margin:0 0 18px}
+  .playall{background:var(--hi);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:20px}
+  .grp{margin-bottom:22px}
+  .grp h2{font-size:14px;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
+  .t{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:left;cursor:pointer;transition:.15s}
+  .t:hover{border-color:var(--hi);transform:translateY(-1px)}
+  .t.playing{border-color:var(--hi);background:#eef2ff}
+  .sym{font-size:26px;font-weight:700;line-height:1}
+  .key{font-family:monospace;font-size:11px;color:var(--sub);margin-top:6px}
+  .seg{font-size:10px;color:#aab2cc;margin-top:2px}
+</style>
+</head>
+<body>
+<h1>Sound Chart Audition · a=8</h1>
+<p class="lead">Source: 48 个英语音标标准美音发音 (BV1sb411L78w) — 43 段视频真人音 + 2 段 Commons (/ɚ/ /ɔr/)。点任意格听发音，点「Play all」顺序听全部。</p>
+<button class="playall" id="playall">▶ Play all 45</button>
+<div id="root"></div>
+
+<script>
+const VER='a=8';
+// [symbol, key, 视频段号(第1遍)]  —— 与 js/ref-pages.js / tools/bili_extract.py 一致
+const DATA=[
+ ['Vowels · short',[
+  ['/ɪ/','v_ih',69],['/ɛ/','v_e',73],['/æ/','v_ae',77],['/ʌ/','v_uh',81],['/ɑ/','v_o',67],['/ʊ/','v_uu',87],['/ə/','v_schwa',91]]],
+ ['Vowels · long & tense',[
+  ['/i/','v_ii',71],['/u/','v_oo',89],['/ɝ/','v_er',75],['/ɚ/','v_schwa_r','Commons']]],
+ ['Diphthongs',[
+  ['/eɪ/','v_ei',49],['/aɪ/','v_ai',51],['/ɔɪ/','v_oi',53],['/aʊ/','v_au',57],['/oʊ/','v_ou',55]]],
+ ['R-colored vowels',[
+  ['/ɑr/','v_aar',79],['/ɔr/','v_awr','Commons'],['/ɪr/','v_ie',59],['/ɛr/','v_ea',61],['/ʊr/','v_ue',63]]],
+ ['Consonants · plosives',[
+  ['/p/','c_p',1],['/b/','c_b',3],['/t/','c_t',5],['/d/','c_d',7],['/k/','c_k',13],['/g/','c_g',15]]],
+ ['Consonants · affricates',[
+  ['/tʃ/','c_ch',9],['/dʒ/','c_j',11]]],
+ ['Consonants · fricatives',[
+  ['/f/','c_f',17],['/v/','c_v',19],['/θ/','c_th',21],['/ð/','c_dh',23],['/s/','c_s',25],['/z/','c_z',27],['/ʃ/','c_sh',29],['/ʒ/','c_zh',31],['/h/','c_h',33]]],
+ ['Consonants · nasals & liquids',[
+  ['/m/','c_m',35],['/n/','c_n',37],['/ŋ/','c_ng',39],['/l/','c_l',41],['/r/','c_r',43],['/w/','c_w',45],['/j/','c_y',47]]]
+];
+const root=document.getElementById('root');
+let audio=null, seqTimer=null;
+function tile(sym,key,seg){
+  const b=document.createElement('button');b.className='t';b.dataset.key=key;
+  b.innerHTML=`<div class="sym">${sym}</div><div class="key">${key}</div><div class="seg">${typeof seg==='number'?'segment '+seg:seg}</div>`;
+  b.onclick=()=>play(key,b);return b;
+}
+DATA.forEach(([g,items])=>{
+  const box=document.createElement('div');box.className='grp';
+  box.innerHTML=`<h2>${g}</h2>`;
+  const grid=document.createElement('div');grid.className='grid';
+  items.forEach(it=>grid.appendChild(tile(...it)));
+  box.appendChild(grid);root.appendChild(box);
+});
+function stop(){if(audio){audio.pause();audio=null;}document.querySelectorAll('.t.playing').forEach(e=>e.classList.remove('playing'));}
+function play(key,btn){
+  stop();if(btn)btn.classList.add('playing');
+  audio=new Audio(`../audio/ipa/${key}.m4a?${VER}`);
+  audio.onended=()=>{if(btn)btn.classList.remove('playing');audio=null;};
+  audio.onerror=()=>{if(btn)btn.classList.remove('playing');console.error('fail',key);audio=null;};
+  audio.play().catch(()=>{});
+}
+document.getElementById('playall').onclick=()=>{
+  stop();
+  const all=[...document.querySelectorAll('.t')];let i=0;
+  const next=()=>{if(i>=all.length){stop();return;}const b=all[i++];play(b.dataset.key,b);audio.onended=()=>{audio=null;seqTimer=setTimeout(next,220);};};
+  next();
+};
+</script>
+</body>
+</html>

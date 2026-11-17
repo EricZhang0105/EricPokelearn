@@ -783,6 +783,16 @@ function freshQuestions(lesson,lessonId,slots,opts){
   // 第一轮：保留手写题库的精选题（摇 3 次）
   for(let i=0;i<3 && picked.length<slots;i++) take(lesson.make(slots,opts));
 
+  /* 家长真人录制题库模式：c-blend 只出家长已录制的题（data.js 已按录音池出题），
+     绝不能再走下面的统一题库/自动扩容——那些变体题用的是合成音，会混进来。
+     宁可题少（录几题出几题），也不破坏「只出真人录音题」的约定。 */
+  const parentBlendMode = lessonId==='c-blend'
+    && typeof ParentBlendBank!=='undefined' && ParentBlendBank.ready && ParentBlendBank.count()>0;
+  if(parentBlendMode){
+    return {items:picked.slice(0,slots).map(q=>({q,isReview:false})), level, grown:0,
+            bankSize:picked.length};
+  }
+
   // 第二轮：统一题库（每课 ≥200 道确定性题）按难度抽取；
   // spread 逐轮放大参数空间 → 库存见底时自动造出「以前从没出过」的新题。
   let grown=0;
