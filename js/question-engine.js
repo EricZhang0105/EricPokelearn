@@ -245,14 +245,14 @@ function englishExpand(lessonId, level, need){
         speak:{text:w,lang:'en-US'},options:shuffle([w,...decoys]),answer:w,
         explain:`The word is "${w}".`});
     }else if(lessonId==='e-build'){
-      const subjects=['I','We','They','My friend','The children'];
-      const verbs=['like','see','have','want','read','make'];
-      const objs=shuffle(pool.filter(x=>x.length<8)).slice(0,6);
-      const s=pick(subjects), v=pick(verbs), o=pick(objs);
-      const tiles=[s,v,'a',o,'.'];
-      out.push({type:'build',prompt:'Tap the words in order to build a sentence',
-        sub:'Put the words in the right order',tiles:shuffle(tiles),answer:tiles.join(' '),
-        speak:{text:tiles.join(' ').replace(/ \./g,'.'),lang:'en-US',forceAuto:true}});
+      /* v69：这里以前是「随机主语 + 随机动词 + a + 随机词」，
+         宾语取自 268 词整池（含 red/hot/run 等），于是造出
+         "I read a hat." "I read a red." 这类病句。
+         造句必须用「动词-名词白名单」，统一交给 Bank 的语料生成器。 */
+      if(typeof Bank!=='undefined' && Bank.build){
+        return Bank.build('e-build', level, 2).slice(0, need);
+      }
+      return [];
     }else if(lessonId==='e-grammar'){
       // 参数化：主语 × 句型，一次能造出 60+ 道互不相同的语法题
       const T=[
@@ -311,6 +311,11 @@ function chineseExpand(lessonId, level, need){
   const toneCl=(typeof zhToneClip==='function')?zhToneClip:null;
   const toneMark=(typeof zhToneMark==='function')?zhToneMark:(s)=>s;
 
+  if(lessonId==='c-word'){
+    /* v69 词语专项：扩容也必须出「词语题」，绝不能退回拼音题 —— 那与本课目标不符 */
+    if(typeof Bank!=='undefined' && Bank.build) return Bank.build('c-word',level,2).slice(0,need);
+    return out;
+  }
   if(lessonId==='c-initial'||lessonId==='c-final'||lessonId==='c-whole'){
     const list = lessonId==='c-initial'?ini : lessonId==='c-final'?fin : who;
     const kind = lessonId==='c-initial'?'initial':lessonId==='c-final'?'final':'whole';

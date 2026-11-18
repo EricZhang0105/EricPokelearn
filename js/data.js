@@ -369,8 +369,43 @@ const EN_ZH={
   thirsty:'口渴的', sleepy:'困倦的', brave:'勇敢的', kind:'善良的', quiet:'安静的', loud:'大声的',
   fast:'快的', slow:'慢的', clever:'聪明的', gentle:'温柔的', shiny:'闪亮的'
 };
+/* v69：进阶词（SIGHT_ADV / SPELL_ADV）的中文释义并入同一张表。
+   sightLabel 只查 EN_ZH，所以这里必须补齐，否则进阶词会没有中文。 */
+Object.assign(EN_ZH, {
+  before:'在…之前', after:'在…之后', always:'总是', never:'从不', often:'经常',
+  around:'周围', until:'直到', without:'没有', between:'在…之间', enough:'足够的',
+  maybe:'也许', almost:'几乎', during:'在…期间', above:'在上面', below:'在下面',
+  behind:'在后面', across:'穿过', another:'另一个', anyone:'任何人', everything:'一切',
+  sometimes:'有时', usually:'通常', finally:'最后', quietly:'安静地', quickly:'快速地',
+  carefully:'小心地', understand:'理解', describe:'描述', explain:'解释', decide:'决定',
+  prepare:'准备', imagine:'想象', improve:'改进', protect:'保护', celebrate:'庆祝',
+  holiday:'假日', weather:'天气', answer:'回答', sentence:'句子', spelling:'拼写',
+  number:'数字', letter:'字母'
+});
 /* 阅读理解题库在 js/read-passages.js（独立文件，每周自动上新） */
 const CVC=['cat','dog','sun','pig','cup','hat','bug','pen','top','map','fox','bus','red','box','leg','sit','hot','run'];
+
+/* =========================================================
+   v69 · 英文难度上台阶（小学三、四年级）
+   ---------------------------------------------------------
+   Sight Words 与 Spelling 原来只吃 SIGHT / CVC 两套 3 字母词，
+   孩子熟练后一直停在「cat / dog」这一档。现在按掌握量分级：
+     level 1–2：SIGHT / CVC（保持入门手感）
+     level 3  ：混入进阶词（功能词、形容词）
+     level 4–5：进阶词为主（学校高频词 + 学科词）
+   题目形式不变（听音选词 / 听音拼写），只是词汇与拼写难度上移。
+   ========================================================= */
+const SIGHT_ADV=['because','before','after','always','never','often','around','until',
+  'without','between','important','different','enough','maybe','almost','during','above',
+  'below','behind','across','another','anyone','everything','sometimes','usually','finally',
+  'quietly','quickly','carefully','beautiful','dangerous','delicious','remember','understand',
+  'describe','explain','decide','prepare','discover','imagine','improve','protect','celebrate'];
+const SPELL_ADV=['because','before','together','always','never','around','between','important',
+  'different','enough','almost','during','behind','across','another','sometimes','usually',
+  'finally','quickly','carefully','beautiful','dangerous','delicious','remember','understand',
+  'describe','explain','decide','prepare','discover','imagine','improve','protect','celebrate',
+  'birthday','holiday','morning','evening','family','weather','picture','question','answer',
+  'library','kitchen','mountain','sentence','spelling','reading','writing','number','letter'];
 const PHON=[
   {w:'cat',e:'🐱',a:'c'},{w:'dog',e:'🐶',a:'d'},{w:'sun',e:'☀️',a:'s'},
   {w:'pig',e:'🐷',a:'p'},{w:'bug',e:'🐛',a:'b'},{w:'top',e:'🔝',a:'t'},
@@ -378,16 +413,28 @@ const PHON=[
   {w:'rat',e:'🐀',a:'r'},{w:'map',e:'🗺️',a:'m'},{w:'net',e:'🕸️',a:'n'},
 ];
 const BUILD=[
-  {tiles:['I','see','a','dog','.'],a:'I see a dog .'},
-  {tiles:['The','cat','is','red','.'],a:'The cat is red .'},
-  {tiles:['We','go','to','school','.'],a:'We go to school .'},
-  {tiles:['I','like','my','book','.'],a:'I like my book .'},
-  {tiles:['The','sun','is','hot','.'],a:'The sun is hot .'},
-  {tiles:['The','dog','can','run','.'],a:'The dog can run .'},
-  {tiles:['Look','at','the','sun','.'],a:'Look at the sun .'},
-  {tiles:['She','has','a','ball','.'],a:'She has a ball .'},
-  {tiles:['We','are','happy','.'],a:'We are happy .'},
-  {tiles:['I','can','see','a','bird','.'],a:'I can see a bird .'},
+  {t:1,tiles:['I','see','a','dog','.'],a:'I see a dog .'},
+  {t:1,tiles:['The','cat','is','red','.'],a:'The cat is red .'},
+  {t:1,tiles:['We','go','to','school','.'],a:'We go to school .'},
+  {t:1,tiles:['I','like','my','book','.'],a:'I like my book .'},
+  {t:1,tiles:['The','sun','is','hot','.'],a:'The sun is hot .'},
+  {t:1,tiles:['The','dog','can','run','.'],a:'The dog can run .'},
+  {t:1,tiles:['Look','at','the','sun','.'],a:'Look at the sun .'},
+  {t:2,tiles:['She','has','a','ball','.'],a:'She has a ball .'},
+  {t:2,tiles:['We','are','happy','.'],a:'We are happy .'},
+  {t:2,tiles:['I','can','see','a','bird','.'],a:'I can see a bird .'},
+  /* 小学三、四年级句型：过去时、进行时、将来时、比较级、because 从句、
+     频度状语、所有格 —— 带 t（难度档），低 level 不会先撞上这些长句 */
+  {t:3,tiles:['My','sister','reads','a','story','every','night','.'],a:'My sister reads a story every night .'},
+  {t:3,tiles:['We','saw','a','rainbow','after','the','rain','.'],a:'We saw a rainbow after the rain .'},
+  {t:3,tiles:['The','children','are','playing','in','the','garden','.'],a:'The children are playing in the garden .'},
+  {t:3,tiles:['He','wants','a','new','bike','for','his','birthday','.'],a:'He wants a new bike for his birthday .'},
+  {t:3,tiles:['My','father','works','in','a','big','office','.'],a:'My father works in a big office .'},
+  {t:4,tiles:['I','like','apples','because','they','are','sweet','.'],a:'I like apples because they are sweet .'},
+  {t:4,tiles:['She','finished','her','homework','before','dinner','.'],a:'She finished her homework before dinner .'},
+  {t:4,tiles:['We','are','going','to','visit','the','zoo','tomorrow','.'],a:'We are going to visit the zoo tomorrow .'},
+  {t:4,tiles:['The','library','is','very','quiet','in','the','morning','.'],a:'The library is very quiet in the morning .'},
+  {t:5,tiles:['This','book','is','more','interesting','than','that','one','.'],a:'This book is more interesting than that one .'},
 ];
 
 /* 语法：常见结构，每题一个知识点，答对后播报完整句子 */
@@ -495,23 +542,35 @@ const ENGLISH=[
 
   { id:'e-sight', title:'Sight Words', emoji:'👀',
     desc:'See a word and read it (listen & choose)',
-    make(){
+    make(limit, opts){
+      /* v69：按掌握量升级。level 1–2 仍是 SIGHT 基础词；
+         level>=3 混入进阶功能词/形容词，level>=4 以进阶词为主。 */
+      const lv=(opts&&opts.level)||1;
+      const pool = lv>=4 ? SIGHT.concat(SIGHT_ADV, SIGHT_ADV)
+                 : lv>=3 ? SIGHT.concat(SIGHT_ADV)
+                 : SIGHT;
       const out=[];
       for(let i=0;i<10;i++){
-        const w=pick(SIGHT);
-        const opts=shuffle([w,...shuffle(SIGHT.filter(x=>x!==w)).slice(0,2)]);
+        const w=pick(pool);
+        const choices=shuffle([w,...shuffle(pool.filter(x=>x!==w)).slice(0,2)]);
         out.push({type:'choice', prompt:`Listen, then tap the word 👂`,
           sub:`(Tap 🔊 and choose the word you hear)`,
-          speak:{text:w,lang:'en-US'}, options:shuffle(opts), answer:w, explain:`The word is "${w}".`});
+          speak:{text:w,lang:'en-US'}, options:shuffle(choices), answer:w, explain:`The word is "${w}".`});
       }
       return out;
     }},
 
   { id:'e-spell', title:'Spelling (Listen & Type)', emoji:'✍️',
     desc:'Hear the word and spell it',
-    make(){
+    make(limit, opts){
+      /* v69：拼写分级。level 1–2 拼 CVC（cat/dog）；
+         level 3 混入少量进阶词；level 4–5 以 G3–G4 高频词为主。 */
+      const lv=(opts&&opts.level)||1;
+      const list = lv>=4 ? SPELL_ADV
+                 : lv>=3 ? SPELL_ADV.slice(0,22).concat(CVC.slice(0,4))
+                 : CVC;
       const out=[];
-      shuffle(CVC).slice(0,10).forEach(w=>{
+      shuffle(list).slice(0,10).forEach(w=>{
         out.push({type:'type', prompt:`Listen and spell the word 🔊`,
           sub:`(Tap 🔊, then spell with the keyboard)`, speak:{text:w,lang:'en-US'},
           answer:w, explain:`Spell: ${w.split('').join('-')}.`});
@@ -526,11 +585,17 @@ const ENGLISH=[
 
   { id:'e-build', title:'Sentence Building (Writing)', emoji:'🧱',
     desc:'Tap words in order to make a sentence',
-    make(){
+    make(limit, opts){
+      /* v69：BUILD 每条带 t（难度档）。低 level 只出短句，
+         level 上来后才加入过去时/比较级/because 从句等长句。 */
+      const lv=(opts&&opts.level)||1;
+      const lo=Math.max(1, lv-2), hi=lv+1;
+      const pool=BUILD.filter(b=>{ const t=b.t||1; return t>=lo && t<=hi; });
+      const list=pool.length>=6?pool:BUILD;
       const out=[];
-      shuffle(BUILD).slice(0,10).forEach(b=>{
+      shuffle(list).slice(0,10).forEach(b=>{
         out.push({type:'build', prompt:`Tap the words in order to build a sentence`,
-          sub:`Put the words in the right order`, tiles:shuffle(b.tiles), answer:b.a,
+          sub:`Put the words in the right order`, tiles:shuffle(b.tiles), answer:b.a, tier:b.t||1,
           /* 句子建构题进题必读（不依赖「自动朗读」开关），答对后在 bindBuild 里再读完整句 */
           speak:{text:b.a.replace(/ \./g,'.'),lang:'en-US',forceAuto:true}});
       });
@@ -588,6 +653,167 @@ const CHARS=[
   {c:'大',p:'dà'},{c:'小',p:'xiǎo'},{c:'中',p:'zhōng'},{c:'国',p:'guó'},
   {c:'我',p:'wǒ'},{c:'你',p:'nǐ'},{c:'妈',p:'mā'},{c:'爸',p:'bà'},
 ];
+
+/* =========================================================
+   v69 · 中文词语专项（小学二–四年级）
+   ---------------------------------------------------------
+   拼音/认字走到头以后，中文要向「词语运用」上台阶：
+   反义词、近义词、量词、同音字辨析、成语补全。
+   这些题全部是文字题（不依赖新录音，朗读走设备中文 TTS），
+   所以可以放心扩量，不会出现「没录音就没声音」的问题。
+   ========================================================= */
+/* 反义词：左边是题面，右边是答案 */
+const ZH_OPP=[
+  ['大','小'],['多','少'],['高','低'],['长','短'],['快','慢'],['冷','热'],['早','晚'],
+  ['前','后'],['里','外'],['远','近'],['新','旧'],['胖','瘦'],['轻','重'],['厚','薄'],
+  ['粗','细'],['快乐','难过'],['勇敢','胆小'],['勤劳','懒惰'],['诚实','虚伪'],
+  ['安静','吵闹'],['整齐','凌乱'],['复杂','简单'],['明亮','昏暗'],['温暖','寒冷'],
+  ['仔细','粗心'],['谦虚','骄傲'],['胜利','失败'],['开始','结束'],['保护','破坏'],
+  ['节约','浪费'],['团结','分裂'],['清楚','模糊'],['熟悉','陌生'],['危险','安全'],
+  ['宽阔','狭窄'],['湿润','干燥'],['幸福','痛苦'],['热闹','冷清']
+];
+/* 近义词：两个词意思最接近 */
+const ZH_SYN=[
+  ['高兴','快乐'],['美丽','漂亮'],['立刻','马上'],['忽然','突然'],['著名','有名'],
+  ['寂静','安静'],['连忙','赶紧'],['珍贵','宝贵'],['勇敢','英勇'],['朴素','简朴'],
+  ['鼓励','鼓舞'],['观察','察看'],['特别','非常'],['经常','常常'],['希望','盼望'],
+  ['明白','清楚'],['惊奇','惊讶'],['温柔','温和'],['帮助','协助'],['责备','批评'],
+  ['干净','整洁'],['寒冷','严寒'],['炎热','酷热'],['聪明','机灵'],['好看','漂亮'],
+  ['宽阔','宽广'],['牢固','坚固'],['认真','用心'],['相信','信任'],['办法','方法'],
+  ['清晨','早晨'],['傍晚','黄昏'],['害怕','恐惧'],['观看','观赏']
+];
+/* 量词：一（ ）+ 名词 */
+const ZH_MEASURE=[
+  {n:'马',a:'匹',o:['匹','条','只']},{n:'牛',a:'头',o:['头','匹','张']},
+  {n:'鱼',a:'条',o:['条','只','片']},{n:'鸟',a:'只',o:['只','头','棵']},
+  {n:'花',a:'朵',o:['朵','把','根']},{n:'树',a:'棵',o:['棵','朵','匹']},
+  {n:'书',a:'本',o:['本','张','条']},{n:'纸',a:'张',o:['张','本','只']},
+  {n:'铅笔',a:'支',o:['支','把','面']},{n:'尺子',a:'把',o:['把','支','匹']},
+  {n:'伞',a:'把',o:['把','顶','根']},{n:'桥',a:'座',o:['座','面','条']},
+  {n:'山',a:'座',o:['座','条','片']},{n:'河',a:'条',o:['条','座','把']},
+  {n:'白云',a:'朵',o:['朵','片','根']},{n:'星星',a:'颗',o:['颗','朵','把']},
+  {n:'石头',a:'块',o:['块','张','只']},{n:'衣服',a:'件',o:['件','条','双']},
+  {n:'裤子',a:'条',o:['条','件','只']},{n:'鞋子',a:'双',o:['双','条','个']},
+  {n:'房子',a:'间',o:['间','座','条']},{n:'窗户',a:'扇',o:['扇','面','根']},
+  {n:'镜子',a:'面',o:['面','扇','把']},{n:'国旗',a:'面',o:['面','条','颗']},
+  {n:'西瓜',a:'个',o:['个','棵','匹']},{n:'香蕉',a:'根',o:['根','朵','面']},
+  {n:'米饭',a:'碗',o:['碗','条','张']},{n:'水',a:'杯',o:['杯','双','棵']},
+  {n:'火车',a:'列',o:['列','匹','朵']},{n:'飞机',a:'架',o:['架','座','条']},
+  {n:'床',a:'张',o:['张','条','把']},{n:'桌子',a:'张',o:['张','只','根']},
+  {n:'椅子',a:'把',o:['把','张','条']},{n:'刀',a:'把',o:['把','面','颗']},
+  {n:'信',a:'封',o:['封','张','本']},{n:'歌',a:'首',o:['首','篇','幅']},
+  {n:'画',a:'幅',o:['幅','首','本']},{n:'钥匙',a:'把',o:['把','颗','张']}
+];
+/* 同音字 / 形近字辨析：句子里的空要填对的那个字 */
+const ZH_HOMO=[
+  {s:'我们一起去（ ）园玩。',a:'公',o:['公','工','功']},
+  {s:'妈妈在（ ）房里做饭。',a:'厨',o:['厨','橱','除']},
+  {s:'他的（ ）业做完了。',a:'作',o:['作','做','坐']},
+  {s:'小鸟在天空（ ）翔。',a:'飞',o:['飞','非','啡']},
+  {s:'我要（ ）习功课。',a:'复',o:['复','富','付']},
+  {s:'秋天到了，树叶变（ ）了。',a:'黄',o:['黄','皇','煌']},
+  {s:'他在操场上（ ）步。',a:'跑',o:['跑','炮','泡']},
+  {s:'老师（ ）我们读课文。',a:'教',o:['教','交','叫']},
+  {s:'这本书（ ）有意思。',a:'很',o:['很','狠','恨']},
+  {s:'我们要爱（ ）公物。',a:'护',o:['护','户','互']},
+  {s:'小河的水很（ ）澈。',a:'清',o:['清','青','轻']},
+  {s:'他（ ）心地写作业。',a:'专',o:['专','砖','转']},
+  {s:'山上的风景真（ ）丽。',a:'美',o:['美','每','妹']},
+  {s:'我们一起（ ）祝生日。',a:'庆',o:['庆','轻','清']},
+  {s:'阳光照在身上很温（ ）。',a:'暖',o:['暖','缓','援']},
+  {s:'他（ ）明地举起了手。',a:'聪',o:['聪','葱','匆']},
+  {s:'他把书（ ）在桌子上。',a:'放',o:['放','访','房']},
+  {s:'我们要（ ）守纪律。',a:'遵',o:['遵','尊','村']},
+  {s:'今天的天气很（ ）朗。',a:'晴',o:['晴','清','请']},
+  {s:'小猫（ ）在沙发上。',a:'趴',o:['趴','爬','怕']},
+  {s:'他（ ）着雨伞去上学。',a:'撑',o:['撑','掌','常']},
+  {s:'这件事很（ ）要。',a:'重',o:['重','众','种']}
+];
+/* 成语补全：常见成语 / 谚语，考的是「用对字」 */
+const ZH_IDIOM=[
+  {s:'一心一（ ）',a:'意',o:['意','义','议']},
+  {s:'守株待（ ）',a:'兔',o:['兔','免','晚']},
+  {s:'画蛇添（ ）',a:'足',o:['足','走','是']},
+  {s:'亡羊补（ ）',a:'牢',o:['牢','劳','老']},
+  {s:'井底之（ ）',a:'蛙',o:['蛙','娃','洼']},
+  {s:'掩耳盗（ ）',a:'铃',o:['铃','零','龄']},
+  {s:'刻舟求（ ）',a:'剑',o:['剑','见','建']},
+  {s:'对牛弹（ ）',a:'琴',o:['琴','勤','芹']},
+  {s:'愚公移（ ）',a:'山',o:['山','三','伞']},
+  {s:'尺有所（ ）',a:'短',o:['短','段','断']},
+  {s:'千里之（ ），始于足下',a:'行',o:['行','形','型']},
+  {s:'众人拾柴火（ ）高',a:'焰',o:['焰','艳','燕']},
+  {s:'不耻下（ ）',a:'问',o:['问','闻','文']},
+  {s:'胸有成（ ）',a:'竹',o:['竹','足','住']},
+  {s:'一石二（ ）',a:'鸟',o:['鸟','马','乌']},
+  {s:'百发百（ ）',a:'中',o:['中','忠','钟']},
+  {s:'三心二（ ）',a:'意',o:['意','义','议']},
+  {s:'画龙点（ ）',a:'睛',o:['睛','晴','清']},
+  {s:'井井有（ ）',a:'条',o:['条','挑','跳']},
+  {s:'拔苗助（ ）',a:'长',o:['长','常','场']}
+];
+
+/* 词语题生成器：level 越高，同音字与成语占比越大（反义词退居基础档）。
+   每套 10 题，题型混排，避免一节课只练一种；题目不足时按题型轮转补足。 */
+function zhWordSet(limit, level){
+  const lv=Math.max(1,Math.min(5,Number(level)||1));
+  const n=Math.max(1,limit||10);
+  const bag=[];
+  const put=(t,c)=>{ for(let i=0;i<c;i++) bag.push(t); };
+  put('opp', lv<=2?4:2);
+  put('syn', 2);
+  put('measure', 2);
+  if(lv>=3) put('homo', 2);
+  if(lv>=4) put('idiom', 2);
+  if(lv>=5) put('idiom', 1);
+
+  const Q={ opp:shuffle(ZH_OPP.slice()), syn:shuffle(ZH_SYN.slice()),
+            measure:shuffle(ZH_MEASURE.slice()), homo:shuffle(ZH_HOMO.slice()),
+            idiom:shuffle(ZH_IDIOM.slice()) };
+  const cursor={opp:0,syn:0,measure:0,homo:0,idiom:0};
+  const take=(t)=>{ const arr=Q[t]; if(!arr.length) return null;
+    const it=arr[cursor[t]%arr.length]; cursor[t]++; return it; };
+
+  const oppWords=[].concat(...ZH_OPP), synWords=[].concat(...ZH_SYN);
+  const decoys=(pool,ans,k)=>shuffle([...new Set(pool)].filter(x=>x!==ans)).slice(0,k);
+
+  const out=[];
+  for(const t of shuffle(bag)){
+    if(out.length>=n) break;
+    if(t==='opp'){
+      const p=take('opp'); if(!p) continue;
+      out.push({type:'choice',prompt:'选出与它意思相反的词',
+        sub:`<span class="zh-big">${p[0]}</span>`,speak:{text:p[0],lang:'zh-CN'},
+        options:shuffle([p[1],...decoys(oppWords,p[1],2)]),answer:p[1],
+        explain:`「${p[0]}」的反义词是「${p[1]}」。`});
+    }else if(t==='syn'){
+      const p=take('syn'); if(!p) continue;
+      out.push({type:'choice',prompt:'选出意思最接近的词',
+        sub:`<span class="zh-big">${p[0]}</span>`,speak:{text:p[0],lang:'zh-CN'},
+        options:shuffle([p[1],...decoys(synWords,p[1],2)]),answer:p[1],
+        explain:`「${p[0]}」和「${p[1]}」意思最接近。`});
+    }else if(t==='measure'){
+      const m=take('measure'); if(!m) continue;
+      out.push({type:'choice',prompt:'选出合适的量词',
+        sub:`一（　）<span class="zh-big">${m.n}</span>`,speak:{text:`一${m.a}${m.n}`,lang:'zh-CN'},
+        options:shuffle(m.o.slice()),answer:m.a,
+        explain:`一${m.a}${m.n} —— 量词要用「${m.a}」。`});
+    }else if(t==='homo'){
+      const h=take('homo'); if(!h) continue;
+      out.push({type:'choice',prompt:'选出正确的字',
+        sub:`<span class="zh-sent">${h.s}</span>`,speak:{text:h.s.replace('（ ）',h.a),lang:'zh-CN'},
+        options:shuffle(h.o.slice()),answer:h.a,
+        explain:`填「${h.a}」：${h.s.replace('（ ）',h.a)}`});
+    }else{
+      const d=take('idiom'); if(!d) continue;
+      out.push({type:'choice',prompt:'补全成语',
+        sub:`<span class="zh-sent">${d.s}</span>`,speak:{text:d.s.replace('（ ）',d.a),lang:'zh-CN'},
+        options:shuffle(d.o.slice()),answer:d.a,
+        explain:`「${d.s.replace('（ ）',d.a)}」`});
+    }
+  }
+  return out;
+}
 
 const CHINESE=[
   /* 汇总页：声母 / 韵母 / 整体认读音节 / 四声调 一页看全（点读音） */
@@ -742,6 +968,13 @@ const CHINESE=[
       });
       return out;
     }},
+
+  /* v69：词语专项。拼音与认字之后，中文要练「词怎么用」——
+     反义词 / 近义词 / 量词 / 同音字 / 成语，难度随掌握量上调。
+     全部是文字题，朗读走设备中文 TTS，不依赖新录音。 */
+  { id:'c-word', title:'Words 词语运用', emoji:'📚',
+    desc:'反义词 · 近义词 · 量词 · 同音字 · 成语（小学二–四年级）',
+    make(limit, opts){ return zhWordSet(limit||10, (opts&&opts.level)||1); }},
 ];
 
 /* ---------------- 汇总 ---------------- */

@@ -222,37 +222,115 @@ function mathBank(lessonId,level,spread){
    英文题库
    ========================================================= */
 const SUBJ=['I','We','They','He','She','My friend','The children','My brother'];
-const VERBS=['like','see','have','want','read','make','find','watch','draw','help'];
-const PLACES=['at school','in the park','at home','after lunch','with my friend','every day'];
 function article(w){ return /^[aeiou]/i.test(w)?'an':'a'; }
+
+/* ---------------------------------------------------------
+   Sentence Building 语料（v69 重写）
+   ---------------------------------------------------------
+   旧版把 268 个词整池（含 red / hot / big 这类形容词、run / read 这类动词）
+   随机当作 "a ___" 的宾语，再配 like / see / read，于是造出
+   "I read a hat." "I read a red." 这种语义不通、还会教错搭配的病句。
+
+   现在改成「动词 → 它真正能接的名词」逐一白名单配对：
+     · 宾语自带正确冠词（a / an / the），复数用 the + 复数名词
+     · 主语只用「人」，避免 "The cat reads a newspaper." 这类荒诞句
+     · 动词按三单/复数正确变形，过去时用不规则表（see→saw / have→had）
+     · 六个句型由易到难（tier 1→5），难度自然覆盖到小学三、四年级
+   每一句都是孩子可以照着说、照着写的正确英语。
+   --------------------------------------------------------- */
+const BO_OBJ={
+  see:  [['a','bird'],['a','rainbow'],['a','boat'],['a','kite'],['a','bus'],['an','airplane'],['a','flower'],['a','tree'],['the','moon']],
+  read: [['a','book'],['a','story'],['a','comic'],['a','letter'],['a','newspaper'],['a','poem'],['a','map']],
+  make: [['a','cake'],['a','card'],['a','model'],['a','kite'],['a','sandwich'],['a','boat'],['a','snowman']],
+  draw: [['a','cat'],['a','house'],['a','dragon'],['a','tree'],['a','picture'],['a','boat'],['a','robot']],
+  find: [['a','coin'],['a','shell'],['a','key'],['a','book'],['a','ball'],['a','hat'],['a','box']],
+  want: [['a','drink'],['an','apple'],['a','toy'],['a','bike'],['a','book'],['a','pen'],['a','cake']],
+  have: [['a','bike'],['a','dog'],['a','cat'],['a','ball'],['a','book'],['a','watch'],['a','hat'],['a','kite']],
+  watch:[['a','film'],['a','game'],['a','match'],['a','show'],['the','birds'],['the','clouds']],
+  eat:  [['an','apple'],['a','banana'],['a','cake'],['a','sandwich'],['an','orange'],['a','mango'],['a','biscuit']],
+  carry:[['a','bag'],['a','box'],['a','basket'],['a','book'],['a','kite']],
+  wash: [['a','cup'],['the','car'],['a','plate'],['a','shirt'],['the','dog']],
+  feed: [['a','cat'],['a','dog'],['a','bird'],['the','ducks']],
+  paint:[['a','picture'],['a','wall'],['a','boat'],['a','flower'],['a','dragon']],
+  open: [['a','box'],['a','door'],['the','window'],['a','book']],
+  close:[['a','door'],['the','window'],['a','box'],['a','book']]
+};
+/* 三单形态 + 过去式（不规则动词手写，别用规则拼） */
+const BO_VERB={
+  see:{s:'sees',p:'saw'},     read:{s:'reads',p:'read'},   make:{s:'makes',p:'made'},
+  draw:{s:'draws',p:'drew'},  find:{s:'finds',p:'found'},  want:{s:'wants',p:'wanted'},
+  have:{s:'has',p:'had'},     watch:{s:'watches',p:'watched'}, eat:{s:'eats',p:'ate'},
+  carry:{s:'carries',p:'carried'}, wash:{s:'washes',p:'washed'}, feed:{s:'feeds',p:'fed'},
+  paint:{s:'paints',p:'painted'}, open:{s:'opens',p:'opened'}, close:{s:'closes',p:'closed'}
+};
+/* 主语只用「人」：动物/物品做主语会把动作句变成荒诞句。
+   lc = 句中（非句首）时要用的写法；专有名词 Tom and Ben 保持大写。 */
+const BO_SUBJ=[
+  {t:'I',lc:'I',p3:false}, {t:'We',lc:'we',p3:false}, {t:'They',lc:'they',p3:false},
+  {t:'He',lc:'he',p3:true}, {t:'She',lc:'she',p3:true}, {t:'My friend',lc:'my friend',p3:true},
+  {t:'My brother',lc:'my brother',p3:true}, {t:'My sister',lc:'my sister',p3:true},
+  {t:'The children',lc:'the children',p3:false}, {t:'Tom and Ben',lc:'Tom and Ben',p3:false}
+];
+const BO_PLACE=['in the park','at school','at home','in the garden','on the bus',
+                'in the kitchen','in the classroom'];
+const BO_TIME=['yesterday','last Sunday','this morning','last week','after school'];
+/* 只和 a/an + 单数可数名词搭配；the + 复数不插形容词，避免 "a big birds"。
+   形容词只用「大小 / 颜色」，和任何具体名词搭配都自然（不会出现 a new apple 这种别扭说法）。 */
+const BO_ADJ=['big','small','little','red','blue','green','yellow'];
+const BO_VERB_KEYS=Object.keys(BO_OBJ);
+
 function buildSentences(spread){
-  /* spread 扩容：把派生词也放进宾语池并放宽上限，
-     否则前 420 句永远是同一批，题库刷完就再也造不出新句。 */
-  const objs=wordPool(spread).filter(w=>w.length<=9).slice(0,110+spread*40);
-  const limit=600+spread*300;
+  const sp=Math.max(0,Number(spread)||0);
+  const limit=900+sp*400;
   const out=[];
-  let i=0;
-  for(let s=0;s<SUBJ.length;s++){
-    for(let v=0;v<VERBS.length;v++){
-      for(let o=0;o<objs.length;o++){
-        const w=objs[o], sv=SUBJ[s], vb=VERBS[v];
-        /* 主语与动词搭配：三单加 s，避免教错语法 */
-        const verb=/^(He|She|My friend|My brother)$/.test(sv) ? vb+'s' : vb;
-        const extra=(s+v+o)%4===0 ? PLACES[(s+v+o)%PLACES.length] : '';
-        const tiles=[sv,verb,article(w),w].concat(extra?extra.split(' '):[]).concat(['.']);
-        const sentence=tiles.join(' ').replace(/ \./g,'.');
-        const tier=Math.max(1,Math.min(5,
-          1+Math.floor(w.length/3)+(extra?1:0)+(tiles.length>6?1:0)));
-        out.push({qid:'s'+s+'v'+v+'o'+o,tier,type:'build',
-          prompt:'Tap the words in order to build a sentence',
-          sub:'Put the words in the right order',
-          tiles:shuffle(tiles),answer:tiles.join(' '),
-          /* 答对后的完整句由 bindBuild 统一播报，这里不再放 answerSpeak，
-             否则 onCorrect 与 bindBuild 会把同一句念两遍。 */
-          speak:{text:sentence,lang:'en-US',forceAuto:true},
-          explain:sentence});
-        i++;
-        if(i>=limit) return out;
+  const add=(qid,tier,words)=>{
+    const tiles=words.concat(['.']);
+    const sentence=tiles.join(' ').replace(/ \./g,'.');
+    out.push({qid:'w'+qid,tier:Math.max(1,Math.min(5,tier)),type:'build',
+      prompt:'Tap the words in order to build a sentence',
+      sub:'Put the words in the right order',
+      tiles:shuffle(tiles),answer:tiles.join(' '),
+      /* 答对后的完整句由 bindBuild 统一播报，这里不放 answerSpeak，
+         否则 onCorrect 与 bindBuild 会把同一句念两遍。 */
+      speak:{text:sentence,lang:'en-US',forceAuto:true},
+      explain:sentence});
+  };
+
+  for(let s=0;s<BO_SUBJ.length;s++){
+    const S=BO_SUBJ[s];
+    for(let v=0;v<BO_VERB_KEYS.length;v++){
+      const base=BO_VERB_KEYS[v], list=BO_OBJ[base], V=BO_VERB[base];
+      const vw = S.p3 ? V.s : base;
+      for(let o=0;o<list.length;o++){
+        const det=list[o][0], noun=list[o][1];
+        /* k 用「-」分隔三元组：早期版本用 s+v+o 求和当 key，会撞 qid（0+1+0 与 1+0+0）。
+           ki 是数值下标，专门给形容词 / 地点 / 时间取模用（不能拿字符串取模）。 */
+        const k=s+'-'+v+'-'+o, ki=s*100+v*10+o;
+        if(out.length>=limit) return out;
+
+        /* ① 入门：主语 + 动词 + 宾语（He draws a dragon.） */
+        add('1_'+k, 1+(noun.length>=7?1:0), [S.t,vw,det,noun]);
+        /* ② 进阶：加地点/时间短语（They eat a sandwich in the park.） */
+        add('2_'+k, 2+(noun.length>=8?1:0), [S.t,vw,det,noun,BO_PLACE[ki%BO_PLACE.length]]);
+        /* ③ 熟练：加形容词（She has a new bike. / He eats an old biscuit.）
+             形容词会改变首音，冠词要按形容词重新取 a/an，不能沿用名词的。 */
+        if(det!=='the'){
+          const adj=BO_ADJ[ki%BO_ADJ.length];
+          add('3_'+k, 3, [S.t,vw,article(adj),adj,noun]);
+        }
+        /* ④ 挑战：过去时 + 时间状语（We saw a rainbow yesterday.） */
+        add('4_'+k, 4, [S.t,V.p,det,noun,BO_TIME[ki%BO_TIME.length]]);
+        /* ⑤ 高手：频度状语前置（Every day my brother reads a book at home.）
+             主语在句中要小写（专有名词除外），不能出现 "Every day My brother"。 */
+        add('5_'+k, 5, ['Every','day',S.lc,vw,det,noun,BO_PLACE[ki%BO_PLACE.length]]);
+        /* ⑥ 并列动作：同一主语连做两件事（She draws a cat and paints a picture.）
+            第二个动词限「动作类」，排除 have/want 这类接起来生硬的说法。 */
+        const base2=BO_VERB_KEYS[(v+1)%BO_VERB_KEYS.length];
+        if(base2!==base && base2!=='have' && base2!=='want'){
+          const o2=(o+1)%BO_OBJ[base2].length, d2=BO_OBJ[base2][o2][0], n2=BO_OBJ[base2][o2][1];
+          const vw2=S.p3?BO_VERB[base2].s:base2;
+          add('6_'+k, 4, [S.t,vw,det,noun,'and',vw2,d2,n2]);
+        }
       }
     }
   }
@@ -261,33 +339,66 @@ function buildSentences(spread){
 /* 语法模板：每个句型都同时用到主语 s 和名词 n，保证「主语 × 名词 × 句型」
    组合出来的题题题不同；w 是该句型的基础难度档。 */
 function grammarTemplates(){
-  const third=(s)=>/^(He|She|It|My dad|The cat|My sister|The puppy)$/.test(s);
-  const be=(s)=>s==='I'?'am':third(s)?'is':'are';
+  /* 主谓一致按「复数主语白名单」判定：
+     旧版只认 He/She/It/My dad/The cat/My sister/The puppy，
+     于是 Tom / My teacher 这类三单主语会被错当成复数 → "Tom go"。
+     Our class 是集合名词，按三单处理。 */
+  const PLURAL_SUBJ=['We','They','You','The girls','Ben and Tom','Tom and Ben','The children'];
+  const plural=(s)=>PLURAL_SUBJ.indexOf(s)>=0;
+  const third=(s)=>s!=='I' && !plural(s);
+  const be=(s)=>s==='I'?'am':plural(s)?'are':'is';
+  /* 名词复数：fish→fishes、box→boxes、baby→babies；避免 "two fishs" 这种错 */
+  const ns=(n)=>/(s|sh|ch|x)$/.test(n) ? n+'es'
+            : /[^aeiou]y$/.test(n) ? n.slice(0,-1)+'ies' : n+'s';
+  /* 宾格/介词后要用宾格代词：near me（不是 near I）；句中词组要小写 */
+  const lower=(s)=>/^(My|The|Our)\s/.test(s) ? s.charAt(0).toLowerCase()+s.slice(1) : s;
+  const obj=(s)=>({I:'me',We:'us',They:'them',You:'you',He:'him',She:'her'})[s] || lower(s);
   return [
-    {w:1,f:(s,n)=>({s:`${s} ___ a ${n}.`,o:['have','has','having'],
+    {w:1,f:(s,n)=>({s:`${s} ___ ${article(n)} ${n}.`,o:['have','has','having'],
       a:third(s)?'has':'have',why:'With he, she or it we use "has"; with I, you, we and they we use "have".'})},
     {w:1,f:(s,n)=>({s:`${s} ___ happy with the ${n}.`,o:['am','is','are'],
       a:be(s),why:'The subject picks the be verb: I am, he is, they are.'})},
     {w:2,f:(s,n)=>({s:`${s} puts the ${n} ___ the box.`,o:['in','of','by'],
       a:'in',why:'Use "in" when something is inside the box.'})},
-    {w:2,f:(s,n)=>({s:`${s} ___ reading about a ${n}.`,o:['is','are','am'],
+    {w:2,f:(s,n)=>({s:`${s} ___ reading about ${article(n)} ${n}.`,o:['is','are','am'],
       a:be(s),why:'Use am, is or are before an -ing word.'})},
-    {w:2,f:(s,n)=>({s:`There ___ a ${n} near ${s}.`,o:['is','are','am'],
+    {w:2,f:(s,n)=>({s:`There ___ ${article(n)} ${n} near ${obj(s)}.`,o:['is','are','am'],
       a:'is',why:'One thing takes "There is"; two or more take "There are".'})},
-    {w:3,f:(s,n)=>({s:`${s} has two ${n}s. They ___ small.`,o:['is','are','am'],
+    {w:3,f:(s,n)=>({s:`${s} ${third(s)?'has':'have'} two ${ns(n)}. They ___ small.`,o:['is','are','am'],
       a:'are',why:'"They" means more than one, so we use "are".'})},
-    {w:3,f:(s,n)=>({s:`${s} ___ a ${n} yesterday.`,o:['have','has','had'],
+    {w:3,f:(s,n)=>({s:`${s} ___ ${article(n)} ${n} yesterday.`,o:['have','has','had'],
       a:'had',why:'"Yesterday" is the past, so we use "had".'})},
     {w:3,f:(s,n)=>({s:`${s} wants ___ ${n}.`,o:['a','an','the'],
       a:article(n),why:'Use "an" before a vowel sound.'})},
     {w:4,f:(s,n)=>({s:`${s} likes the ${n}. ___ is fun.`,o:['It','They','He'],
       a:'It',why:'Use "It" for a thing; use "He" or "She" for a person.'})},
-    {w:4,f:(s,n)=>({s:`${s} ___ to school with a ${n}.`,o:['go','goes','going'],
+    {w:4,f:(s,n)=>({s:`${s} ___ to school with ${article(n)} ${n}.`,o:['go','goes','going'],
       a:third(s)?'goes':'go',why:'With he, she or it we add -es: he goes.'})},
-    {w:5,f:(s,n)=>({s:`___ ${n} belongs to ${s}.`,o:['The','A','An'],
+    {w:5,f:(s,n)=>({s:`___ ${n} belongs to ${obj(s)}.`,o:['The','A','An'],
       a:'The',why:'Use "The" when we mean one special thing.'})},
-    {w:5,f:(s,n)=>({s:`${s} can see a ${n}, can't ___?`,o:['I','you','they'],
+    {w:5,f:(s,n)=>({s:`${s} can see ${article(n)} ${n}, can't ___?`,o:['I','you','they'],
       a:'you',why:'After "... can\'t ___?" we say "you".'})},
+
+    /* ---------- v69：小学三、四年级语法点（tier 3–5）---------- */
+    {w:3,f:(s,n)=>({s:`${s} ___ to the park yesterday.`,o:['go','went','goes'],
+      a:'went',why:'"Yesterday" tells us it is the past, so we use "went".'})},
+    {w:4,f:(s,n)=>({s:`This ${n} is ___ than that one.`,o:['big','bigger','biggest'],
+      a:'bigger',why:'When we compare two things we add -er: bigger than.'})},
+    {w:4,f:(s,n)=>({s:`This ${n} is ___ beautiful than that one.`,o:['more','most','much'],
+      a:'more',why:'Long adjectives take "more": more beautiful than.'})},
+    {w:4,f:(s,n)=>({s:`${s} ___ ${article(n)} ${n} now.`,o:['am reading','is reading','are reading'],
+      a:be(s)==='am'?'am reading':be(s)==='is'?'is reading':'are reading',
+      why:'"Now" means it is happening: I am reading, she is reading, they are reading.'})},
+    {w:3,f:(s,n)=>({s:`${s} will ___ ${article(n)} ${n} tomorrow.`,o:['read','reads','reading'],
+      a:'read',why:'After "will" we always use the base verb: will read.'})},
+    {w:4,f:(s,n)=>({s:`There ___ ${article(n)} ${n} and two books on the table.`,o:['is','are','am'],
+      a:'is',why:'The first thing after "There" is one thing, so we use "is".'})},
+    {w:5,f:(s,n)=>({s:`${s} ___ finished the ${n}.`,o:['have','has','having'],
+      a:third(s)?'has':'have',why:'"has finished / have finished" shows the action is complete.'})},
+    {w:3,f:(s,n)=>({s:`___ is the ${n}?`,o:['What','Where','Who'],
+      a:'Where',why:'We ask about a place with "Where is ...?".'})},
+    {w:5,f:(s,n)=>({s:`___ ${n} is this?`,o:['Who','Whose','Which'],
+      a:'Whose',why:'We ask who owns something with "Whose ... is this?".'})},
   ];
 }
 function englishBank(lessonId,level,spread){
@@ -383,16 +494,88 @@ function zhPool(){
 }
 function zclip(kind,key){
   return (typeof zhClip==='function')?zhClip(kind,key):null;
-}
-function tclip(base,t){
+}function tclip(base,t){
   return (typeof zhToneClip==='function')?zhToneClip(base,t):null;
 }
 function tmark(s,t){
   return (typeof zhToneMark==='function')?zhToneMark(s,t):s;
 }
+/* ---------------------------------------------------------
+   v69 中文词语题库（c-word）：反义词 / 近义词 / 量词 / 同音字 / 成语
+   拼音类题库（ZH_BLENDS 63 个音节 × 变体）到这里已经练完，
+   中文要向「词语运用」升高一个年级。所有题都是文字题，
+   朗读走设备中文 TTS，不需要新增录音文件。
+   --------------------------------------------------------- */
+function wordBank(spread){
+  const OPP=(typeof ZH_OPP!=='undefined')?ZH_OPP:[];
+  const SYN=(typeof ZH_SYN!=='undefined')?ZH_SYN:[];
+  const MEA=(typeof ZH_MEASURE!=='undefined')?ZH_MEASURE:[];
+  const HOM=(typeof ZH_HOMO!=='undefined')?ZH_HOMO:[];
+  const IDM=(typeof ZH_IDIOM!=='undefined')?ZH_IDIOM:[];
+  const out=[];
+  const add=(qid,tier,obj)=>out.push(tag(obj,'b:c-word:'+qid,tier));
+  const oppWords=[].concat(...OPP), synWords=[].concat(...SYN);
+  /* 选项要确定性旋转，保证同一 qid 的选项永远一致 */
+  const rotArr=(arr,seed)=>{ const k=hn(seed)%arr.length; return arr.slice(k).concat(arr.slice(0,k)); };
+
+  OPP.forEach((p,i)=>{
+    add('opp'+i,2,{type:'choice',prompt:'选出与它意思相反的词',
+      sub:`<span class="zh-big">${p[0]}</span>`,speak:{text:p[0],lang:'zh-CN'},
+      options:detOpts(p[1],oppWords.filter(x=>x!==p[0]),'op'+i),answer:p[1],
+      explain:`「${p[0]}」的反义词是「${p[1]}」。`});
+    /* 反向再出一题（小 → 大），同一组词练两个方向 */
+    add('oppR'+i,3,{type:'choice',prompt:'选出与它意思相反的词',
+      sub:`<span class="zh-big">${p[1]}</span>`,speak:{text:p[1],lang:'zh-CN'},
+      options:detOpts(p[0],oppWords.filter(x=>x!==p[1]),'or'+i),answer:p[0],
+      explain:`「${p[1]}」的反义词是「${p[0]}」。`});
+  });
+  SYN.forEach((p,i)=>{
+    add('syn'+i,2,{type:'choice',prompt:'选出意思最接近的词',
+      sub:`<span class="zh-big">${p[0]}</span>`,speak:{text:p[0],lang:'zh-CN'},
+      options:detOpts(p[1],synWords.filter(x=>x!==p[0]),'sy'+i),answer:p[1],
+      explain:`「${p[0]}」和「${p[1]}」意思最接近。`});
+    add('synR'+i,3,{type:'choice',prompt:'选出意思最接近的词',
+      sub:`<span class="zh-big">${p[1]}</span>`,speak:{text:p[1],lang:'zh-CN'},
+      options:detOpts(p[0],synWords.filter(x=>x!==p[1]),'sr'+i),answer:p[0],
+      explain:`「${p[1]}」和「${p[0]}」意思最接近。`});
+  });
+  MEA.forEach((m,i)=>{
+    add('mea'+i,3,{type:'choice',prompt:'选出合适的量词',
+      sub:`一（　）<span class="zh-big">${m.n}</span>`,speak:{text:`一${m.a}${m.n}`,lang:'zh-CN'},
+      options:rotArr(m.o.slice(),'me'+i),answer:m.a,
+      explain:`一${m.a}${m.n} —— 量词要用「${m.a}」。`});
+  });
+  HOM.forEach((h,i)=>{
+    add('hom'+i,4,{type:'choice',prompt:'选出正确的字',
+      sub:`<span class="zh-sent">${h.s}</span>`,speak:{text:h.s.replace('（ ）',h.a),lang:'zh-CN'},
+      options:rotArr(h.o.slice(),'ho'+i),answer:h.a,
+      explain:`填「${h.a}」：${h.s.replace('（ ）',h.a)}`});
+  });
+  IDM.forEach((d,i)=>{
+    add('idi'+i,5,{type:'choice',prompt:'补全成语',
+      sub:`<span class="zh-sent">${d.s}</span>`,speak:{text:d.s.replace('（ ）',d.a),lang:'zh-CN'},
+      options:rotArr(d.o.slice(),'id'+i),answer:d.a,
+      explain:`「${d.s.replace('（ ）',d.a)}」`});
+  });
+  /* spread 扩容：把近义/反义的「换问法」也算新题，保持题库持续可扩 */
+  if(spread>0){
+    OPP.forEach((p,i)=>{
+      add('oppW'+i,3,{type:'choice',prompt:`「${p[0]}」的反义词是哪个词？`,
+        sub:'看句子选一选',speak:{text:`${p[0]}的反义词`,lang:'zh-CN'},
+        options:detOpts(p[1],oppWords.filter(x=>x!==p[0]),'ow'+i),answer:p[1],
+        explain:`「${p[0]}」的反义词是「${p[1]}」。`});
+      add('synW'+i,3,{type:'choice',prompt:`哪个词和「${p[0]}」意思最接近？`,
+        sub:'看句子选一选',speak:{text:`和${p[0]}意思最接近的词`,lang:'zh-CN'},
+        options:detOpts(p[1],synWords.filter(x=>x!==p[0]),'sw'+i),answer:p[1],
+        explain:`「${p[0]}」和「${p[1]}」意思最接近。`});
+    });
+  }
+  return out;
+}
+
 function chineseBank(lessonId,level,spread){
-  const P=zhPool(), out=[];
-  const add=(qid,tier,obj)=>out.push(tag(obj,'b:'+lessonId+':'+qid,tier));
+  if(lessonId==='c-word') return wordBank(spread);
+  const P=zhPool(), out=[];  const add=(qid,tier,obj)=>out.push(tag(obj,'b:'+lessonId+':'+qid,tier));
   const names=['第一声','第二声','第三声','第四声'];
   const iniList=P.ini.map(x=>x.p), finList=P.fin.map(x=>x.p), whoList=P.who.map(x=>x.p);
   const hzList=P.ble.map(x=>x.hz);
@@ -543,5 +726,6 @@ function capacity(lessonId,level,spread){
           tiers:[1,2,3,4,5].map(t=>a.filter(q=>q.tier===t).length)};
 }
 global.Bank={build,capacity,wordCount:WORDS.length,
-  _internal:{h32,wordPool,mathBank,englishBank,chineseBank}};
+  _internal:{h32,wordPool,mathBank,englishBank,chineseBank,
+             BO_OBJ,BO_VERB,BO_SUBJ,BO_PLACE,BO_TIME,BO_ADJ}};
 })(typeof window!=='undefined'?window:globalThis);

@@ -458,9 +458,13 @@ body.kb-open #screen-lesson{padding-bottom:250px;}   /* 键盘约 220px，留出
   font-size:30px;letter-spacing:.5px;min-height:96px;display:flex;align-items:center;justify-content:center;}
 .reader-text.en{font-size:29px;line-height:1.4;}
 .reader-text.small{font-size:23px;line-height:1.6;}
+/* v69：P3–P6 长段落（>78 字）用更小一档，并允许滚动，保证整段都能读到 */
+.reader-text.tiny{font-size:19px;line-height:1.7;overflow-y:auto;max-height:34vh;
+  align-items:flex-start;text-align:left;}
 @media(max-width:560px){
   .reader-text{font-size:25px;padding:16px;}
   .reader-text.small{font-size:20px;}
+  .reader-text.tiny{font-size:17px;max-height:38vh;}
 }
 .reader-dots{display:flex;justify-content:center;gap:7px;margin:14px 0 10px;}
 .reader-dots .dot{width:8px;height:8px;border-radius:50%;background:#E7D8BF;transition:all .15s;}

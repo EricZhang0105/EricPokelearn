@@ -12,7 +12,12 @@ const BOOK_LEVELS = [
   { id:'k1', label:'K1', cn:'幼儿园低班', age:'4–5 岁', color:'#FF8A3D' },
   { id:'k2', label:'K2', cn:'幼儿园高班', age:'5–6 岁', color:'#3DA5FF' },
   { id:'p1', label:'P1', cn:'小学一年级', age:'6–7 岁', color:'#7A6EF0' },
-  { id:'p2', label:'P2', cn:'小学二年级', age:'7–8 岁', color:'#46C98B' }
+  { id:'p2', label:'P2', cn:'小学二年级', age:'7–8 岁', color:'#46C98B' },
+  /* v69：补齐小学三–六年级，高年级不用再和 K1 混在一个书架上找书 */
+  { id:'p3', label:'P3', cn:'小学三年级', age:'8–9 岁', color:'#E0A32E' },
+  { id:'p4', label:'P4', cn:'小学四年级', age:'9–10 岁', color:'#E2739B' },
+  { id:'p5', label:'P5', cn:'小学五年级', age:'10–11 岁', color:'#3FA9A0' },
+  { id:'p6', label:'P6', cn:'小学六年级', age:'11–12 岁', color:'#8A6FD1' }
 ];
 const BOOK_LANGS = [
   { id:'zh', label:'中文绘本', flag:'🇨🇳', color:'#FF5C8A' },
@@ -32,7 +37,7 @@ const ART_W = 400, ART_H = 260, GROUND = 210;
 const SKY_KEYS = { sun:1, moon:1, star:1, cloud:1, bird:1, kite:1, rainbow:1 };
 
 const ITEM_SCALE = {
-  tree:1.35, house:1.35, castle:1.3, car:1.1, boat:1.05, rainbow:1.5,
+  tree:1.35, house:1.35, castle:1.3, bridge:1.05, car:1.1, boat:1.05, rainbow:1.5,
   apple:0.78, banana:0.78, watermelon:0.8, grapes:0.78, flower:0.75,
   ball:0.8, seed:0.7, leaf:0.7, bug:0.7, box:0.85, hat:0.8, cake:0.9,
   book:0.8, umbrella:0.95, pan:0.95, drum:0.95, cat:1, dog:1, rabbit:1, bear:1, duck:1,
@@ -149,6 +154,14 @@ const SHAPES = {
       <circle cx="-28" cy="-6" r="12" fill="#3B3B3B"/><circle cx="-28" cy="-6" r="5" fill="#CFCFCF"/>
       <circle cx="30" cy="-6" r="12" fill="#3B3B3B"/><circle cx="30" cy="-6" r="5" fill="#CFCFCF"/>
       <rect x="44" y="-32" width="8" height="6" rx="3" fill="#FFE066"/>
+    </g>`,
+  /* v69：石拱桥（P3–P6 的「村口的老桥」等故事要用） */
+  bridge:(x,y,s)=>`<g transform="translate(${x},${y}) scale(${s})">
+      <path d="M-64,4 q64,-52 128,0" fill="none" stroke="#B99B73" stroke-width="9" stroke-linecap="round"/>
+      <rect x="-70" y="-6" width="140" height="8" rx="4" fill="#9A7B57"/>
+      <rect x="-58" y="0" width="9" height="30" fill="#A98A66"/>
+      <rect x="49" y="0" width="9" height="30" fill="#A98A66"/>
+      <path d="M-70,26 q70,10 140,0" fill="none" stroke="#8CD24C" stroke-width="6" stroke-linecap="round"/>
     </g>`,
   cake:(x,y,s)=>`<g transform="translate(${x},${y}) scale(${s})">
       <ellipse cx="0" cy="0" rx="40" ry="7" fill="#EADFD0"/>
@@ -1065,6 +1078,286 @@ const RAW_BOOKS = [
       ]
     ]
   },
+
+  /* =========================================================
+     v69 · 小学三–六年级（P3–P6）新增 24 本
+     ---------------------------------------------------------
+     这批书带 always:true —— 不走「每周放出 5 本」的队列，
+     上线即可阅读，孩子不用等十周才看到高年级的书。
+     文字量按年级递增：P3 每页 1–2 句，P6 每页 3–4 句。
+     ========================================================= */
+
+  /* ---------- P3 · 三年级 ---------- */
+  { id:'zh-p3-lost-kite', lang:'zh', level:'p3', always:true,
+    title:'断线的风筝', titleEn:'The Kite That Got Away',
+    tag:'友情 · 意外', pages:[
+    ['星期天下午，风很大，小明带着新风筝去公园。','garden|kite,child,sun'],
+    ['风筝越飞越高，像一只蓝色的小鸟。','day|kite,cloud'],
+    ['忽然，线断了，风筝摇摇晃晃地飞走了。','day|kite,cloud'],
+    ['小明追着风筝跑，一直跑到小河边。','garden|child,tree'],
+    ['一位老爷爷把风筝从树上取了下来。','garden|tree,child'],
+    ['“线断了没关系，人没事就好。”老爷爷笑着说。','garden|tree,child,flower'],
+    ['回家的路上，小明给风筝换上了更结实的线。','day|child,kite']
+  ]},
+  { id:'zh-p3-rainy-morning', lang:'zh', level:'p3', always:true,
+    title:'雨天的早晨', titleEn:'A Rainy Morning',
+    tag:'观察 · 家庭', pages:[
+    ['早上醒来，窗外下着小雨。','rain|cloud,house'],
+    ['雨点打在玻璃上，像有人在轻轻敲门。','rain|house,cloud'],
+    ['我趴在窗边数雨滴，数到一百就忘了。','rain|child,house'],
+    ['妈妈说：“雨停了，我们出去走一走。”','rain|child,umbrella'],
+    ['路上有好多小水洼，我跳过去，又跳回来。','garden|child,flower'],
+    ['雨后的天空挂着一道彩虹。','day|rainbow,sun'],
+    ['原来下雨天也可以很好玩。','day|rainbow,child']
+  ]},
+  { id:'zh-p3-little-gardener', lang:'zh', level:'p3', always:true,
+    title:'小园丁', titleEn:'The Little Gardener',
+    tag:'种植 · 耐心', pages:[
+    ['奶奶给了我一小包种子。','garden|seed,child'],
+    ['我把种子埋进土里，轻轻浇了一点水。','garden|seed,child'],
+    ['一天、两天，土里什么也没有。','garden|sprout'],
+    ['我有点着急，奶奶说：“别急，种子在睡觉。”','garden|sprout,child'],
+    ['第五天，土里冒出两片小叶子。','garden|sprout,sun'],
+    ['我每天早上都去看它，给它浇水。','garden|plant,child'],
+    ['一个月后，它开出了小小的黄花。','garden|flower,plant']
+  ]},
+  { id:'en-p3-treasure-map', lang:'en', level:'p3', always:true,
+    title:'The Treasure Map', titleEn:'地图上的宝藏',
+    tag:'Family · discovery', pages:[
+    ['Grandpa finds an old map in the attic.','room|book'],
+    ['"There is a treasure near the big tree," he says.','room|book,child'],
+    ['We walk to the park and look at the map again.','garden|child,tree'],
+    ['We dig under the tree, but we find only a box.','garden|child,tree,box'],
+    ['Inside the box there is a photo of Grandpa as a boy.','room|box,child'],
+    ['"This is the best treasure of all," he says.','room|box,child'],
+    ['We put the photo on the wall next to the map.','room|house']
+  ]},
+  { id:'en-p3-class-pet', lang:'en', level:'p3', always:true,
+    title:'Our Class Pet', titleEn:'班级宠物',
+    tag:'Responsibility · school', pages:[
+    ['Our class has a small fish called Bubble.','room|fish'],
+    ['Every week one child takes it home.','room|fish,child'],
+    ['This week it is my turn.','room|fish,child'],
+    ['I feed it and clean the water every day.','room|fish'],
+    ['On Friday the water looks dirty and Bubble swims slowly.','room|fish'],
+    ['Dad helps me change the water and wash the stones.','room|fish,child'],
+    ['On Monday Bubble is fast and happy again.','room|fish']
+  ]},
+  { id:'en-p3-night-market', lang:'en', level:'p3', always:true,
+    title:'The Night Market', titleEn:'夜市',
+    tag:'Culture · family', pages:[
+    ['On Saturday night Mom takes me to the night market.','night|child,house'],
+    ['There are lights, music and hundreds of people.','night|child,star'],
+    ['We eat hot noodles and sweet cakes.','night|child,cake'],
+    ['A man makes a dragon out of sugar.','night|child,star'],
+    ['I buy a small lantern with my own money.','night|child,star'],
+    ['On the way home the lantern lights up our street.','night|star,house'],
+    ['I hope we come again next Saturday.','night|star,child']
+  ]},
+
+  /* ---------- P4 · 四年级 ---------- */
+  { id:'zh-p4-bamboo-flute', lang:'zh', level:'p4', always:true,
+    title:'爷爷的竹笛', titleEn:"Grandpa's Bamboo Flute",
+    tag:'传承 · 耐心', pages:[
+    ['爷爷的抽屉里有一支竹笛，颜色黄黄的，已经用了很多年。','room|box'],
+    ['我拿起来吹了一下，只听见“呼”的一声。','room|child,box'],
+    ['爷爷笑了：“别急，先学会把气吹稳。”','room|child'],
+    ['他教我按住第一个孔，慢慢地吐气，不要用力。','garden|child,tree'],
+    ['一个星期后，我能吹出短短的一个音。','garden|child,flower'],
+    ['一个月后，我吹出了爷爷最爱的那首曲子。','garden|child,sun'],
+    ['爷爷闭上眼睛听着，眼角的皱纹也笑了。','garden|child,tree']
+  ]},
+  { id:'zh-p4-two-seeds', lang:'zh', level:'p4', always:true,
+    title:'两颗种子', titleEn:'Two Seeds',
+    tag:'寓言 · 勇气', pages:[
+    ['春天，两颗种子一起躺在松软的土里。','garden|seed,seed'],
+    ['第一颗说：“我要钻出去，看看太阳。”','garden|seed,sun'],
+    ['它用力顶开泥土，长出了嫩嫩的芽。','garden|sprout,sun'],
+    ['第二颗说：“外面太危险，我留在土里更安全。”','garden|seed'],
+    ['一只小鸟走过来，把土里的种子吃掉了。','garden|bird,seed'],
+    ['嫩芽一天天长高，风吹过来也不怕。','garden|tree,sun'],
+    ['有些路，只有勇敢往前走的人才看得见。','garden|tree,flower']
+  ]},
+  { id:'zh-p4-old-bridge', lang:'zh', level:'p4', always:true,
+    title:'村口的老桥', titleEn:'The Old Bridge',
+    tag:'家乡 · 记忆', pages:[
+    ['村口有一座石桥，桥面被走了几百年，亮亮的。','day|bridge,tree'],
+    ['爷爷说，他小时候就在这座桥上玩。','day|bridge,child'],
+    ['桥下的水很清，能看见小鱼游来游去。','day|bridge,fish'],
+    ['后来新修了公路，走桥的人越来越少。','day|bridge,car'],
+    ['有一天，桥缝里长出了一丛小草。','day|bridge,plant'],
+    ['村里人商量了很久，决定把老桥留下来。','day|bridge,child'],
+    ['现在，老桥成了大家傍晚散步的地方。','day|bridge,child,sun']
+  ]},
+  { id:'en-p4-water-cycle', lang:'en', level:'p4', always:true,
+    title:'Where the Rain Comes From', titleEn:'雨从哪里来',
+    tag:'Science · water cycle', pages:[
+    ['The sun shines on the sea and the water becomes warm.','sea|sun,seaweed'],
+    ['Some of the water goes up into the sky.','sea|cloud,sun'],
+    ['High in the sky it gets cold and makes a cloud.','day|cloud'],
+    ['The cloud grows heavy, and the rain falls down.','rain|cloud'],
+    ['The rain runs into rivers and under the ground.','rain|tree'],
+    ['Plants drink the water and grow tall and green.','garden|plant,flower'],
+    ['Then the water finds its way back to the sea.','sea|fish,seaweed']
+  ]},
+  { id:'en-p4-broken-clock', lang:'en', level:'p4', always:true,
+    title:'The Clock That Stopped', titleEn:'停住的钟',
+    tag:'Problem solving · family', pages:[
+    ['Our kitchen clock stops at half past seven.','room|child'],
+    ['Dad opens the back and looks inside.','room|child,box'],
+    ['"There is a small wheel that will not turn," he says.','room|box'],
+    ['We carry the clock to Mr Lee, who repairs old things.','room|child'],
+    ['Mr Lee cleans the wheel with a soft cloth and a little oil.','room|child'],
+    ['The clock starts again: tick, tick, tick.','room|child'],
+    ['Now nobody in our house is late for school.','room|child,house']
+  ]},
+  { id:'en-p4-lighthouse', lang:'en', level:'p4', always:true,
+    title:'The Lighthouse Keeper', titleEn:'灯塔守护人',
+    tag:'Courage · sea', pages:[
+    ['Every night the old man climbs the stairs of the lighthouse.','night|star,house'],
+    ['He lights the lamp so that ships can see the rocks.','night|star'],
+    ['One stormy night the wind blows the door open.','rain|house,cloud'],
+    ['The lamp goes out and the sea turns black.','rain|cloud'],
+    ['The old man lights it again with shaking hands.','rain|star'],
+    ['A ship turns away from the rocks and sounds its horn.','night|star,boat'],
+    ['In the morning the sea is quiet and blue again.','sea|boat,sun']
+  ]},
+
+  /* ---------- P5 · 五年级 ---------- */
+  { id:'zh-p5-paper-boat', lang:'zh', level:'p5', always:true,
+    title:'纸船与远方', titleEn:'A Paper Boat Goes Far',
+    tag:'想象 · 心愿', pages:[
+    ['我从作业本上撕下一角，折成一只小小的纸船。','room|child,book'],
+    ['我把它放进雨后的水沟，看它慢慢漂走。','rain|boat,child'],
+    ['水沟连着河，河又连着很远很远的海。','day|boat'],
+    ['我在船身里写了一个愿望：希望它到得了大海。','room|boat,book'],
+    ['第二天，水沟干了，纸船卡在石缝里。','day|boat,tree'],
+    ['我没有生气，又折了一只，放进河里。','day|boat,sun'],
+    ['有些愿望不一定要到岸，漂过就已经很好。','day|boat,cloud']
+  ]},
+  { id:'zh-p5-silkworm', lang:'zh', level:'p5', always:true,
+    title:'养蚕记', titleEn:'My Silkworms',
+    tag:'观察日记 · 生命', pages:[
+    ['春天，妈妈带回来一小盒蚕卵。','room|box,child'],
+    ['过了一个星期，卵里爬出黑黑的小蚕。','room|box'],
+    ['我每天给它们换新鲜的桑叶。','garden|leaf,child'],
+    ['蚕一天天变白、变胖，吃叶子时沙沙作响。','garden|leaf'],
+    ['有一天，它们不吃也不动了。','garden|leaf,child'],
+    ['妈妈说：“别担心，它们要吐丝结茧了。”','room|box'],
+    ['三个星期后，茧里飞出了白色的蛾子。','room|box,child']
+  ]},
+  { id:'zh-p5-city-wall', lang:'zh', level:'p5', always:true,
+    title:'城墙上的风', titleEn:'Wind on the Old Wall',
+    tag:'历史 · 家国', pages:[
+    ['假期里，我们一家人去爬一座古老的城墙。','day|castle,child'],
+    ['城墙很高，砖缝里长着细小的草。','day|castle,plant'],
+    ['风从远处吹来，带着一点点水汽。','day|cloud,castle'],
+    ['爸爸说，这些砖已经在这里站了六百年。','day|castle,child'],
+    ['我摸着砖上的凹痕，像摸到很久以前的手。','day|castle'],
+    ['夕阳把城墙的影子拉得很长很长。','day|sun,castle'],
+    ['我想，风会一直吹，城墙也会一直站着。','day|castle,cloud']
+  ]},
+  { id:'en-p5-young-inventor', lang:'en', level:'p5', always:true,
+    title:'The Boy Who Built a Machine', titleEn:'一个男孩的发明',
+    tag:'Invention · perseverance', pages:[
+    ['Ten-year-old Ben walks to the river every morning.','day|child,tree'],
+    ['He watches women carry heavy water pots for miles.','day|child'],
+    ['"There must be a better way," he thinks.','day|child'],
+    ['He builds a small model with wood, string and an old wheel.','room|child,box'],
+    ['The first model breaks, so he builds a second one.','room|child,box'],
+    ['His new machine can pull a pot without any hands.','day|child'],
+    ['People in the village still use his idea today.','day|child,house']
+  ]},
+  { id:'en-p5-migration', lang:'en', level:'p5', always:true,
+    title:'The Long Journey South', titleEn:'候鸟的旅程',
+    tag:'Nature · migration', pages:[
+    ['Every autumn the birds fly south together.','day|bird,cloud'],
+    ['They travel hundreds of kilometres over land and sea.','sea|bird,cloud'],
+    ['The young birds follow the old ones and learn the way.','day|bird'],
+    ['At night they rest in the tall trees near the water.','night|tree,bird'],
+    ['One day a storm comes and the group is separated.','rain|bird,cloud'],
+    ['The oldest bird remembers the shape of the coast.','day|bird,sun'],
+    ['Next spring they will come back to this very tree.','day|tree,bird,flower']
+  ]},
+  { id:'en-p5-library-key', lang:'en', level:'p5', always:true,
+    title:'The Key to the Library', titleEn:'图书馆的钥匙',
+    tag:'Friendship · honesty', pages:[
+    ['Miss Chen opens the library at eight every morning.','room|book'],
+    ['One Monday the key is not in her bag.','room|book,box'],
+    ['The children wait outside in the cold wind.','day|child,cloud'],
+    ['Amy remembers a small window at the back of the building.','room|child'],
+    ['She climbs in and opens the front door from inside.','room|book,child'],
+    ['Miss Chen gives her a key of her own.','room|book,child'],
+    ['"Come early tomorrow," she says with a smile.','room|book']
+  ]},
+
+  /* ---------- P6 · 六年级 ---------- */
+  { id:'zh-p6-last-lantern', lang:'zh', level:'p6', always:true,
+    title:'最后一盏灯', titleEn:'The Last Lamp',
+    tag:'城市 · 温情', pages:[
+    ['小城的老街要拆了，路灯一盏一盏地熄了。','night|house,star'],
+    ['只有拐角那盏还亮着，照着修鞋的小摊。','night|star,house'],
+    ['修鞋的老人说，这盏灯已经陪了他四十年。','night|star,child'],
+    ['孩子们在灯下写作业，写完就结伴回家。','night|star,child'],
+    ['新街装上了更亮的灯，老人却没有搬过去。','night|house,star'],
+    ['一个冬天的夜里，那盏灯忽然坏了。','night|house'],
+    ['第二天早上，台阶上放着一盏新的小灯。','day|sun,house']
+  ]},
+  { id:'zh-p6-river-letter', lang:'zh', level:'p6', always:true,
+    title:'河流的信', titleEn:'A Letter from the River',
+    tag:'环保 · 责任', pages:[
+    ['河边立着一块旧木牌，上面的字已经看不清了。','day|tree'],
+    ['爷爷说，从前这里的水清得能照出云。','day|boat,cloud'],
+    ['后来工厂把水排进河里，鱼一条一条不见了。','day|boat'],
+    ['那年夏天，河面上浮着一层白色的泡沫。','day|boat,cloud'],
+    ['镇上的人开始捡垃圾、种树，给工厂写信。','day|child,tree'],
+    ['三年以后，第一批小鱼回到了河里。','day|fish,boat'],
+    ['河不会说话，但它会用自己的方式回答。','day|fish,sun']
+  ]},
+  { id:'zh-p6-time-capsule', lang:'zh', level:'p6', always:true,
+    title:'时间胶囊', titleEn:'The Time Capsule',
+    tag:'成长 · 记忆', pages:[
+    ['毕业前，老师让我们做一个时间胶囊。','room|box,child'],
+    ['每个人写一封信，写给十年后的自己。','room|book,child'],
+    ['有人写想当医生，有人写想去很远的地方。','room|book'],
+    ['我把一张画和一颗小石头放进了铁盒。','room|box'],
+    ['我们在操场那棵大树下挖了一个坑。','garden|tree,child'],
+    ['盒子慢慢埋下去的时候，谁也没有说话。','garden|tree,child'],
+    ['十年后再打开，也许我们都已经变了吧。','garden|tree,sun']
+  ]},
+  { id:'en-p6-robot-garden', lang:'en', level:'p6', always:true,
+    title:'The Robot in the Garden', titleEn:'会种花的机器人',
+    tag:'Science fiction · time', pages:[
+    ['In 2040 a robot named Pea works in a city garden.','garden|plant'],
+    ['Pea knows the name of every flower and the day it opens.','garden|flower'],
+    ['But it cannot feel the wind or smell the rain.','rain|cloud'],
+    ['One afternoon a girl gives Pea a small seed.','garden|seed,child'],
+    ['"You should plant it yourself," she says.','garden|seed,child'],
+    ['Pea waits thirty days without moving, and the seed opens.','garden|sprout,sun'],
+    ['For the first time, Pea understands what time means.','garden|flower,child']
+  ]},
+  { id:'en-p6-mountain-mail', lang:'en', level:'p6', always:true,
+    title:'The Mountain Postman', titleEn:'山里的邮递员',
+    tag:'Duty · people', pages:[
+    ['Uncle Wang has carried mail up this mountain for twenty years.','day|tree,house'],
+    ['There is no road, only a narrow path of stones.','day|tree'],
+    ['In winter the path disappears under deep snow.','snow|tree'],
+    ['He puts the letters in his bag and starts before sunrise.','snow|tree'],
+    ['One family is waiting for a letter from their son in the city.','snow|house'],
+    ['Uncle Wang arrives at night with cold hands and warm news.','snow|house,star'],
+    ['"A letter is a person\'s voice," he says.','night|house,star']
+  ]},
+  { id:'en-p6-three-wishes', lang:'en', level:'p6', always:true,
+    title:'Three Wishes', titleEn:'三个愿望',
+    tag:'Fable · wisdom', pages:[
+    ['A poor farmer finds an old pot in his field.','garden|box'],
+    ['A voice says, "You may have three wishes."','room|box'],
+    ['"I wish for a big dinner," says the farmer at once.','room|cake'],
+    ['The table fills with food, and his wife laughs with joy.','room|cake'],
+    ['"I wish this food would last forever," she says.','room|cake'],
+    ['Now they can never finish it, and they never plant again.','garden|box'],
+    ['The third wish is silence, and they walk back to the field.','garden|plant,child']
+  ]},
 ];
 
 /* 规范化：pages 由 [text, art] 转成对象，并补上顺序号 */
@@ -1091,10 +1384,12 @@ function currentBookWeek(){
   return Math.max(0, Math.floor(diff / 7));
 }
 
-/* 已解锁（可阅读）的绘本；旧书永远保留 */
+/* 已解锁（可阅读）的绘本；旧书永远保留。
+   always:true 的书（v69 新增的 P3–P6）不受「每周 5 本」的队列限制，
+   上线即可读，否则高年级要等十几周才轮得到。 */
 function availableBooks(){
   const wk = currentBookWeek();
-  return BOOKS.filter(b=>weekIndexOfBook(b.seq) <= wk);
+  return BOOKS.filter(b=>b.always || weekIndexOfBook(b.seq) <= wk);
 }
 /* 下一批解锁的日期（下周一），返回本地日期字符串 */
 function nextBookUnlockDate(){

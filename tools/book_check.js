@@ -29,9 +29,9 @@ for (const b of BOOKS) {
   if (!b.id) { err(tag + ' 缺 id'); continue; }
   if (ids.has(b.id)) err(tag + ' id 重复');
   ids.add(b.id);
-  if (!/^(zh|en)-(k1|k2|p1|p2)-[a-z0-9-]+$/.test(b.id)) err(tag + ' id 命名不规范（应为 zh|en-级别-slug）');
+  if (!/^(zh|en)-(k1|k2|p1|p2|p3|p4|p5|p6)-[a-z0-9-]+$/.test(b.id)) err(tag + ' id 命名不规范（应为 zh|en-级别-slug）');
   if (!['zh', 'en'].includes(b.lang)) err(tag + ' lang 必须是 zh/en');
-  if (!LEVELS.has(b.level)) err(tag + ' level 必须是 k1/k2/p1/p2');
+  if (!LEVELS.has(b.level)) err(tag + ` level 必须是 ${Array.from(LEVELS).join('/')}`);
   if (!b.title || !b.titleEn) err(tag + ' 缺标题');
   if (!Array.isArray(b.pages) || b.pages.length < 5 || b.pages.length > 8) err(tag + ` 页数 ${b.pages && b.pages.length} 不在 5–8`);
   (b.pages || []).forEach((p, i) => {

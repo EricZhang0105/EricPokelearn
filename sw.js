@@ -1,9 +1,17 @@
 /* PokeLearn service worker — offline-capable PWA
- * 缓存策略（v68）：
+ * 缓存策略（v69）：
  * - HTML / JS / CSS / manifest：网络优先，断网回退缓存 → 改版后孩子设备立刻拿到新版本
  * - 图片（精灵图、图标）：缓存优先 → 秒开且省流量
  * - 中文音频：安装时预缓存（173 段 / 3.7MB，Tingting 高清语音，含四声示范音），第一次打开就能离线听
  * 改了静态文件后请把 CACHE 里的版本号 +1，强制刷新图片缓存。
+ * v69（2026-11-18）：
+ *   ① 造句语料重写：旧版把 268 词整池当宾语，造出 "I read a hat." "I read a red."
+ *      这类病句；改为「动词→可搭配名词」白名单 + 冠词/三单/过去时全部按语法生成，
+ *      六个句型 tier 1–5，覆盖到小学三、四年级（tools/writing_check.js 逐句校验）。
+ *   ② 英文难度：语法模板新增过去时/比较级/进行时/将来时/疑问词/所有格等 G3-4 句型；
+ *      拼写与 Sight Words 按 level 分级（高阶启用 SPELL_ADV / SIGHT_ADV）。
+ *   ③ 中文难度：新增 c-word 词语专项（反义词/近义词/量词/同音字/成语，224 道）。
+ *   ④ 绘本：新增 P3–P6 四个年级共 24 本（always:true 上线即可读），总数 40→64 本。
  * v68（2026-11-18）：
  *   Sight Words 中文补全：题库扩容用的 question-bank.js WORDS（268 词 + 派生共 536）
  *   之前只覆盖旧 100 词，导致大部分选项只有英文。EN_ZH 补全全部词 + sightZh 词根
@@ -82,7 +90,7 @@
  * v40（2026-11-16 语音统一）：所有音频 URL 带 ?a=2 版本参数，旧缓存（Flo 时代发闷的
  *   录音 + 63 只宝可梦的多音色鼓励语）不会再被复用；鼓励语改为统一女声 TTS。
  */
-const CACHE = 'pokelearn-v68';
+const CACHE = 'pokelearn-v69';
 const SHELL = [
   './',
   './index.html',

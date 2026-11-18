@@ -2416,8 +2416,11 @@ function renderReaderPage(firstTime){
   $('#readerBadge').innerHTML = r && r.read ? `<span class="rb-read">✓ 已读 ${r.times>1?'×'+r.times:''}</span>` : '';
   $('#readerArt').innerHTML = bookArt(pg.art);
   $('#readerText').textContent = pg.t;
+  /* P3–P6 的页面文字比低年级长得多：分三档字号，长段落用 tiny，
+     避免一段话占满屏幕或被裁掉（v69） */
+  const tlen = pg.t.length;
   $('#readerText').className = 'reader-text ' + (b.lang==='zh' ? 'zh' : 'en') +
-    (pg.t.length>46 ? ' small' : '');
+    (tlen > 78 ? ' tiny' : tlen > 46 ? ' small' : '');
 
   $('#readerDots').innerHTML = b.pages.map((_,i)=>
     `<span class="dot ${i===reader.page?'on':''}"></span>`).join('');
