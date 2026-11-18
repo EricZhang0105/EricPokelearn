@@ -1059,10 +1059,28 @@ function stopSpeechInput(){
 
 /* v65 Sight Words 选项标签：英文 + 中文释义，仅用于「看」，不参与判题。
    判题/语音/去重全部依赖 data-v 与 answer 里的英文原词，因此只在这里改显示文本，
-   data-v 仍写 o。只有 e-sight 课才翻译，其它题型像素级不变。 */
+   data-v 仍写 o。只有 e-sight 课才翻译，其它题型像素级不变。
+   v68：题库扩容会派生 books/walking/unhappy 等词形，先查原词再回溯词根。 */
+function sightZh(word){
+  if(typeof EN_ZH==='undefined') return null;
+  const s=String(word).toLowerCase();
+  if(EN_ZH[s]) return EN_ZH[s];
+  // 按派生规则还原词根（question-bank.js extraWords 用的是 s/ing/ed/er/un/y）
+  const stems=[];
+  if(/ies$/.test(s)) stems.push(s.slice(0,-3)+'y');          // countries → country
+  if(/es$/.test(s))  stems.push(s.slice(0,-2), s.slice(0,-1));// boxes → box, watches → watch
+  if(/s$/.test(s))   stems.push(s.slice(0,-1));              // books → book
+  if(/ing$/.test(s)) stems.push(s.slice(0,-3), s.slice(0,-2));// walking → walk, making → make
+  if(/ed$/.test(s))  stems.push(s.slice(0,-2), s.slice(0,-1));// wanted → want, liked → like
+  if(/er$/.test(s))  stems.push(s.slice(0,-2), s.slice(0,-1));// teacher → teach, bigger → big
+  if(/^un/.test(s))  stems.push(s.slice(2));                 // unhappy → happy
+  if(/y$/.test(s))   stems.push(s.slice(0,-1));              // rainy → rain
+  for(const st of stems){ if(EN_ZH[st]) return EN_ZH[st]; }
+  return null;
+}
 function sightLabel(o){
-  if(state.lessonId!=='e-sight' || typeof EN_ZH==='undefined') return o;
-  const zh=EN_ZH[String(o).toLowerCase()];
+  if(state.lessonId!=='e-sight') return o;
+  const zh=sightZh(o);
   return zh ? `${o} <span class="opt-zh">${zh}</span>` : o;
 }
 

@@ -328,7 +328,46 @@ const EN_ZH={
   umbrella:'雨伞', morning:'早晨', evening:'傍晚', together:'一起', because:'因为',
   favorite:'最喜欢的', picture:'图画', purple:'紫色的', animal:'动物', bicycle:'自行车',
   teacher:'老师', playground:'操场', delicious:'美味的', exciting:'令人兴奋的',
-  yesterday:'昨天', tomorrow:'明天'
+  yesterday:'昨天', tomorrow:'明天',
+  /* v68 补全：question-bank.js 的 WORDS 全表（题库扩容后出题用的 271 词）。
+     之前只覆盖 SIGHT/CVC/WORDS_L1-L3 那 100 词，扩容题里 computer/elephant 等
+     201 个词都没中文，孩子看到「零星几个有翻译」。这里一次性补齐，保证任一选项都有中文。 */
+  computer:'电脑', elephant:'大象', dinosaur:'恐龙', butterfly:'蝴蝶', sandwich:'三明治',
+  breakfast:'早餐', bedroom:'卧室', football:'足球', sunshine:'阳光', painting:'绘画',
+  counting:'数数', writing:'写字', reading:'阅读', singing:'唱歌', dancing:'跳舞',
+  swimming:'游泳', running:'跑步', adventure:'冒险', calendar:'日历', chocolate:'巧克力',
+  classroom:'教室', community:'社区', different:'不同的', discover:'发现', exercise:'锻炼',
+  family:'家庭', festival:'节日', geography:'地理', grandmother:'奶奶', helicopter:'直升机',
+  important:'重要的', interesting:'有趣的', keyboard:'键盘', kangaroo:'袋鼠', language:'语言', mountain:'高山',
+  newspaper:'报纸', octopus:'章鱼', penguin:'企鹅', question:'问题', remember:'记得',
+  restaurant:'餐厅', science:'科学', telescope:'望远镜', vegetable:'蔬菜', waterfall:'瀑布',
+  xylophone:'木琴', zebra:'斑马', astronaut:'宇航员', basketball:'篮球', brilliant:'很棒的',
+  carnival:'狂欢节', dolphin:'海豚', envelope:'信封', fountain:'喷泉', galaxy:'银河',
+  harmony:'和谐', island:'岛屿', jellyfish:'水母', kitchen:'厨房', ladder:'梯子',
+  magnet:'磁铁', needle:'针', ocean:'海洋', pencil:'铅笔', quarter:'四分之一',
+  spaceship:'宇宙飞船', triangle:'三角形', universe:'宇宙', village:'村庄', window:'窗户',
+  young:'年轻的', zoo:'动物园', balloon:'气球', camera:'相机', carrot:'胡萝卜', circle:'圆形',
+  doctor:'医生', farmer:'农民', feather:'羽毛', flower:'花朵', forest:'森林', guitar:'吉他',
+  honey:'蜂蜜', igloo:'冰屋', jungle:'丛林', kitten:'小猫', lemon:'柠檬', moonlight:'月光',
+  noodle:'面条', palace:'宫殿', rabbit:'兔子', silver:'银色的', tiger:'老虎', violet:'紫罗兰色',
+  winter:'冬天', watermelon:'西瓜', electricity:'电', imagination:'想象力', celebration:'庆祝',
+  thermometer:'温度计', microscope:'显微镜', photography:'摄影', supermarket:'超市', engineer:'工程师',
+  wonderful:'精彩的', beautiful:'美丽的', dangerous:'危险的', comfortable:'舒适的', kilometres:'公里',
+  mathematics:'数学', alphabet:'字母表', aquarium:'水族馆', barbecue:'烧烤', cucumber:'黄瓜',
+  firefighter:'消防员', hamburger:'汉堡包', vacation:'假期', information:'信息', invitation:'邀请',
+  magazine:'杂志', necklace:'项链', paragraph:'段落', quality:'质量', yogurt:'酸奶',
+  banana:'香蕉', grape:'葡萄', peach:'桃子', mango:'芒果', melon:'甜瓜', cherry:'樱桃',
+  strawberry:'草莓', juice:'果汁', bread:'面包', butter:'黄油', cheese:'奶酪', cookie:'饼干',
+  pizza:'披萨', salad:'沙拉', soup:'汤', rice:'米饭', tomato:'西红柿', potato:'土豆',
+  onion:'洋葱', shirt:'衬衫', shoes:'鞋子', socks:'袜子', dress:'连衣裙', coat:'外套',
+  scarf:'围巾', glove:'手套', jacket:'夹克', pocket:'口袋', button:'纽扣', zipper:'拉链',
+  clock:'时钟', watch:'手表', lamp:'台灯', door:'门', floor:'地板', wall:'墙', roof:'屋顶',
+  stairs:'楼梯', gate:'大门', fence:'栅栏', river:'河流', lake:'湖泊', sea:'大海', beach:'沙滩',
+  hill:'小山', road:'道路', bridge:'桥', tunnel:'隧道', train:'火车', ticket:'票',
+  ruler:'尺子', eraser:'橡皮', crayon:'蜡笔', paper:'纸', glue:'胶水', scissors:'剪刀',
+  backpack:'书包', chalk:'粉笔', board:'黑板', angry:'生气的', tired:'疲倦的', hungry:'饥饿的',
+  thirsty:'口渴的', sleepy:'困倦的', brave:'勇敢的', kind:'善良的', quiet:'安静的', loud:'大声的',
+  fast:'快的', slow:'慢的', clever:'聪明的', gentle:'温柔的', shiny:'闪亮的'
 };
 /* 阅读理解题库在 js/read-passages.js（独立文件，每周自动上新） */
 const CVC=['cat','dog','sun','pig','cup','hat','bug','pen','top','map','fox','bus','red','box','leg','sit','hot','run'];

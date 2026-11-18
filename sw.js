@@ -1,9 +1,13 @@
 /* PokeLearn service worker — offline-capable PWA
- * 缓存策略（v67）：
+ * 缓存策略（v68）：
  * - HTML / JS / CSS / manifest：网络优先，断网回退缓存 → 改版后孩子设备立刻拿到新版本
  * - 图片（精灵图、图标）：缓存优先 → 秒开且省流量
  * - 中文音频：安装时预缓存（173 段 / 3.7MB，Tingting 高清语音，含四声示范音），第一次打开就能离线听
  * 改了静态文件后请把 CACHE 里的版本号 +1，强制刷新图片缓存。
+ * v68（2026-11-18）：
+ *   Sight Words 中文补全：题库扩容用的 question-bank.js WORDS（268 词 + 派生共 536）
+ *   之前只覆盖旧 100 词，导致大部分选项只有英文。EN_ZH 补全全部词 + sightZh 词根
+ *   回溯（books/walking/unhappy）。修正 sight_zh_check.js 用对真实词表自测。
  * v67（2026-11-18）：
  *   错题本「Practice again」改为连续复习：点一道后把全部错题排成队列（点击那道打头），
  *   答完直接进下一道（答错显示「下一道」按钮、答对自动），不用退出重进错题本。
@@ -78,7 +82,7 @@
  * v40（2026-11-16 语音统一）：所有音频 URL 带 ?a=2 版本参数，旧缓存（Flo 时代发闷的
  *   录音 + 63 只宝可梦的多音色鼓励语）不会再被复用；鼓励语改为统一女声 TTS。
  */
-const CACHE = 'pokelearn-v67';
+const CACHE = 'pokelearn-v68';
 const SHELL = [
   './',
   './index.html',
