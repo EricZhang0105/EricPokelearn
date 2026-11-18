@@ -8,10 +8,21 @@
 | 用途 | 永久地址 | 特性 |
 |---|---|---|
 | 主链接（日常使用 / 分享 / iPad 主屏 / 孩子用） | https://ericzhang0105.github.io/EricPokelearn/ | 地址永不变；任何机器 push 后 1–2 分钟自动更新 |
-| 云同步（登录 / 跨设备同步存档与家长录音） | https://wbapp-irsoalbj6c5htbc5ks1cye.app.workbuddy.host/?sharecode=4KAXDGF6AB | 地址永不变；只用于账号与数据同步，页面新旧不影响数据 |
+| 云同步（登录 / 跨设备同步存档与家长录音） | https://wbapp-ig9wrpabw0v66x4kzqyd6s.app.workbuddy.host/?sharecode=BC3RN7J6A4 | 本机可稳定重发、保持地址不变；只用于账号与数据同步 |
 
 日常一律打开**主链接**。需要登录或跨设备同步时，点页面右上角「👤 登录 / 注册」→
-一键跳转到云同步链接。两个链接是同一个 App，数据互通。sharecode 必须完整保留，不能删。
+一键跳转到云同步链接（当前为 ig9wrp 应用）。sharecode 必须完整保留，不能删。
+
+### 云同步链接为何选 ig9wrp（2026-11-18 定案）
+- 云服务按 Origin 精确校验：只有页面域名与 `publishableKey` 所属应用一致时登录才通过。
+  实测 IrsOaLbj 域名与 ig9wrp 域名各自预检 204，但新域名 212284 为 403。
+- 原来的 IrsOaLbj 链接页面内容卡在 v62 且**本机无法推送更新**（域名绑定在旧 Windows 机器目录，
+  WorkBuddy 发布工具按本地目录 hash 定域名，反复验证无法覆盖），故弃用为跳转目标。
+- ig9wrp 是本机稳定绑定目录（`/Users/eric.zhang/WorkBuddy/PokeLearnCloud`，hash `0d8bc2413d799978`），
+  可从本机反复重发且地址不变、版本保持最新，故设为主链接的云登录跳转目标。
+- **数据说明**：云数据绑定在应用 ID 上。切换到 ig9wrp 后，用同一邮箱登录后，本机存档/录音会在
+  5 秒内自动上传（v63 起），多台设备登同一账号自动合并。旧 IrsOaLbj 里如有未同步的录音，
+  先在旧链接登录让它同步到本机，再到 ig9wrp 登录上传即可接续。
 
 ## 二、为什么主链接永远不变
 

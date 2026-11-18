@@ -285,7 +285,7 @@
 			<key>PayloadType</key>
 			<string>com.apple.webClip.managed</string>
 			<key>PayloadUUID</key>
-			<string>16086E42-76D2-47D1-83B9-F4DC9318D3B5</string>
+			<string>9035A51F-E60C-401F-8EFF-53CB935F50C0</string>
 			<key>PayloadVersion</key>
 			<integer>1</integer>
 		</dict>
@@ -303,7 +303,7 @@
 	<key>PayloadType</key>
 	<string>Configuration</string>
 	<key>PayloadUUID</key>
-	<string>FF3AB32E-0F9F-4DFD-8551-BE88F2589C92</string>
+	<string>FBBC48E4-EB39-46A0-87B3-DCDF492EE3F8</string>
 	<key>PayloadVersion</key>
 	<integer>1</integer>
 </dict>

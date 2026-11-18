@@ -272,7 +272,7 @@
 				<key>Precomposed</key>
 				<true/>
 				<key>URL</key>
-				<string>https://wbapp-irsoalbj6c5htbc5ks1cye.app.workbuddy.host/?sharecode=4KAXDGF6AB</string>
+				<string>https://wbapp-ig9wrpabw0v66x4kzqyd6s.app.workbuddy.host/?sharecode=BC3RN7J6A4</string>
 			</dict>
 			<key>PayloadDescription</key>
 			<string>在主屏幕添加 PokeLearn 儿童学习应用图标，全屏运行、离线可用。</string>
@@ -285,7 +285,7 @@
 			<key>PayloadType</key>
 			<string>com.apple.webClip.managed</string>
 			<key>PayloadUUID</key>
-			<string>129131B3-568E-499D-8ED3-5E184805082E</string>
+			<string>C8E65FCD-390F-4815-B913-22900914C7AD</string>
 			<key>PayloadVersion</key>
 			<integer>1</integer>
 		</dict>
@@ -303,7 +303,7 @@
 	<key>PayloadType</key>
 	<string>Configuration</string>
 	<key>PayloadUUID</key>
-	<string>DAD33937-ECBA-4E6A-8F2C-0D717D1CBE64</string>
+	<string>9AC29AB9-D65F-4358-868E-D782BA0B75F4</string>
 	<key>PayloadVersion</key>
 	<integer>1</integer>
 </dict>
