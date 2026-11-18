@@ -302,6 +302,34 @@ const MATH = [
    英文 · 全英文（阅读 / 拼写 / 写作 / 分级读物）
    ========================================================= */
 const SIGHT=['the','a','I','you','he','she','we','to','and','is','it','in','on','at','can','see','look','go','big','red','blue','cat','dog','sun','run','hot','cup','book','ball','tree'];
+/* v65：Sight Words 选项「英文 + 中文」释义表。仅用于显示层，答案/判题/语音仍用英文原词。
+   键统一小写；覆盖 SIGHT/CVC/WORDS_L1-L3 全部可能成为 sight 选项的单词，
+   这样每个选项都带中文，孩子不会靠「谁有中文」猜出答案。 */
+const EN_ZH={
+  /* SIGHT */
+  the:'这个', a:'一个', i:'我', you:'你', he:'他', she:'她', we:'我们', to:'到/向',
+  and:'和', is:'是', it:'它', in:'在…里', on:'在…上', at:'在', can:'能/会', see:'看见',
+  look:'看', go:'去', big:'大的', red:'红色的', blue:'蓝色的', cat:'猫', dog:'狗',
+  sun:'太阳', run:'跑', hot:'热的', cup:'杯子', book:'书', ball:'球', tree:'树',
+  /* CVC 补充 */
+  pig:'猪', hat:'帽子', bug:'虫子', pen:'钢笔', top:'顶部', map:'地图', fox:'狐狸',
+  bus:'公共汽车', box:'盒子', leg:'腿', sit:'坐',
+  /* WORDS_L1 补充 */
+  my:'我的', up:'向上', me:'我', has:'有', like:'喜欢', play:'玩', fun:'有趣的',
+  bag:'书包', bed:'床', mom:'妈妈', dad:'爸爸',
+  /* WORDS_L2 补充 */
+  fish:'鱼', bird:'鸟', cake:'蛋糕', milk:'牛奶', rain:'雨', park:'公园', ship:'轮船',
+  shop:'商店', duck:'鸭子', frog:'青蛙', jump:'跳', help:'帮助', read:'读', sing:'唱歌',
+  walk:'走路', green:'绿色的', yellow:'黄色的', small:'小的', happy:'开心的', water:'水',
+  table:'桌子', chair:'椅子', house:'房子', school:'学校', friend:'朋友', apple:'苹果',
+  orange:'橙子',
+  /* WORDS_L3 补充 */
+  garden:'花园', market:'市场', birthday:'生日', rainbow:'彩虹', library:'图书馆',
+  umbrella:'雨伞', morning:'早晨', evening:'傍晚', together:'一起', because:'因为',
+  favorite:'最喜欢的', picture:'图画', purple:'紫色的', animal:'动物', bicycle:'自行车',
+  teacher:'老师', playground:'操场', delicious:'美味的', exciting:'令人兴奋的',
+  yesterday:'昨天', tomorrow:'明天'
+};
 /* 阅读理解题库在 js/read-passages.js（独立文件，每周自动上新） */
 const CVC=['cat','dog','sun','pig','cup','hat','bug','pen','top','map','fox','bus','red','box','leg','sit','hot','run'];
 const PHON=[

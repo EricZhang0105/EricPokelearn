@@ -1056,6 +1056,15 @@ function stopSpeechInput(){
   if(_stopSpeechInput){ try{ _stopSpeechInput(); }catch(e){} _stopSpeechInput=null; }
 }
 
+/* v65 Sight Words 选项标签：英文 + 中文释义，仅用于「看」，不参与判题。
+   判题/语音/去重全部依赖 data-v 与 answer 里的英文原词，因此只在这里改显示文本，
+   data-v 仍写 o。只有 e-sight 课才翻译，其它题型像素级不变。 */
+function sightLabel(o){
+  if(state.lessonId!=='e-sight' || typeof EN_ZH==='undefined') return o;
+  const zh=EN_ZH[String(o).toLowerCase()];
+  return zh ? `${o} <span class="opt-zh">${zh}</span>` : o;
+}
+
 /* ---------- 渲染题目 ---------- */
 function renderQuestion(){
   stopSpeechInput();
@@ -1108,7 +1117,7 @@ function renderQuestion(){
     h+=`<div class="option-grid ${q.tone?'tone-grid':''}" id="optGrid">`;
     q.options.forEach((o,i)=>{
       const label = q.tone && q.optionMarks
-        ? `<span class="tone-mark">${q.optionMarks[i]}</span><span class="tone-name">${o}</span>` : o;
+        ? `<span class="tone-mark">${q.optionMarks[i]}</span><span class="tone-name">${o}</span>` : sightLabel(o);
       h+=`<button class="option-btn" data-v="${o}">${label}</button>`;
     });
     h+=`</div>`;
@@ -1236,7 +1245,7 @@ function choiceCardHTML(cq){
   h+=`<div class="option-grid ${cq.tone?'tone-grid':''}" id="optGrid">`+
      cq.options.map((o,i)=>{
        const label=(cq.tone && cq.optionMarks)
-         ? `<span class="tone-mark">${cq.optionMarks[i]}</span><span class="tone-name">${o}</span>` : o;
+         ? `<span class="tone-mark">${cq.optionMarks[i]}</span><span class="tone-name">${o}</span>` : sightLabel(o);
        return `<button class="option-btn" data-v="${o}">${label}</button>`;
      }).join('')+`</div>`;
   if(cq.canSpeak && Store.getSetting('mic'))
