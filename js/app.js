@@ -1028,6 +1028,7 @@ function beginSession(subject,lessonId){
   state.idx=0; state.correct=0;
   state.total=state.questions.length;
   state.subject=subject; state.lessonId=lessonId; state.reviewDone=false;
+  state.mistakeReviewSession=false;   // 正常上课：反馈按钮用标准文案，不显示「下一道」
   state.animQueue=[];          // 本套题里发生的进化/退化/死亡动画，在题目切换时播放
   state.delta=0;               // 本套题净能量变化，用于结果页展示
   cancelSpeech();              // 上一节课的讲解/读题一律停掉
@@ -1666,7 +1667,8 @@ function showFeedback(good,explain,autoNext,onWrong,stay,delay){
   }else if(!good){
     const btn=document.createElement('button');
     btn.className='btn-secondary'; btn.style.marginTop='10px';
-    btn.textContent= stay?'Keep going':'Continue ➡️';
+    // 错题复习：答错后按钮明确写「下一道」，点了直接进队列下一题，不用退出重进
+    btn.textContent= state.mistakeReviewSession ? '下一道 ➡️' : (stay?'Keep going':'Continue ➡️');
     btn.onclick=()=>{ if(onWrong) onWrong(); nextQuestion(); };
     fb.appendChild(document.createElement('br'));
     fb.appendChild(btn);
@@ -1897,11 +1899,25 @@ function openMistakes(){
   show('screen-mistakes');
 }
 
-function startPractice(m){
-  state.subject=m.subject; state.lessonId=m.lessonId;
+/* 错题本「Practice again」：把当前所有错题排成一个连续复习队列。
+ * 之前每次只装 1 道（total=1），答完就进结果页，孩子得退出→回首页→重进错题本再选题。
+ * 现在答完一道直接进下一道（答错有「下一道」按钮、答对自动），错题全复习完才回结果页。
+ * 注意：答对的复习题会被 onCorrect 从错题本移除，但那是另一份数组引用，
+ *       不影响这里已快照的 state.questions，队列能完整走完。 */
+function startPractice(startM){
+  const all=Store.allMistakes().slice().reverse();   // 与错题本列表同序（最新在前）
+  const picked=all.findIndex(x=>x===startM);
+  // 以点击的那道打头，其余按列表顺序跟上；跨科目错题也照常复习（不需要同课上下文）
+  const ordered = picked>=0 ? [startM, ...all.filter(x=>x!==startM)] : all;
+  state.subject=startM.subject; state.lessonId=startM.lessonId;
   state.selectedPokemon = state.selectedPokemon || POKEMON[0].id;
-  state.questions=[{q:m.q,ref:m,isReview:true}];
-  state.idx=0; state.correct=0; state.total=1;
+  state.questions=ordered.map(x=>({q:x.q,ref:x,isReview:true}));
+  state.idx=0; state.correct=0; state.total=state.questions.length;
+  state.mistakeReviewSession=true;    // 反馈区据此显示「下一道」按钮
+  state.animQueue=[]; state.delta=0;  // 错题复习不涉及进化动画/能量结算展示
+  cancelSpeech();
+  state.pendingExplain=false;
+  state.explainToken=(state.explainToken||0)+1;
   updateCompanion();
   show('screen-lesson');
   renderQuestion();
