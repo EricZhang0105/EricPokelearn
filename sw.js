@@ -1,9 +1,16 @@
 /* PokeLearn service worker — offline-capable PWA
- * 缓存策略（v65）：
+ * 缓存策略（v66）：
  * - HTML / JS / CSS / manifest：网络优先，断网回退缓存 → 改版后孩子设备立刻拿到新版本
  * - 图片（精灵图、图标）：缓存优先 → 秒开且省流量
  * - 中文音频：安装时预缓存（173 段 / 3.7MB，Tingting 高清语音，含四声示范音），第一次打开就能离线听
  * 改了静态文件后请把 CACHE 里的版本号 +1，强制刷新图片缓存。
+ * v66（2026-11-18）：
+ *   四声辨调音频 tone_<base>_<t> 单独升 a=9（其余中文仍 a=8）。旧音频由 edge-tts
+ *   裸读单字、句尾掉 50-70Hz：一声「屋」听成降调、三声「晚」偏平像一声。已用
+ *   tools/zh_tone_fix.py 以 Praat PSOLA 按目标调型重塑全部 32 段（报告 zh_tone_report.json），
+ *   Praat 复核 32/32 达标。独立版本号使 iPad 只重新缓存这 32 段。
+ * v65（2026-11-18）：
+ *   Sight Words 选项显示「英文 + 中文」（cat 猫），仅显示层，判题/语音仍用英文原词。
  * v53（2026-11-17）：
  *   1) 第③部分字母卡改为读【字母名】（A=ei、B=bi…），不再是音素；26 段 letter_A..Z 由
  *      全 App 同一把 Jenny 女声合成（tools/letters_build.py），音视频版本 a=9。
@@ -68,7 +75,7 @@
  * v40（2026-11-16 语音统一）：所有音频 URL 带 ?a=2 版本参数，旧缓存（Flo 时代发闷的
  *   录音 + 63 只宝可梦的多音色鼓励语）不会再被复用；鼓励语改为统一女声 TTS。
  */
-const CACHE = 'pokelearn-v65';
+const CACHE = 'pokelearn-v66';
 const SHELL = [
   './',
   './index.html',

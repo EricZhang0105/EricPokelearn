@@ -35,4 +35,6 @@ hang_real.html
 test_blend.html
 test_denoise.html
 audio/zh/test_*.m4a
+# 四声调型修复前的原音频备份，仅本地回滚用
+audio/zh/_bak_tone_*/
 tools/_make_test_blend.py

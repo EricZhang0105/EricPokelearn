@@ -35,7 +35,7 @@ MANIFEST = os.path.join(ROOT, 'tools', 'zh_manifest.json')
 VOICE = 'zh-CN-XiaoxiaoNeural'   # 唯一音色：普通话女声
 SR = 44100
 BR = '96k'
-AUDIO_VER = 'a=5'                # 换音色/重录后必须 +1，顶掉设备上的旧音频缓存
+AUDIO_VER = 'a=8'                # 通用中文音频版本（tone_* 单独走 a=9、realhang_* 走 a=12）
 FORCE = '--force' in sys.argv
 VERIFY_ONLY = '--verify' in sys.argv
 
@@ -367,7 +367,15 @@ async def main():
              'self.ZH_AUDIO_LIST = [']
     for i, f in enumerate(files):
         comma = ',' if i < len(files) - 1 else ''
-        ver = 'a=12' if f.startswith('realhang_') else AUDIO_VER
+        # 版本分段（v66）：
+        #   realhang_* 真人原声 = a=12；tone_* 四声辨调 = a=9（PSOLA 重塑调型后单独顶缓存）；
+        #   其余中文音频 = a=8。与 zh-phonics.js 的 zhClip/zhToneClip 保持一致，勿统一。
+        if f.startswith('realhang_'):
+            ver = 'a=12'
+        elif f.startswith('tone_'):
+            ver = 'a=9'
+        else:
+            ver = 'a=8'
         lines.append(f'  "audio/zh/{f}?{ver}"{comma}')
     lines.append('];')
     open(LIST_JS, 'w', encoding='utf-8').write('\n'.join(lines) + '\n')

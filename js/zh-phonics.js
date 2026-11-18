@@ -201,7 +201,11 @@ const ZH_TONES = [
   {base:'wan',  py:['wān','wán','wǎn','wàn'],   hz:['弯','完','晚','万'], word:['弯腰','完成','晚上','一万']},
   {base:'tang', py:['tāng','táng','tǎng','tàng'], hz:['汤','糖','躺','烫'], word:['喝汤','糖果','躺下','烫伤']},
 ];
-function zhToneClip(base,t){ return zhClip('tone', base+'_'+t); }
+/* v66：四声辨调音频单独升到 a=9（其余中文音频仍 a=8）。
+   旧 tone_* 由 edge-tts 裸读单字、句尾掉 50-70Hz：一声(屋)听成降调、三声(晚)偏平像一声。
+   已用 tools/zh_tone_fix.py 以 Praat PSOLA 按目标调型重塑 32 段；独立版本号让 iPad
+   只重新缓存这 32 段，顶掉设备上的旧音频。 */
+function zhToneClip(base,t){ return 'audio/zh/tone_'+base+'_'+t+'.m4a?a=9'; }
 /* 带调韵母（四步拼读的第 2 步）：u—ù 里那个「ù」。
  * 旧实现没有这段录音，只能把 "ù" 交给设备 TTS，而设备会忽略调号 → 第四声读成第一声。
  * 现在按「韵母 + 声调」单独录音，音色和全库一致，调型已用 Praat 校验过。 */
