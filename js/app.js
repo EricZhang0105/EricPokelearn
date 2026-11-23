@@ -1118,7 +1118,10 @@ function renderQuestion(){
   // 阅读短文题没有 prompt 字段，别渲染出 "undefined"
   h += (q.type==='passage' || !q.prompt) ? '' : `<div class="q-prompt">${q.prompt}</div>`;
   if(q.sub && q.type!=='passage') h+=`<div class="q-sub">${q.sub}</div>`;
-  if(q.visual) h+=`<div class="q-visual">${q.visual}</div>`;
+  /* v70 · circle 题的宝可梦信息（图/名字/位置）已完整的放在圈选卡片 items 里，
+     再渲染 q.visual 会出现上下两排重复的宝可梦，孩子分不清点哪排，
+     「找不同」题还会在上排提前泄露答案。故 circle 题跳过独立 visual。 */
+  if(q.visual && q.type!=='circle') h+=`<div class="q-visual">${q.visual}</div>`;
 
   if(q.type==='passage'){
     h+=`<div class="passage-card"><div class="passage-title">📖 ${q.title}</div>
@@ -1156,6 +1159,33 @@ function renderQuestion(){
   } else if(q.type==='build'){
     h+=`<div class="build-answer" id="buildAnswer"></div>
       <div class="build-pool" id="buildPool"></div>`;
+  } else if(q.type==='circle'){
+    /* v70 · 点图圈选：touch 一个宝可梦卡片即画圈；multi 时可多选。
+       全部图标渲染成按钮，选中态用 .circled（大红圈 + 勾），适合 5 岁孩子和 iPad。 */
+    h+=`<div class="circle-grid ${q.multi?'circle-multi':''}" id="circleGrid">`;
+    (q.items||[]).forEach(it=>{
+      h+=`<button class="circle-item" data-key="${it.key}" type="button">
+        <span class="ci-ring"></span>
+        <img src="${it.img}" alt="${it.label}" loading="lazy">
+        <span class="ci-label">${it.label}</span>
+        ${it.pos?`<span class="ci-pos">${it.pos}</span>`:''}
+      </button>`;
+    });
+    h+=`</div><button class="check-btn" id="circleCheck">Check ✓</button>`;
+  } else if(q.type==='match'){
+    /* v70 · 点击连线：先点左列一项，再点右列一项即连一条线；已连的可再点取消。 */
+    h+=`<div class="match-hint">👆 Tap one on the left, then one on the right to draw a line.</div>
+      <div class="match-wrap" id="matchWrap">
+        <svg class="match-svg" id="matchSvg"></svg>
+        <div class="match-col" id="matchLeft">`;
+    (q.left||[]).forEach(l=>{
+      h+=`<button class="match-node" data-side="L" data-id="${l.id}" type="button">${l.html||l.label||l.id}</button>`;
+    });
+    h+=`</div><div class="match-col" id="matchRight">`;
+    (q.right||[]).forEach(r=>{
+      h+=`<button class="match-node" data-side="R" data-id="${r.id}" type="button"><span class="match-val">${r.label}</span></button>`;
+    });
+    h+=`</div></div><button class="check-btn" id="matchCheck">Check ✓</button>`;
   } else if(q.type==='speak'){
     h+=`<div class="speak-card">
       <div class="speak-hint">${q.hint||'大声读出来吧！'}</div>
@@ -1194,6 +1224,8 @@ function renderQuestion(){
   }
   else if(q.type==='type') bindType(q,item);
   else if(q.type==='build') bindBuild(q,item);
+  else if(q.type==='circle') bindCircle(q,item);
+  else if(q.type==='match') bindMatch(q,item);
   else if(q.type==='speak') bindSpeak(q,item);
 }
 
@@ -1558,6 +1590,126 @@ function bindBuild(q,item){
     }
   };
   render();
+}
+
+/* ---------- v70 · 点图圈选题（circle） ----------
+   孩子 touch 宝可梦卡片即画大红圈；multi=true 时可圈多个。
+   q.answer 是逗号分隔的已排序 key 串（单选就是一个 key）。 */
+function bindCircle(q,item){
+  const grid=$('#circleGrid'); const btn=$('#circleCheck');
+  if(!grid||!btn) return;
+  const chosen=new Set(); let answered=false;
+  grid.querySelectorAll('.circle-item').forEach(el=>{
+    el.onclick=()=>{
+      if(answered) return;
+      const k=el.dataset.key;
+      if(q.multi){
+        if(chosen.has(k)){ chosen.delete(k); el.classList.remove('circled'); }
+        else { chosen.add(k); el.classList.add('circled'); }
+      }else{
+        // 单选：再点一次可取消
+        grid.querySelectorAll('.circle-item').forEach(x=>x.classList.remove('circled'));
+        chosen.clear(); chosen.add(k); el.classList.add('circled');
+      }
+      btn.disabled=(chosen.size===0);
+    };
+  });
+  btn.disabled=true;
+  btn.onclick=()=>{
+    if(answered || chosen.size===0) return;
+    answered=true; btn.disabled=true;
+    grid.querySelectorAll('.circle-item').forEach(x=>{ x.style.pointerEvents='none'; });
+    const got=Array.from(chosen).sort().join(',');
+    const want=String(q.answer||'').split(',').filter(Boolean).sort().join(',');
+    const correct=(got===want);
+    // 标出正确答案（无论对错都让孩子看到正确答案在哪）
+    grid.querySelectorAll('.circle-item').forEach(el=>{
+      if(String(q.answer||'').split(',').includes(el.dataset.key)) el.classList.add('is-answer');
+    });
+    if(correct){
+      state.correct++; onCorrect(item); sfx('good');
+      showFeedback(true,q.explain,true,null,false,q.feedbackDelay||(q.answerSpeak?2800:1100));
+    }else{
+      sfx('bad');
+      showFeedback(false,q.explain,false,()=>recordWrong(item,got,q));
+    }
+  };
+}
+
+/* ---------- v70 · 点击连线配对题（match） ----------
+   先点左列一项（高亮），再点右列一项 → 画连线并记录配对；
+   点已连线的节点可取消。q.pairs={L0:'R2',...}。 */
+function bindMatch(q,item){
+  const wrap=$('#matchWrap'); const svg=$('#matchSvg'); const btn=$('#matchCheck');
+  if(!wrap||!svg||!btn) return;
+  const pairs={};       // leftId -> rightId
+  let activeL=null;     // 当前选中的左节点 id
+  let answered=false;
+
+  const center=(el)=>{
+    const a=el.getBoundingClientRect(), b=wrap.getBoundingClientRect();
+    return { x:a.left - b.left + a.width/2, y:a.top - b.top + a.height/2 };
+  };
+  const redraw=()=>{
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    const wb=wrap.getBoundingClientRect();
+    svg.setAttribute('viewBox',`0 0 ${wb.width} ${wb.height}`);
+    Object.keys(pairs).forEach(lid=>{
+      const le=wrap.querySelector('.match-node[data-side="L"][data-id="'+lid+'"]');
+      const re=wrap.querySelector('.match-node[data-side="R"][data-id="'+pairs[lid]+'"]');
+      if(!le||!re) return;
+      const p1=center(le), p2=center(re);
+      const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',p1.x); line.setAttribute('y1',p1.y);
+      line.setAttribute('x2',p2.x); line.setAttribute('y2',p2.y);
+      line.setAttribute('class','match-line');
+      svg.appendChild(line);
+    });
+  };
+  const setActive=(el)=>{
+    wrap.querySelectorAll('.match-node').forEach(x=>x.classList.remove('active'));
+    if(el) el.classList.add('active');
+  };
+  wrap.querySelectorAll('.match-node').forEach(el=>{
+    el.onclick=()=>{
+      if(answered) return;
+      const side=el.dataset.side, id=el.dataset.id;
+      if(side==='L'){
+        // 点左边：若已连线，先移除该连线；再设为 active
+        if(pairs[id]) { delete pairs[id]; redraw(); }
+        activeL=id; setActive(el);
+      }else{
+        // 点右边：必须有 activeL 才连线；若右节点已被占用，先清掉占用它的左键
+        if(!activeL){ setActive(el); return; }
+        Object.keys(pairs).forEach(k=>{ if(pairs[k]===id) delete pairs[k]; });
+        pairs[activeL]=id;
+        activeL=null; setActive(null); redraw();
+      }
+      btn.disabled=Object.keys(pairs).length<((q.left||[]).length);
+    };
+  });
+  // iPad 旋转 / 窗口变化时重画线（用 rAF 等布局稳定）
+  const onResize=()=>requestAnimationFrame(redraw);
+  window.addEventListener('resize',onResize);
+  btn.disabled=true;
+  btn.onclick=()=>{
+    if(answered) return;
+    answered=true; btn.disabled=true;
+    wrap.querySelectorAll('.match-node').forEach(x=>x.style.pointerEvents='none');
+    let okCount=0;
+    Object.keys(q.pairs||{}).forEach(l=>{ if(pairs[l]===q.pairs[l]) okCount++; });
+    const total=Object.keys(q.pairs||{}).length;
+    const correct=(Object.keys(pairs).length===total && okCount===total);
+    const got=Object.keys(pairs).sort().map(k=>k+'='+pairs[k]).join(',');
+    if(correct){
+      state.correct++; onCorrect(item); sfx('good');
+      showFeedback(true,q.explain,true,null,false,q.feedbackDelay||(q.answerSpeak?2200:1200));
+    }else{
+      sfx('bad');
+      showFeedback(false,'Not quite — try the lines again.',false,()=>recordWrong(item,got,q));
+    }
+    window.removeEventListener('resize',onResize);
+  };
 }
 
 /* ---------- 屏幕键盘 ---------- */

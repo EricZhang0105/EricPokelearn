@@ -788,6 +788,15 @@ function freshQuestions(lesson,lessonId,slots,opts){
   // 第一轮：保留手写题库的精选题（摇 3 次）
   for(let i=0;i<3 && picked.length<slots;i++) take(lesson.make(slots,opts));
 
+  /* v70 · CPA/逻辑/空间/专注力/连线专项课：题目结构是特制的（circle/match +
+     特制 visual），绝不能走下面的统一数字题库/扩容——那些只会产出 choice 加减法题，
+     会把专项课搅成四不像。直接从本课 make() 摇够题就返回，宁可题少也不混入。 */
+  if(lesson.noPool){
+    for(let i=0;i<12 && picked.length<slots;i++) take(lesson.make(slots,opts));
+    return {items:picked.slice(0,slots).map(q=>({q,isReview:false})), level, grown:0,
+            bankSize:picked.length};
+  }
+
   /* 家长真人录制题库模式：c-blend 只出家长已录制的题（data.js 已按录音池出题），
      绝不能再走下面的统一题库/自动扩容——那些变体题用的是合成音，会混进来。
      宁可题少（录几题出几题），也不破坏「只出真人录音题」的约定。 */

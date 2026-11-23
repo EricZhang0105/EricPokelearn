@@ -64,8 +64,11 @@ const BlendCloud=vm.runInContext('BlendCloud',ctx);
   ok('index.html 加载 blend-cloud.js', /js\/blend-cloud\.js/.test(idx));
   ok('blend-cloud 在 parent-blend 之后加载', idx.indexOf('blend-cloud.js')>idx.indexOf('parent-blend.js'));
   ok('sw.js 预缓存 blend-cloud.js', /'\.\/js\/blend-cloud\.js'/.test(sw));
-  ok('sw 版本 v69', /pokelearn-v69/.test(sw));
-  ok('cloud-config 版本 v69', /v69 · 2026-11-18/.test(cc));
+  // 版本号动态对齐 package.json，避免每次发版都要改测试脚本
+  const pkg=JSON.parse(fs.readFileSync(path.join(__dirname,'..','package.json'),'utf8'));
+  const ver=String(pkg.version).split('.')[0];
+  ok('sw 版本 v'+ver, new RegExp('pokelearn-v'+ver).test(sw));
+  ok('cloud-config 版本 v'+ver, new RegExp('v'+ver+' · ').test(cc));
   ok('新增刷新同步状态按钮 blendRefreshBtn', /id="blendRefreshBtn"/.test(app));
   ok('刷新按钮走只读 status()', /BlendCloud\.status\(\)/.test(app));
   ok('同步按钮带 onProgress 进度回调', /onProgress/.test(app));

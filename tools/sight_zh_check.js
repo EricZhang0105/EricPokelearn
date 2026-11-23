@@ -26,7 +26,8 @@ const WORDS = wordPool(0);   // wordPool(0) 即 WORDS 基础表
 
 // 把 app.js 的 sightZh + sightLabel 抽出来，在带 state 的上下文里跑
 const appSrc = fs.readFileSync(path.join(R, 'js/app.js'), 'utf8');
-const fnMatch = appSrc.match(/function sightZh\(word\)\{[\s\S]*?\n\}\nfunction sightLabel\(o\)\{[\s\S]*?\n\}/);
+/* Windows 上 git 会把文件检出成 CRLF，正则用 \r?\n 兼容 LF/CRLF（否则本机误报找不到函数） */
+const fnMatch = appSrc.match(/function sightZh\(word\)\{[\s\S]*?\r?\n\}\r?\nfunction sightLabel\(o\)\{[\s\S]*?\r?\n\}/);
 if (!fnMatch) { console.error('  ✗ app.js 里找不到 sightZh/sightLabel'); process.exit(1); }
 const appCtx = { console, Math, String, EN_ZH, state: { lessonId: 'e-sight' } };
 vm.createContext(appCtx);

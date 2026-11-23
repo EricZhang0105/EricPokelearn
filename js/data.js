@@ -977,6 +977,11 @@ const CHINESE=[
     make(limit, opts){ return zhWordSet(limit||10, (opts&&opts.level)||1); }},
 ];
 
+/* ---------------- v70：新加坡 CPA + 逻辑/空间/专注力新题 ----------------
+   math-v2.js 提供视觉组件与 8 门新课程的 MATH_V2，合并进主 MATH 数组。
+   这样课程列表、组题引擎、进度存档都自动纳入，无需改动其它调度逻辑。 */
+if(typeof MATH_V2!=='undefined' && Array.isArray(MATH_V2)) MATH.push(...MATH_V2);
+
 /* ---------------- 汇总 ---------------- */
 const CURRICULUM = {
   math:    { key:'math',    label:'Math',    lessons:MATH },
