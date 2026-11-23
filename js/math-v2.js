@@ -344,6 +344,66 @@ function genMatch(n){
   return out;
 }
 
+/* =========================================================
+   综合训练（Mixed Review）：一套里把数学模块所有题型都过一遍
+   ---------------------------------------------------------
+   数学模块共有 17 类出题器（m-facts 是只读挂图，不算题型）：
+     经典 9 类 —— count / bonds10 / add10 / bonds20 / add20 /
+                 sub10 / sub20 / word / mixed
+     CPA/新题 8 类 —— cpa-add / cpa-sub / doubles / word-plus /
+                     logic / space / focus / match
+   每一类都直接复用原课程的 make()，不再重写一份出题逻辑 ——
+   以后任何一门课调整题目，综合训练自动跟着更新。
+   一套只有 10 道题，装不下 17 类，所以「打乱题型顺序 → 每类先出 1 道」，
+   保证一套里尽量多不同题型，连做几套必然覆盖全部 17 类。
+   ========================================================= */
+function comboFamilies(){
+  const legacyMaker=(id)=>{
+    if(typeof MATH==='undefined' || !Array.isArray(MATH)) return null;
+    const les=MATH.find(l=>l.id===id);
+    return les && typeof les.make==='function' ? les.make : null;
+  };
+  return [
+    {id:'count',     make:legacyMaker('m-count')},
+    {id:'bonds10',   make:legacyMaker('m-bonds10')},
+    {id:'add10',     make:legacyMaker('m-add10')},
+    {id:'bonds20',   make:legacyMaker('m-bonds20')},
+    {id:'add20',     make:legacyMaker('m-add20')},
+    {id:'sub10',     make:legacyMaker('m-sub10')},
+    {id:'sub20',     make:legacyMaker('m-sub20')},
+    {id:'word',      make:legacyMaker('m-word')},
+    {id:'mixed',     make:legacyMaker('m-mixed')},
+    {id:'cpa-add',   make:genCpaAdd},
+    {id:'cpa-sub',   make:genCpaSub},
+    {id:'doubles',   make:genDoubles},
+    {id:'word-plus', make:genWordPlus},
+    {id:'logic',     make:genLogic},
+    {id:'space',     make:genSpace},
+    {id:'focus',     make:genFocus},
+    {id:'match',     make:genMatch},
+  ].filter(f=>typeof f.make==='function');
+}
+function genCombo(n, opts){
+  n=Math.max(1, Number(n)||10);
+  const fams=shuffle(comboFamilies());
+  const out=[];
+  /* 最早一轮就每类各出一道（题型尽量分散），某类万一摇空了再下一轮换一批。 */
+  for(let pass=0; pass<5 && out.length<n; pass++){
+    for(const f of fams){
+      if(out.length>=n) break;
+      let batch=[];
+      try{ batch=f.make(2)||[]; }catch(e){ batch=[]; }
+      if(!batch.length) continue;
+      const q=batch[ri(0,batch.length-1)];
+      if(!q) continue;
+      /* src 只用于测试/统计「这道题来自哪个题型」，不参与渲染与去重指纹。 */
+      q.src=f.id;
+      out.push(q);
+    }
+  }
+  return out;
+}
+
 /* ---------------- 课程注册：追加到 MATH 数组末尾（由 data.js 合并） ---------------- */
 const MATH_V2 = [
   { id:'m-cpa-add', level:1, title:'CPA · Add with Make-10', emoji:'🧮',
@@ -370,9 +430,16 @@ const MATH_V2 = [
   { id:'m-match', level:1, title:'Match the Pairs', emoji:'🔗',
     desc:'Draw lines: ten-frame ↔ number, sum ↔ answer', noPool:true,
     make(slots){ return genMatch(Math.max(12,slots||10)); } },
+
+  /* 综合训练：数学模块全部题型混着练（每套打乱出题顺序，尽量覆盖不同类型） */
+  { id:'m-combo', level:3, title:'Mixed Review · All Skills', emoji:'🏆',
+    desc:'One set, every math skill: count · bonds · add · subtract · stories · CPA · doubles · logic · space · focus · match',
+    noPool:true,
+    make(slots){ return genCombo(Math.max(10,slots||10)); } },
 ];
 
 if(typeof module!=='undefined' && module.exports){
   module.exports={ tenFrame, barModel, petRow, ord,
-    genCpaAdd, genCpaSub, genDoubles, genWordPlus, genLogic, genSpace, genFocus, genMatch, MATH_V2 };
+    genCpaAdd, genCpaSub, genDoubles, genWordPlus, genLogic, genSpace, genFocus, genMatch,
+    comboFamilies, genCombo, MATH_V2 };
 }

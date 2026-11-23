@@ -1,6 +1,6 @@
 {
   "name": "pokelearn",
-  "version": "72.0.0",
+  "version": "73.0.0",
   "private": true,
   "description": "Kids learning PWA (English/Chinese/Math) with Pokemon evolution rewards",
   "scripts": {
