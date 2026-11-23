@@ -334,6 +334,271 @@ const READ_PASSAGES = [
       {q:'What was on top of the plant in June?', o:['a yellow flower','a red apple','a new seed'], a:'a yellow flower'},
       {q:'The shoot grew two small ___.', short:true, a:'leaves', accept:['leaves','leaf'], hint:'l _ _ _ _ _'}
     ]},
+  {
+    "id": "rp-2026w48-1",
+    "level": 1,
+    "title": "Nina and the Bird",
+    "visual": "🐦",
+    "text": "Nina has a blue bird. The bird is small and soft. Nina can play with the bird. Nina is happy.",
+    "qs": [
+      {
+        "q": "What does Nina have?",
+        "o": [
+          "a blue bird",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a blue bird"
+      },
+      {
+        "q": "What color is the bird?",
+        "o": [
+          "blue",
+          "yellow",
+          "purple"
+        ],
+        "a": "blue"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the garden",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the garden"
+      },
+      {
+        "q": "Is Nina happy?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "Nina has a ___ bird.",
+        "short": true,
+        "a": "blue",
+        "accept": [
+          "blue"
+        ],
+        "hint": "b _ _ _"
+      }
+    ]
+  },
+  {
+    "id": "rp-2026w48-2",
+    "level": 1,
+    "title": "Ivy and the Dog",
+    "visual": "🐶",
+    "text": "Ivy has a yellow dog. The dog is small and soft. Ivy can play with the dog. Ivy is proud.",
+    "qs": [
+      {
+        "q": "What does Ivy have?",
+        "o": [
+          "a yellow dog",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a yellow dog"
+      },
+      {
+        "q": "What color is the dog?",
+        "o": [
+          "yellow",
+          "blue",
+          "purple"
+        ],
+        "a": "yellow"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the farm",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the farm"
+      },
+      {
+        "q": "Is Ivy proud?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "Ivy has a ___ dog.",
+        "short": true,
+        "a": "yellow",
+        "accept": [
+          "yellow"
+        ],
+        "hint": "y _ _ _"
+      }
+    ]
+  },
+  {
+    "id": "rp-2026w48-3",
+    "level": 2,
+    "title": "Lily and the Rabbit",
+    "visual": "🐰",
+    "text": "One morning, Lily and the pink rabbit go to the school. The rabbit runs fast on the path. They see a blue kite near the gate. Lily looks at it and smiles. \"What a nice day!\" says Lily.",
+    "qs": [
+      {
+        "q": "What does Lily have?",
+        "o": [
+          "a pink rabbit",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a pink rabbit"
+      },
+      {
+        "q": "What color is the rabbit?",
+        "o": [
+          "pink",
+          "blue",
+          "purple"
+        ],
+        "a": "pink"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the school",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the school"
+      },
+      {
+        "q": "Is Lily happy?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "Lily has a ___ rabbit.",
+        "short": true,
+        "a": "pink",
+        "accept": [
+          "pink"
+        ],
+        "hint": "p _ _ _"
+      }
+    ]
+  },
+  {
+    "id": "rp-2026w48-4",
+    "level": 2,
+    "title": "Ken and the Cat",
+    "visual": "🐱",
+    "text": "In the afternoon, Ken and the red cat go to the library. The cat runs fast on the path. They see a little frog near the gate. Ken looks at it and smiles. \"What a nice day!\" says Ken.",
+    "qs": [
+      {
+        "q": "What does Ken have?",
+        "o": [
+          "a red cat",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a red cat"
+      },
+      {
+        "q": "What color is the cat?",
+        "o": [
+          "red",
+          "black",
+          "purple"
+        ],
+        "a": "red"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the library",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the library"
+      },
+      {
+        "q": "Is Ken glad?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "Ken has a ___ cat.",
+        "short": true,
+        "a": "red",
+        "accept": [
+          "red"
+        ],
+        "hint": "r _ _ _"
+      }
+    ]
+  },
+  {
+    "id": "rp-2026w48-5",
+    "level": 3,
+    "title": "Tom and the Bird",
+    "visual": "🐦",
+    "text": "At the weekend, Tom takes the pink bird to the farm. The sky is blue and the air is warm. Soon they find a blue kite beside the big tree. The bird wants to play, but Tom wants to look at the map first. They walk a long way and stop near a little shop. Tom buys a cold drink and shares it with a friend. When the sun goes down, they walk home together. \"We will come back next week,\" says Tom.",
+    "qs": [
+      {
+        "q": "What does Tom have?",
+        "o": [
+          "a pink bird",
+          "a big bus",
+          "a toy box"
+        ],
+        "a": "a pink bird"
+      },
+      {
+        "q": "What color is the bird?",
+        "o": [
+          "pink",
+          "blue",
+          "purple"
+        ],
+        "a": "pink"
+      },
+      {
+        "q": "Where do they go?",
+        "o": [
+          "the farm",
+          "the zoo",
+          "the market"
+        ],
+        "a": "the farm"
+      },
+      {
+        "q": "Is Tom proud?",
+        "o": [
+          "Yes",
+          "No"
+        ],
+        "a": "Yes"
+      },
+      {
+        "q": "Tom has a ___ bird.",
+        "short": true,
+        "a": "pink",
+        "accept": [
+          "pink"
+        ],
+        "hint": "p _ _ _"
+      }
+    ]
+  },
 ];
 
 /* ---------------- 题目 ID + 分级信息 ---------------- */
