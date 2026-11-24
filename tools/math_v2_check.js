@@ -25,12 +25,15 @@ const gen={
   genSpace:vm.runInContext('genSpace',ctx),
   genFocus:vm.runInContext('genFocus',ctx),
   genMatch:vm.runInContext('genMatch',ctx),
+  genPattern:vm.runInContext('genPattern',ctx),
+  genCompare:vm.runInContext('genCompare',ctx),
+  genOrdinal:vm.runInContext('genOrdinal',ctx),
 };
 const CJK=/[\u3400-\u9fff]/;
 const hasCJK=s=>CJK.test(String(s||''));
 
 console.log('\n=== 1. 课程注册 ===');
-ok('MATH_V2 有 9 门课（含综合训练）', MATH_V2.length===9, 'got '+MATH_V2.length);
+ok('MATH_V2 有 12 门课（8旧+3新+综合训练）', MATH_V2.length===12, 'got '+MATH_V2.length);
 ok('MATH 已合并（>19 课）', MATH.length>=19, 'got '+MATH.length);
 const ids=MATH_V2.map(l=>l.id);
 ok('课程 id 全部唯一', new Set(ids).size===ids.length);
@@ -74,13 +77,19 @@ scan('进阶应用题', sets.genWordPlus, (q,i,l)=>{
   ok(l+'#'+i+' sub 英文', !hasCJK(q.sub));
   ok(l+'#'+i+' answer 在 options', q.options.includes(String(q.answer)));
 });
-scan('逻辑赛跑', sets.genLogic, (q,i,l)=>{
+scan('逻辑推理', sets.genLogic, (q,i,l)=>{
   common(q,i,l);
-  ok(l+'#'+i+' type=circle', q.type==='circle');
-  const keys=q.items.map(x=>x.key);
-  ok(l+'#'+i+' answer 在 items', keys.includes(q.answer), 'ans='+q.answer);
-  ok(l+'#'+i+' sub 含比较线索', /faster|slower/.test(q.sub));
-  ok(l+'#'+i+' items 英文', q.items.every(x=>!hasCJK(x.label)));
+  // v74 四类：choice(找规律) 或 circle(传递/排除/赛跑)
+  ok(l+'#'+i+' type 合法', ['circle','choice'].includes(q.type), 'type='+q.type);
+  if(q.type==='choice'){
+    ok(l+'#'+i+' answer 在 options', q.options.includes(q.answer), 'ans='+q.answer);
+    ok(l+'#'+i+' 找规律有题干序列', /❓|\?/.test(q.sub||''));
+  }else{
+    const keys=q.items.map(x=>x.key);
+    ok(l+'#'+i+' answer 在 items', keys.includes(q.answer), 'ans='+q.answer);
+    ok(l+'#'+i+' sub 含推理线索', /taller|shortest|biggest|faster|slower|not the/.test(q.sub));
+    ok(l+'#'+i+' 宝可梦互不重复', new Set(keys).size===keys.length);
+  }
 });
 scan('空间排队', sets.genSpace, (q,i,l)=>{
   common(q,i,l);
@@ -115,6 +124,41 @@ scan('连线配对', sets.genMatch, (q,i,l)=>{
   ok(l+'#'+i+' answer=排序数字组合', /^\d+(, \d+)*$/.test(q.answer), 'ans='+q.answer);
   ok(l+'#'+i+' 右项 label 英文数字', q.right.every(x=>/^\d+$/.test(x.label)));
 });
+scan('找规律', sets.genPattern, (q,i,l)=>{
+  common(q,i,l);
+  ok(l+'#'+i+' type=choice', q.type==='choice');
+  ok(l+'#'+i+' answer 在 options', q.options.includes(q.answer), 'ans='+q.answer);
+  ok(l+'#'+i+' 有序列题干', /❓/.test(q.sub));
+});
+scan('比大小', sets.genCompare, (q,i,l)=>{
+  common(q,i,l);
+  ok(l+'#'+i+' type=choice', q.type==='choice');
+  ok(l+'#'+i+' answer 在 options', q.options.includes(q.answer), 'ans='+q.answer);
+  ok(l+'#'+i+' 选项恰为两数', q.options.length===2);
+});
+scan('序数', sets.genOrdinal, (q,i,l)=>{
+  common(q,i,l);
+  ok(l+'#'+i+' type=circle', q.type==='circle');
+  const keys=q.items.map(x=>x.key);
+  ok(l+'#'+i+' answer 在 items', keys.includes(q.answer), 'ans='+q.answer);
+  ok(l+'#'+i+' 宝可梦互不重复', new Set(keys.map(k=>k.replace(/_\d+$/,''))).size===keys.length);
+});
+
+/* v74 多模式覆盖：摇足够多次，确认逻辑/空间/连线的新子类都真的会出现 */
+console.log('\n=== 2b. v74 新子类覆盖 ===');
+{
+  const logicBig=gen.genLogic(120), spaceBig=gen.genSpace(120), matchBig=gen.genMatch(120);
+  ok('逻辑含 choice 找规律', logicBig.some(q=>q.type==='choice'));
+  ok('逻辑含传递 taller', logicBig.some(q=>/taller|shortest/.test(q.sub||'')));
+  ok('逻辑含排除 not the biggest', logicBig.some(q=>/not the biggest/.test(q.sub||'')));
+  ok('逻辑含赛跑 faster/slower', logicBig.some(q=>/faster|slower/.test(q.sub||'')));
+  ok('空间含相邻 next to', spaceBig.some(q=>/next to/.test(q.prompt||'')));
+  ok('空间含两端 first and the last', spaceBig.some(q=>/first and the last/.test(q.prompt||'')));
+  ok('空间含之间 between', spaceBig.some(q=>/between/.test(q.prompt||'')));
+  ok('空间含镜像 mirror', spaceBig.some(q=>/mirror/i.test(q.prompt||'')));
+  ok('连线含图形计数 group', matchBig.some(q=>/group to its number/.test(q.prompt||'')));
+  ok('连线含数字分解 total', matchBig.some(q=>/sum to its total/.test(q.prompt||'')));
+}
 
 console.log('\n=== 3. 真实取题能力（模拟 noPool 摇多次累积，凑够 10 道不重复）===');
 function normRaw(q){
@@ -132,8 +176,8 @@ console.log('\n=== 4. 接线静态断言 ===');
 const app=F('js/app.js'), idx=F('index.html'), sw=F('sw.js'), qe=F('js/question-engine.js'), cc=F('js/cloud-config.js');
 ok('index 加载 math-v2.js 且在 data.js 前', idx.indexOf('js/math-v2.js')>0 && idx.indexOf('js/math-v2.js')<idx.indexOf('js/data.js'));
 ok('sw 预缓存 math-v2.js', /'\.\/js\/math-v2\.js'/.test(sw));
-ok('sw 版本 v73', /pokelearn-v73/.test(sw));
-ok('cloud 版本 v73', /v73 · 2026-11-23/.test(cc));
+ok('sw 版本 v74', /pokelearn-v74/.test(sw));
+ok('cloud 版本 v74', /v74 · 2026-11-24/.test(cc));
 ok('引擎有 noPool 短路', /lesson\.noPool/.test(qe));
 ok('app 有 circle 渲染分支', /q\.type==='circle'/.test(app));
 ok('app 有 match 渲染分支', /q\.type==='match'/.test(app));

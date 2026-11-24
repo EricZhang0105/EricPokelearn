@@ -1164,10 +1164,15 @@ function renderQuestion(){
        全部图标渲染成按钮，选中态用 .circled（大红圈 + 勾），适合 5 岁孩子和 iPad。 */
     h+=`<div class="circle-grid ${q.multi?'circle-multi':''}" id="circleGrid">`;
     (q.items||[]).forEach(it=>{
-      h+=`<button class="circle-item" data-key="${it.key}" type="button">
+      /* v74 · 英语词汇/反义词等无图片的圈选题：渲染成大字词卡，不放破图。
+         bindCircle 只认 data-key，卡片形态不影响判分。 */
+      const img=it.img
+        ? `<img src="${it.img}" alt="${it.label}" loading="lazy">`
+        : `<span class="ci-word">${it.label}</span>`;
+      h+=`<button class="circle-item${it.img?'':' circle-text'}" data-key="${it.key}" type="button">
         <span class="ci-ring"></span>
-        <img src="${it.img}" alt="${it.label}" loading="lazy">
-        <span class="ci-label">${it.label}</span>
+        ${img}
+        ${it.img?`<span class="ci-label">${it.label}</span>`:''}
         ${it.pos?`<span class="ci-pos">${it.pos}</span>`:''}
       </button>`;
     });

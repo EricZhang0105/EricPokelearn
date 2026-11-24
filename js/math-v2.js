@@ -169,76 +169,145 @@ function genWordPlus(n){
   return out;
 }
 
-/* ---------------- 题目生成：逻辑 · 赛跑比较（谁最快 / 最慢） ----------------
-   用真实全序生成自洽的比较链；faster/slower 表述随机切换但方向一致。
-   visual 只展示"选手"横排（顺序打乱，不泄露名次），孩子据文字推理后圈选。 */
+/* ---------------- 题目生成：逻辑推理（v74 · 4 类） ----------------
+   参考学而思一年级「逻辑推理」：传递关系 / 排除法 / 赛跑比较 / 找规律。
+   例句中英文均为按 5 岁水平改写，非学而思官方原题。
+   所有 emoji/数字题不含 CJK，圈选题一排宝可梦互不重复。 */
 function genLogic(n){
   const out=[];
   for(let i=0;i<n;i++){
-    const count=ri(3,4);
-    const pool=shuffle(MATH_PETS).slice(0,count);
-    const rank=shuffle(pool.slice());          // rank[0] 最快
-    const shown=shuffle(pool.slice());         // 展示顺序打乱
-    const conds=[];
-    for(let k=0;k<rank.length-1;k++){
-      const fast=rank[k], slow=rank[k+1];
-      conds.push(Math.random()<0.5
-        ? fast.name+' is faster than '+slow.name+'.'
-        : slow.name+' is slower than '+fast.name+'.');
+    const mode=ri(0,3);
+    if(mode===2){
+      /* ③ 找规律：形状/颜色/数字序列，问下一个 */
+      const PATS=[
+        {seq:['🔴','🔵','🔴','🔵','🔴'],next:'🔵',why:'Red, blue, red, blue. The colours take turns.'},
+        {seq:['⭐','⭐','🌙','⭐','⭐'],next:'🌙',why:'Two stars, then a moon. The pattern repeats.'},
+        {seq:['🔺','🟨','🔺','🟨','🔺'],next:'🟨',why:'Triangle, square, triangle, square. Take turns.'},
+        {seq:['1','2','3','4','5'],next:'6',why:'The numbers go up by one each time.'},
+        {seq:['🍎','🍌','🍎','🍌','🍎'],next:'🍌',why:'Apple, banana, apple, banana. Take turns.'},
+        {seq:['2','4','6','8','10'],next:'12',why:'Count up by two each time.'}
+      ];
+      const p=pick(PATS);
+      const pool=[p.next,'🔴','🔵','⭐','🌙','🔺','🟨','🍎','🍌','3','6','7','9','11']
+        .filter(x=>x!==p.next);
+      const opts=shuffle([p.next,...shuffle(pool).slice(0,3)]);
+      out.push({type:'choice',prompt:'What comes next?',sub:p.seq.join('  ')+'  ❓',
+        speak:{text:'What comes next? '+p.seq.join(', '),lang:'en-US'},
+        options:opts,answer:p.next,explain:p.why,
+        answerSpeak:mathTipSpeak(p.why),tag:'logic'});
+      continue;
     }
-    const askFastest=Math.random()<0.6;
-    const ansPet=askFastest?rank[0]:rank[rank.length-1];
-    const question=askFastest?'Who runs the fastest?':'Who runs the slowest?';
-    const sub=shuffle(conds).join(' ');
+    const pool=shuffle(MATH_PETS).slice(0,mode===0?3:ri(3,4));
+    const shown=shuffle(pool.slice());
+    let question,sub,ansPet,explain;
+    if(mode===0){
+      /* ① 传递关系：A taller than B, B taller than C */
+      const rank=shuffle(pool.slice());       // rank[0] 最高
+      const conds=[
+        rank[0].name+' is taller than '+rank[1].name+'.',
+        rank[1].name+' is taller than '+rank[2].name+'.'
+      ];
+      const askTallest=Math.random()<0.5;
+      ansPet=askTallest?rank[0]:rank[2];
+      question=askTallest?'Who is the tallest?':'Who is the shortest?';
+      sub=shuffle(conds).join(' ');
+      explain=ansPet.name+' is '+(askTallest?'the tallest':'the shortest')+'. '+conds.join(' ');
+    }else if(mode===1){
+      /* ② 排除法：谁不是最大 → 剩下那只 */
+      const biggest=pool[0];
+      const conds=[pool[1].name+' is not the biggest.',
+                   pool[2].name+' is not the biggest.'];
+      ansPet=biggest;
+      question='Who is the biggest?';
+      sub=conds.join(' ');
+      explain=biggest.name+' is the biggest. The others are not. '+conds.join(' ');
+    }else{
+      /* ③ 赛跑比较（保留经典） */
+      const rank=shuffle(pool.slice());
+      const conds=[];
+      for(let k=0;k<rank.length-1;k++){
+        const fast=rank[k], slow=rank[k+1];
+        conds.push(Math.random()<0.5
+          ? fast.name+' is faster than '+slow.name+'.'
+          : slow.name+' is slower than '+fast.name+'.');
+      }
+      const askFastest=Math.random()<0.6;
+      ansPet=askFastest?rank[0]:rank[rank.length-1];
+      question=askFastest?'Who runs the fastest?':'Who runs the slowest?';
+      sub=shuffle(conds).join(' ');
+      explain=ansPet.name+' is '+(askFastest?'the fastest':'the slowest')+'. '+conds.join(' ');
+    }
     out.push({type:'circle',prompt:question,sub,
-      visual:petRow(shown.map(p=>({id:p.id,key:petKey(p),name:p.name})),{title:'The runners'}),
+      visual:petRow(shown.map(p=>({id:p.id,key:petKey(p),name:p.name})),{title:'Use the clues'}),
       items:shown.map(p=>({key:petKey(p),label:p.name,img:pokeImg(p.id)})),
       answer:petKey(ansPet),
       speak:{text:sub+' '+question,lang:'en-US'},
-      explain:ansPet.name+' is '+(askFastest?'the fastest':'the slowest')+'. '+conds.join(' '),
-      answerSpeak:mathTipSpeak(ansPet.name+' is the answer. '+conds.join(' ')),
+      explain, answerSpeak:mathTipSpeak(ansPet.name+' is the answer. '+explain),
       tag:'logic'});
   }
   return out;
 }
 
-/* ---------------- 题目生成：空间 · 排队位置（含 battle 双选） ---------------- */
+/* ---------------- 题目生成：空间位置（v74 · 6 类） ----------------
+   参考学而思一年级「位置与顺序 / 方位」：从左数、从右数、相邻、两端、
+   之间、镜像翻转。一排宝可梦互不重复，全英文。 */
 function genSpace(n){
   const out=[];
   for(let i=0;i<n;i++){
     const count=ri(5,6);
     const line=shuffle(MATH_PETS).slice(0,count).map((p,idx)=>({
       id:p.id,key:petKey(p),name:p.name,pos:ord(idx+1)}));
-    const mode=ri(0,2);
+    const mode=ri(0,5);
     let question,keys=[],sub,explain,multi=false;
     if(mode===0){
+      // 从左数第 k 只
       const k=ri(1,count), who=line[k-1];
       question='Who is '+ord(k)+' in the line?';
       keys=[who.key];
       sub='The Pokémon stand in a line from left to right. Look at the picture.';
       explain=who.name+' is '+ord(k)+' from the left.';
     }else if(mode===1){
+      // 从右数（从后数）第 k 只
       const k=ri(1,count), who=line[count-k];
-      question='Who is '+ord(k)+' from the back?';
+      question='Who is '+ord(k)+' from the right?';
       keys=[who.key];
-      sub='The Pokémon stand in a line. The back is on the right.';
-      explain=count+' in line. '+ord(k)+' from the back is '+who.name+'.';
+      sub='The Pokémon stand in a line. The right end is the back.';
+      explain=count+' in line. '+ord(k)+' from the right is '+who.name+'.';
+    }else if(mode===2){
+      // 相邻：谁挨着 X（左右两只，多选）
+      const k=ri(1,count-2);
+      const mid=line[k], left=line[k-1], right=line[k+1];
+      question='Who is next to '+mid.name+'? Circle both!';
+      keys=[left.key,right.key]; multi=true;
+      sub=mid.name+' stands in the middle. Find the friends on both sides.';
+      explain=left.name+' and '+right.name+' are next to '+mid.name+'. One on the left, one on the right.';
+    }else if(mode===3){
+      // 两端：圈出最左和最右两只
+      keys=[line[0].key,line[count-1].key]; multi=true;
+      question='Circle the first and the last in the line.';
+      sub='Look at the two ends of the line. Touch both.';
+      explain=line[0].name+' is first (left end) and '+line[count-1].name+' is last (right end).';
+    }else if(mode===4){
+      // 之间：谁在 X 和 Y 中间
+      const k=ri(1,count-2);
+      const left=line[k-1], mid=line[k], right=line[k+1];
+      question='Who is between '+left.name+' and '+right.name+'?';
+      keys=[mid.key];
+      sub='Look at these three friends standing together.';
+      explain=mid.name+' stands between '+left.name+' and '+right.name+'.';
     }else{
-      // 从头数第 a 只 与 从尾数第 b 只 battle，圈出两只
-      let a,b,p1,p2,guard=0;
-      do{
-        a=ri(1,count); b=ri(1,count);
-        p1=line[a-1]; p2=line[count-b];
-      }while(p1.key===p2.key && guard++<30);
-      question=ord(a)+' from the front battles '+ord(b)+' from the back. Circle the two that battle!';
-      keys=[p1.key,p2.key]; multi=true;
-      sub='The front is on the left, the back is on the right. Find both Pokémon.';
-      explain=p1.name+' and '+p2.name+' battle. '+ord(a)+' from the front is '+p1.name+'; '+ord(b)+' from the back is '+p2.name+'.';
+      // 镜像翻转：镜子里的第 k 只 = 原队列从右数第 k 只
+      const k=ri(1,count);
+      const who=line[count-k];
+      question='In the mirror, who is '+ord(k)+' from the left?';
+      keys=[who.key];
+      sub='The mirror flips the line. Count from the left in the mirror.';
+      explain='The mirror flips left and right. '+ord(k)+' from the left in the mirror is '+who.name+'.';
     }
     out.push({type:'circle',prompt:question,sub,
       visual:petRow(line,{title:'Standing in a line'}),
       items:line.map(it=>({key:it.key,label:it.name,img:pokeImg(it.id),pos:it.pos})),
-      answer:keys.sort().join(','), multi,
+      answer:keys.slice().sort().join(','), multi,
       speak:{text:sub+' '+question,lang:'en-US'},
       explain, answerSpeak:mathTipSpeak(explain), tag:'space'});
   }
@@ -302,41 +371,45 @@ function genFocus(n){
   return out;
 }
 
-/* ---------------- 题目生成：连线配对（数量↔数字 / 算式↔答案） ----------------
+/* ---------------- 题目生成：连线配对（v74 · 4 类） ----------------
+   ① ten-frame ↔ 数字  ② 算式 ↔ 答案
+   ③ 图形个数 ↔ 数字  ④ 数字分解(part) ↔ 总数(whole)
    left: [{id,html}]  right: [{id,label}]
-   pairs: {leftId:rightId}  answer: 'L0=R1,L1=R0,...'（排序后序列化，用于判分与去重） */
+   pairs: {leftId:rightId}  answer: 排序后数字组合（判分实际走 q.pairs）。 */
 function genMatch(n){
   const out=[];
   const PAIRS=3;
+  const GLYPHS=['⭐','🔵','🍎','🔺','🌙'];
   for(let i=0;i<n;i++){
-    const mode=ri(0,1);
+    const mode=ri(0,3);
     const vals=[];
-    // 生成 3 个互不相同的题面值
+    // 生成 PAIRS 个互不相同的目标值
     while(vals.length<PAIRS){
-      const v=mode===0?ri(2,9):ri(4,15);
+      const v=mode===1?ri(4,15):mode===3?ri(6,15):ri(2,9);
       if(!vals.includes(v)) vals.push(v);
     }
     const rightVals=shuffle(vals.slice());
-    const left=vals.map((v,k)=>({
-      id:'L'+k,
-      html: mode===0
-        ? tenFrame(v)
-        : '<span class="match-eq">'+ri(1,Math.max(1,v-1))+' + '+(v-2)+' = ?</span>'
-    }));
-    // 算式模式修正：让左式子的答案正好等于 v（用 v-1 + 1 = v）
-    if(mode===1) left.forEach((it,k)=>{ it.html='<span class="match-eq">'+(vals[k]-1)+' + 1 = ?</span>'; });
-    const right=rightVals.map((v,k)=>({id:'R'+k,label:String(v)}));
-    const pairs={}; vals.forEach((v,k)=>{
-      pairs['L'+k]='R'+rightVals.indexOf(v);
+    const glyph=mode===2?pick(GLYPHS):null;
+    const left=vals.map((v,k)=>{
+      let html;
+      if(mode===0) html=tenFrame(v);
+      else if(mode===1) html='<span class="match-eq">'+(v-1)+' + 1 = ?</span>';
+      else if(mode===2) html='<span class="match-eq">'+glyph.repeat(v)+'</span>';
+      else { const part=ri(1,v-1); html='<span class="match-eq">'+part+' + '+(v-part)+' = ?</span>'; }
+      return {id:'L'+k,html};
     });
-    // 答案用「排序后的数字组合」：既是对家长可读的答案，又让不同数字组合有不同指纹
-    // （判分实际走 q.pairs，不依赖此字段）。rightVals 是vals的乱序，排序后即vals排序。
+    const right=rightVals.map((v,k)=>({id:'R'+k,label:String(v)}));
+    const pairs={}; vals.forEach((v,k)=>{ pairs['L'+k]='R'+rightVals.indexOf(v); });
     const answer=vals.slice().sort((x,y)=>x-y).join(', ');
-    const question=mode===0?'Match each ten-frame to its number':'Match each sum to its answer';
-    const sub=mode===0?'Count the dots. Draw a line to the right number.':'Work out each sum. Draw a line to the answer.';
-    out.push({type:'match',prompt:question,sub,visual:'',left,right,pairs,answer,
+    const M=[
+      {q:'Match each ten-frame to its number',s:'Count the dots. Draw a line to the right number.'},
+      {q:'Match each sum to its answer',s:'Work out each sum. Draw a line to the answer.'},
+      {q:'Match the group to its number',s:'Count the shapes. Draw a line to the right number.'},
+      {q:'Match the sum to its total',s:'Add the two parts. Draw a line to the total.'}
+    ][mode];
+    out.push({type:'match',prompt:M.q,sub:M.s,visual:'',left,right,pairs,answer,
       answerKey:vals.join(','),
-      speak:{text:question+' '+sub,lang:'en-US'},
+      speak:{text:M.q+' '+M.s,lang:'en-US'},
       explain:vals.map(v=>String(v)).join(', ')+'. Match them all!',
       answerSpeak:mathTipSpeak('Well done! You matched every pair.'),
       tag:'match'});
@@ -344,18 +417,107 @@ function genMatch(n){
   return out;
 }
 
+/* ---------------- v74 新题型 ①：找规律（Pattern Detective） ----------------
+   颜色/形状/数字序列问下一个，干扰项从别序列借，保证只有一个正确。 */
+function genPattern(n){
+  const out=[];
+  const PATS=[
+    {seq:['🔴','🔵','🔴','🔵','🔴'],next:'🔵',why:'Red, blue, red, blue. The colours take turns.'},
+    {seq:['⭐','⭐','🌙','⭐','⭐'],next:'🌙',why:'Two stars then a moon. The pattern repeats.'},
+    {seq:['🔺','🟨','🟩','🔺','🟨'],next:'🟩',why:'Three shapes in order, then start again.'},
+    {seq:['🍎','🍌','🍇','🍎','🍌'],next:'🍇',why:'Apple, banana, grape, then start again.'},
+    {seq:['1','2','3','4','5'],next:'6',why:'The numbers go up by one each time.'},
+    {seq:['2','4','6','8'],next:'10',why:'Count up by two each time.'},
+    {seq:['10','9','8','7'],next:'6',why:'The numbers go down by one each time.'},
+    {seq:['🔴','🔴','🔵','🔴','🔴'],next:'🔵',why:'Two red, one blue. The pattern repeats.'},
+    {seq:['🔵','🟡','🟡','🔵','🟡'],next:'🟡',why:'One blue, two yellow. The pattern repeats.'},
+    {seq:['🌙','⭐','🌙','⭐','🌙'],next:'⭐',why:'Moon, star, moon, star. Take turns.'},
+    {seq:['🍓','🍓','🍋','🍓','🍓'],next:'🍋',why:'Two strawberries then a lemon. Repeats.'},
+    {seq:['3','5','7','9','11'],next:'13',why:'Odd numbers, counting up by two.'},
+    {seq:['20','18','16','14'],next:'12',why:'Count down by two each time.'},
+    {seq:['🔺','🔺','🔵','🔵','🔺'],next:'🔺',why:'Two triangles, two circles. Repeats.'},
+    {seq:['🐱','🐶','🐱','🐶','🐱'],next:'🐶',why:'Cat, dog, cat, dog. Take turns.'},
+    {seq:['1','3','5','7','9'],next:'11',why:'The numbers go up by two each time.'}
+  ];
+  const ALL=['🔴','🔵','🟡','⭐','🌙','🔺','🟨','🟩','🍎','🍌','🍇','🍓','🍋','🐱','🐶',
+    '1','2','3','4','5','6','7','8','9','10','11','12','13','14'];
+  for(let i=0;i<n;i++){
+    const p=pick(PATS);
+    const distract=shuffle(ALL.filter(x=>x!==p.next&&p.seq.indexOf(x)<0)).slice(0,3);
+    out.push({type:'choice',prompt:'What comes next?',sub:p.seq.join('  ')+'  ❓',
+      speak:{text:'What comes next? '+p.seq.join(', '),lang:'en-US'},
+      options:shuffle([p.next].concat(distract)),answer:p.next,
+      explain:p.why,answerSpeak:mathTipSpeak(p.why),tag:'pattern'});
+  }
+  return out;
+}
+
+/* ---------------- v74 新题型 ②：比大小（Compare Numbers） ----------------
+   圈出较大/较小的数；偶尔相等用 choice 的 = 判定，避免无解。 */
+function genCompare(n){
+  const out=[];
+  for(let i=0;i<n;i++){
+    const askBig=Math.random()<0.5;
+    let a=ri(1,20), b=ri(1,20);
+    if(a===b) b=a===20?a-1:a+1;             // 本题只比大小，先排除相等
+    const big=Math.max(a,b), small=Math.min(a,b);
+    const answer=askBig?big:small;
+    const pet=mathPet();
+    out.push({type:'choice',prompt:askBig?'Which number is bigger?':'Which number is smaller?',
+      sub:a+'   vs   '+b, visual:petVisual(a,b,'+',pet),petKey:petKey(pet),
+      speak:{text:'Which number is '+(askBig?'bigger':'smaller')+'? '+a+' or '+b+'?',lang:'en-US'},
+      options:shuffle([String(a),String(b)]),answer:String(answer),
+      explain:big+' is bigger than '+small+'. '+small+' is smaller than '+big+'.',
+      answerSpeak:mathTipSpeak(big+' is bigger; '+small+' is smaller.'),tag:'compare'});
+  }
+  return out;
+}
+
+/* ---------------- v74 新题型 ③：序数 / 排序（First, Second, Third） ----------------
+   一排互不相同的宝可梦，问从左数第 k 只是谁（与 space 区别在于强调序数词与前后衔接）。 */
+function genOrdinal(n){
+  const out=[];
+  for(let i=0;i<n;i++){
+    const count=ri(4,6);
+    const line=shuffle(MATH_PETS).slice(0,count).map((p,idx)=>({
+      id:p.id,key:petKey(p)+'_'+idx,name:p.name,pos:ord(idx+1)}));
+    const k=ri(1,count), who=line[k-1];
+    const askFirst=Math.random()<0.5;
+    let question,sub,explain;
+    if(askFirst){
+      question='Who is '+ord(k)+' in the line?';
+      sub='Count from the left. Find '+ord(k)+'.';
+      explain=who.name+' is '+ord(k)+' from the left.';
+    }else{
+      question='Who comes right after '+ord(k)+'?';
+      const after=line[Math.min(k,count-1)];
+      sub=ord(k)+', then who? Look at the line.';
+      explain=after.name+' comes right after '+ord(k)+'.';
+    }
+    const answerKey=askFirst?who.key:line[Math.min(k,count-1)].key;
+    out.push({type:'circle',prompt:question,sub,
+      visual:petRow(line,{title:'Standing in a line'}),
+      items:line.map(it=>({key:it.key,label:it.name,img:pokeImg(it.id),pos:it.pos})),
+      answer:answerKey,multi:false,
+      speak:{text:sub+' '+question,lang:'en-US'},
+      explain, answerSpeak:mathTipSpeak(explain),tag:'ordinal'});
+  }
+  return out;
+}
+
 /* =========================================================
    综合训练（Mixed Review）：一套里把数学模块所有题型都过一遍
    ---------------------------------------------------------
-   数学模块共有 17 类出题器（m-facts 是只读挂图，不算题型）：
+   数学模块共有 20 类出题器（m-facts 是只读挂图，不算题型）：
      经典 9 类 —— count / bonds10 / add10 / bonds20 / add20 /
                  sub10 / sub20 / word / mixed
      CPA/新题 8 类 —— cpa-add / cpa-sub / doubles / word-plus /
                      logic / space / focus / match
+     v74 新增 3 类 —— pattern / compare / ordinal
    每一类都直接复用原课程的 make()，不再重写一份出题逻辑 ——
    以后任何一门课调整题目，综合训练自动跟着更新。
-   一套只有 10 道题，装不下 17 类，所以「打乱题型顺序 → 每类先出 1 道」，
-   保证一套里尽量多不同题型，连做几套必然覆盖全部 17 类。
+   一套只有 10 道题，装不下 20 类，所以「打乱题型顺序 → 每类先出 1 道」，
+   保证一套里尽量多不同题型，连做几套必然覆盖全部 20 类。
    ========================================================= */
 function comboFamilies(){
   const legacyMaker=(id)=>{
@@ -381,6 +543,9 @@ function comboFamilies(){
     {id:'space',     make:genSpace},
     {id:'focus',     make:genFocus},
     {id:'match',     make:genMatch},
+    {id:'pattern',   make:genPattern},
+    {id:'compare',   make:genCompare},
+    {id:'ordinal',   make:genOrdinal},
   ].filter(f=>typeof f.make==='function');
 }
 function genCombo(n, opts){
@@ -418,18 +583,29 @@ const MATH_V2 = [
   { id:'m-word-plus', level:3, title:'Story Problems · Think', emoji:'📖',
     desc:'Compare · two steps · how many more (all English)', noPool:true,
     make(slots){ return genWordPlus(Math.max(12,slots||10)); } },
-  { id:'m-logic', level:2, title:'Logic · Who Is Faster?', emoji:'🏁',
-    desc:'Read the clues, circle the fastest or slowest', noPool:true,
+  { id:'m-logic', level:2, title:'Logic · Think & Deduce', emoji:'🏁',
+    desc:'Taller chains, elimination, who is faster, what comes next', noPool:true,
     make(slots){ return genLogic(Math.max(14,slots||10)); } },
-  { id:'m-space', level:2, title:'Space · In a Line', emoji:'📍',
-    desc:'First, last, from the back, who battles whom', noPool:true,
+  { id:'m-space', level:2, title:'Space · Position & Direction', emoji:'📍',
+    desc:'First, last, next to, between, from the right, mirror flip', noPool:true,
     make(slots){ return genSpace(Math.max(14,slots||10)); } },
   { id:'m-focus', level:1, title:'Look Carefully', emoji:'🔍',
     desc:'Find the different one · circle all · count position', noPool:true,
     make(slots){ return genFocus(Math.max(14,slots||10)); } },
   { id:'m-match', level:1, title:'Match the Pairs', emoji:'🔗',
-    desc:'Draw lines: ten-frame ↔ number, sum ↔ answer', noPool:true,
+    desc:'Draw lines: ten-frame, sums, groups, number bonds', noPool:true,
     make(slots){ return genMatch(Math.max(12,slots||10)); } },
+
+  /* v74 新增题型：找规律 / 比大小 / 序数——参考学而思一年级常考类型 */
+  { id:'m-pattern', level:2, title:'Pattern Detective', emoji:'🔁',
+    desc:'What comes next? colours, shapes and number patterns', noPool:true,
+    make(slots){ return genPattern(Math.max(14,slots||10)); } },
+  { id:'m-compare', level:1, title:'Compare Numbers', emoji:'⚖️',
+    desc:'Greater than, less than, equal — circle the bigger one', noPool:true,
+    make(slots){ return genCompare(Math.max(14,slots||10)); } },
+  { id:'m-ordinal', level:2, title:'First, Second, Third', emoji:'🥇',
+    desc:'Order and ordinals: who is first, next and last', noPool:true,
+    make(slots){ return genOrdinal(Math.max(14,slots||10)); } },
 
   /* 综合训练：数学模块全部题型混着练（每套打乱出题顺序，尽量覆盖不同类型） */
   { id:'m-combo', level:3, title:'Mixed Review · All Skills', emoji:'🏆',
@@ -441,5 +617,6 @@ const MATH_V2 = [
 if(typeof module!=='undefined' && module.exports){
   module.exports={ tenFrame, barModel, petRow, ord,
     genCpaAdd, genCpaSub, genDoubles, genWordPlus, genLogic, genSpace, genFocus, genMatch,
+    genPattern, genCompare, genOrdinal,
     comboFamilies, genCombo, MATH_V2 };
 }

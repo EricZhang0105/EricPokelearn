@@ -1,9 +1,14 @@
 /* PokeLearn service worker — offline-capable PWA
- * 缓存策略（v73）：
+ * 缓存策略（v74）：
  * - HTML / JS / CSS / manifest：网络优先，断网回退缓存 → 改版后孩子设备立刻拿到新版本
  * - 图片（精灵图、图标）：缓存优先 → 秒开且省流量
  * - 中文音频：安装时预缓存（173 段 / 3.7MB，Tingting 高清语音，含四声示范音），第一次打开就能离线听
  * 改了静态文件后请把 CACHE 里的版本号 +1，强制刷新图片缓存。
+ * v74（2026-11-24）：
+ *   数学逻辑/空间/连线大扩展（传递推理·排除·找规律 / 相邻·之间·镜像 / 图形计数·数字分解），
+ *   新增 Pattern·Compare·Ordinal 三门课；
+ *   英语新增 Word Groups·Opposites·Where Is It·Rhyming Words·First&Last + English Mixed Review 综合题组。
+ *   新增 js/english-v2.js 并预缓存。
  * v73（2026-11-23）：
  *   数学新增「综合训练 Mixed Review · All Skills」：一套里打乱抽取数学模块全部
  *   17 类题型（数数 / 数墙 / 加减 / 应用题 / CPA / 倍数 / 逻辑 / 空间 / 专注力 / 连线），
@@ -97,7 +102,7 @@
  * v40（2026-11-16 语音统一）：所有音频 URL 带 ?a=2 版本参数，旧缓存（Flo 时代发闷的
  *   录音 + 63 只宝可梦的多音色鼓励语）不会再被复用；鼓励语改为统一女声 TTS。
  */
-const CACHE = 'pokelearn-v73';
+const CACHE = 'pokelearn-v74';
 const SHELL = [
   './',
   './index.html',
@@ -108,6 +113,7 @@ const SHELL = [
   './js/ref-pages.js',
   './js/math-v2.js',
   './js/data.js',
+  './js/english-v2.js',
   './js/audio-denoise.js',
   './js/parent-blend.js',
   './js/blend-cloud.js',

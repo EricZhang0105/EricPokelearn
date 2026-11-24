@@ -68,11 +68,11 @@ ok('标题全英文', !!les.title && !hasCJK(les.title), les.title);
 ok('简介全英文', !!les.desc && !hasCJK(les.desc));
 ok('有 make()', typeof les.make === 'function');
 ok('排在数学课程列表最后', MATH[MATH.length - 1].id === 'm-combo');
-ok('课程总数 = 原 18 课 + 综合训练', MATH.length === 19, 'got ' + MATH.length);
+ok('课程总数 = 原 18 课 + 11 门 v70/v74 专项课 + 综合训练', MATH.length === 22, 'got ' + MATH.length);
 
 console.log('\n=== 2. 覆盖数学模块全部题型 ===');
 const famIds = families.map(f => f.id);
-ok('题型数 = 17', families.length === 17, 'got ' + families.length + ': ' + famIds.join(','));
+ok('题型数 = 20', families.length === 20, 'got ' + families.length + ': ' + famIds.join(','));
 ok('题型 id 唯一', new Set(famIds).size === famIds.length);
 ok('每个题型都有出题函数', families.every(f => typeof f.make === 'function'));
 const LEGACY = ['count','bonds10','add10','bonds20','add20','sub10','sub20','word','mixed'];
@@ -121,7 +121,7 @@ for (let round = 0; round < 60; round++) {
     }
   });
 }
-ok('17 类题型全部真实出现', seenSrc.size === 17, 'seen=' + seenSrc.size + ' missing=' + famIds.filter(x => !seenSrc.has(x)).join(','));
+ok('20 类题型全部真实出现', seenSrc.size === 20, 'seen=' + seenSrc.size + ' missing=' + famIds.filter(x => !seenSrc.has(x)).join(','));
 ok('每套至少覆盖 9 种题型', minTypesPerSet >= 9, 'min=' + minTypesPerSet);
 ok('题目结构全部合法', badStruct.length === 0, badStruct.slice(0, 5).join(' | '));
 ok('题干无中文', cjk === 0, 'cjk=' + cjk);

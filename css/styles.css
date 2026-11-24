@@ -217,6 +217,10 @@ body{
 .circle-item:active{transform:scale(.95);}
 .circle-item img{width:60px;height:60px;object-fit:contain;user-select:none;-webkit-user-drag:none;
   pointer-events:none;}
+/* v74 · 英语词卡（无图）：宽一点，居中显示单词，双击不选中文字 */
+.circle-item.circle-text{width:auto;min-width:92px;max-width:140px;min-height:80px;padding:10px 12px;justify-content:center;}
+.ci-word{font-size:20px;font-weight:800;color:#5B3E1B;line-height:1.15;text-align:center;
+  word-break:break-word;user-select:none;}
 .ci-label{font-size:12px;font-weight:700;color:#6B4A1E;line-height:1.1;text-align:center;}
 .ci-pos{position:absolute;top:-8px;left:-6px;background:#FF9F43;color:#fff;font-size:11px;
   font-weight:800;border-radius:8px;padding:1px 6px;}
