@@ -1,5 +1,9 @@
 /* PokeLearn service worker — offline-capable PWA
- * 缓存策略（v79）：
+ * 缓存策略（v80）：
+ * v80（2026-11-25）：
+ *   修复：① 错题复习回归测试适配 v76/v77 的 showFeedback(good, explain) 两参数
+ *         + 翻页导航（gotoQuestion），不再按旧的 6 参数签名断言；
+ *         ② 综合训练 genCombo 加内容指纹去重，杜绝一套里抽到两道本质相同的题。
  * v79（2026-11-25）：
  *   新增 Money（花钱/找零/总价/还差）与 Time（醒来/经过/前后推算）两类应用题，
  *   加入综合题组。
@@ -112,7 +116,7 @@
  * v40（2026-11-16 语音统一）：所有音频 URL 带 ?a=2 版本参数，旧缓存（Flo 时代发闷的
  *   录音 + 63 只宝可梦的多音色鼓励语）不会再被复用；鼓励语改为统一女声 TTS。
  */
-const CACHE = 'pokelearn-v79';
+const CACHE = 'pokelearn-v80';
 const SHELL = [
   './',
   './index.html',

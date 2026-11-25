@@ -765,15 +765,25 @@ function genCombo(n, opts){
   n=Math.max(1, Number(n)||10);
   const fams=shuffle(comboFamilies());
   const out=[];
+  /* v79 · 内容指纹去重：不同题型偶尔会生成「本质相同」的题
+     （例：pattern 的 ⭐⭐🌙⭐⭐❓ 与 logic 扩展出的同串题）。
+     同一套里绝不能出现两道一样的，所以在生成器层就拦住，
+     指纹口径与 tools/combo_check.js 一致（type/prompt/sub/answer/visual）。 */
+  const fp=(q)=>[q.type||'',String(q.prompt||''),String(q.sub||''),
+    String(q.answer||''),String(q.visual||'')].join('~');
+  const seen=new Set();
   /* 最早一轮就每类各出一道（题型尽量分散），某类万一摇空了再下一轮换一批。 */
-  for(let pass=0; pass<5 && out.length<n; pass++){
+  for(let pass=0; pass<8 && out.length<n; pass++){
     for(const f of fams){
       if(out.length>=n) break;
       let batch=[];
-      try{ batch=f.make(2)||[]; }catch(e){ batch=[]; }
+      try{ batch=f.make(3)||[]; }catch(e){ batch=[]; }
       if(!batch.length) continue;
-      const q=batch[ri(0,batch.length-1)];
-      if(!q) continue;
+      /* 从这一批里挑一道「本套还没出现过」的；全撞车就换下一轮再摇。 */
+      const fresh=shuffle(batch).filter(q=>q && !seen.has(fp(q)));
+      if(!fresh.length) continue;
+      const q=fresh[0];
+      seen.add(fp(q));
       /* src 只用于测试/统计「这道题来自哪个题型」，不参与渲染与去重指纹。 */
       q.src=f.id;
       out.push(q);
