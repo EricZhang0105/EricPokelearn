@@ -5,6 +5,26 @@
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
 
+/* ---------- v75 · iPadOS 26 窗口按钮防误触 ----------
+   iPadOS 26 在所有窗口左上角加了系统级的 关闭/最小化/全屏 三个按钮，
+   覆盖在 Web Clip / PWA 内容上方，网页无法隐藏或拦截。孩子答完题点
+   左上角「← Back」时容易误触系统关闭按钮退出整个 App。
+   检测「iPad 平板 + 独立 Web App 模式」后给 body 打标记，
+   由 CSS 把顶部按钮整体右移，让出左上角安全区。
+   - standalone 判定：navigator.standalone(iOS 私有) 或 display-mode 媒体查询
+   - iPad 判定：UA 含 iPad，或 Mac UA + 多点触控(iPadOS 桌面模式)
+   普通浏览器 / iPhone 不打标记，布局完全不变。 */
+(function markIpadStandalone(){
+  try{
+    const standalone = (navigator.standalone===true)
+      || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    const ua = navigator.userAgent || '';
+    const iPad = /iPad/.test(ua)
+      || (/Macintosh/.test(ua) && (navigator.maxTouchPoints||0) > 1);
+    if(standalone && iPad) document.body.classList.add('ipad-standalone');
+  }catch(e){}
+})();
+
 Store.load();
 /* 家长录音降噪力度：Eric 2026-11-17 试听后定档 = 强力 strong */
 try{ window.POKELEARN_DENOISE_LEVEL = localStorage.getItem('pokelearn-denoise-level') || 'strong'; }catch(e){ window.POKELEARN_DENOISE_LEVEL = 'strong'; }

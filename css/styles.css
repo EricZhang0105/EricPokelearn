@@ -35,6 +35,19 @@ body{
   z-index:80;opacity:0;transition:opacity .25s,transform .25s;box-shadow:0 6px 20px rgba(0,0,0,.3);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
+/* ===== v75 · iPadOS 26 左上角窗口按钮防误触 =====
+   iPadOS 26 在窗口左上角有系统级 关闭/最小化/全屏 三按钮，覆盖 web app 内容，
+   网页无法隐藏/拦截。孩子点左上角「← Back」会误触关闭按钮退出。
+   app.js 检测到「iPad + 独立 Web App」时给 body 加 .ipad-standalone：
+   这里把顶部按钮整体右移，让出左上角安全区。
+   --ipad-btn-safe 可调：若按钮仍被盖住就调大（如 150px），太靠右就调小。 */
+body.ipad-standalone{ --ipad-btn-safe:132px; }
+body.ipad-standalone .topbar{ padding-left:var(--ipad-btn-safe); }
+body.ipad-standalone .topbar-left{ gap:10px; }
+/* 顶部栏被右移后，标题可能挤到按钮上：让标题区可收缩省略 */
+body.ipad-standalone .topbar-title{ flex:1 1 auto; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:center; }
+
 /* 顶部栏 */
 .topbar{display:flex;align-items:center;justify-content:space-between;
   padding:10px 16px;background:#fff;border-bottom:4px solid #FFE0A3;position:sticky;top:0;z-index:20;}
