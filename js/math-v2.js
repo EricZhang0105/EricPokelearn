@@ -69,6 +69,34 @@ function petRow(items,opts){
       +'</div>').join('')+'</div>';
 }
 
+/* ---------------- v76 · 凑十法解题图（Make-10 solution） ----------------
+   按 Eric 手绘思路：8+7 → 因为 8 比 7 大，留大数 8，把小数 7 拆成
+   「凑十的数 + 剩下的数」(7 = 2 + 5)，先 8+2=10，再 10+5=15。
+   返回纯 HTML，答对后显示在题目下方，孩子看图即可理解拆/合关系。 */
+function make10Solution(a,b){
+  const big=Math.max(a,b), small=Math.min(a,b);
+  const need=10-big, left=small-need;          // 把小数拆成 need + left
+  const ans=a+b;
+  return '<div class="sol-card">'
+    +'<div class="sol-title">🧠 Let\'s make 10!</div>'
+    +'<div class="sol-why">'+big+' is bigger than '+small+', so keep '+big+' and split '+small+'.</div>'
+    // number bond：小数拆成 need + left
+    +'<div class="sol-bond">'
+      +'<div class="sol-bond-top">'+small+'</div>'
+      +'<div class="sol-bond-arms"><i></i><i></i></div>'
+      +'<div class="sol-bond-parts"><span class="sol-need">'+need+'</span><span class="sol-left">'+left+'</span></div>'
+    +'</div>'
+    // 两步算式：大数 + need = 10 → 10 + left = 答案
+    +'<div class="sol-steps">'
+      +'<div class="sol-step"><span class="sol-eq">'+big+' + '+need+'</span><span class="sol-arrow">=</span>'
+        +'<span class="sol-ten">10</span></div>'
+      +'<div class="sol-step"><span class="sol-eq">10 + '+left+'</span><span class="sol-arrow">=</span>'
+        +'<span class="sol-ans">'+ans+'</span></div>'
+    +'</div>'
+    +'<div class="sol-note">'+big+' + '+small+' = '+ans+' ✓</div>'
+  +'</div>';
+}
+
 /* ---------------- 题目生成：CPA 加法（Make-10 专项） ----------------
    Concrete(十格框圆点) → Pictorial(条形图) → Abstract(算式) 同屏呈现。 */
 function genCpaAdd(n){
@@ -86,9 +114,37 @@ function genCpaAdd(n){
       speak:{text:a+' plus '+b+' equals what?',lang:'en-US'},
       options:numOptions(ans,10,20), answer:String(ans),
       explain:mathTip('+',a,b,ans), answerSpeak:mathTipSpeak(mathTip('+',a,b,ans)),
-      tag:'cpa'});
+      solutionHtml:make10Solution(a,b), tag:'cpa'});
   }
   return out;
+}
+
+/* ---------------- v77 · 减法破十法解题图（Subtract by splitting to 10） ----------------
+   按 Eric 手绘思路：16−9 → 因为 16 = 10 + 6，把 9 拆成 6 + 3，
+   先 16−6=10，再 10−3=7。拆分的是"减数"，让被减数先退回 10 再减剩下的。
+   返回纯 HTML，答对后显示在题目下方，孩子看图即可理解拆/减关系。 */
+function subtractSolution(a,take){
+  const back=a-10;                 // 被减数里"满十之外的零头"，如 16 → 6
+  const left=take-back;            // 减数拆开后剩下的部分，如 9 = 6 + 3 → 3
+  const ans=a-take;
+  return '<div class="sol-card sol-sub">'
+    +'<div class="sol-title">🧠 Subtract through 10!</div>'
+    +'<div class="sol-why">'+a+' = 10 + '+back+', so split '+take+' into '+back+' + '+left+'.</div>'
+    // number bond：减数拆成 back + left
+    +'<div class="sol-bond">'
+      +'<div class="sol-bond-top">'+take+'</div>'
+      +'<div class="sol-bond-arms"><i></i><i></i></div>'
+      +'<div class="sol-bond-parts"><span class="sol-need">'+back+'</span><span class="sol-left">'+left+'</span></div>'
+    +'</div>'
+    // 两步算式：被减数 − back = 10 → 10 − left = 答案
+    +'<div class="sol-steps">'
+      +'<div class="sol-step"><span class="sol-eq">'+a+' − '+back+'</span><span class="sol-arrow">=</span>'
+        +'<span class="sol-ten">10</span></div>'
+      +'<div class="sol-step"><span class="sol-eq">10 − '+left+'</span><span class="sol-arrow">=</span>'
+        +'<span class="sol-ans">'+ans+'</span></div>'
+    +'</div>'
+    +'<div class="sol-note">'+a+' − '+take+' = '+ans+' ✓</div>'
+  +'</div>';
 }
 
 /* ---------------- 题目生成：CPA 减法（Think-addition / 退位） ---------------- */
@@ -109,7 +165,7 @@ function genCpaSub(n){
       speak:{text:a+' minus '+take+' equals what?',lang:'en-US'},
       options:numOptions(ans,1,18), answer:String(ans),
       explain:mathTip('-',a,take,ans), answerSpeak:mathTipSpeak(mathTip('-',a,take,ans)),
-      tag:'cpa'});
+      solutionHtml:subtractSolution(a,take), tag:'cpa'});
   }
   return out;
 }
@@ -317,15 +373,16 @@ function genSpace(n){
 /* ---------------- 题目生成：专注力 · Look Carefully ----------------
    硬规则：同一题里出现的所有宝可梦必须互不相同 —— 从 12 只 MATH_PETS 里
    shuffle 后取 5~7 只，不再靠"重复同一只"来做找不同/圈同类。
-   三种专注力维度改为：
+   四种专注力维度（v78 起左右双向）：
      ① Find by name   —— 听名字，在一排各不相同的宝可梦里视觉扫描找出那只
      ② Find by initial—— 看名字首字母，圈出所有匹配的（multi）
-     ③ Count position —— 从左数第 k 只
+     ③ Count from left—— 从左数第 k 只
+     ④ Count from right—— 从右数第 k 只（从右端倒着数，强化专注力）
    key 仍带 '_'+k 后缀，保证 DOM 与判分唯一。 */
 function genFocus(n){
   const out=[];
   for(let i=0;i<n;i++){
-    const mode=ri(0,2);
+    const mode=ri(0,3);
     const count=ri(5,7);
     // 一排互不相同的宝可梦（MATH_PETS 有 12 只，够抽 5~7 只不重复）
     let seq=shuffle(MATH_PETS).slice(0,count);
@@ -353,13 +410,22 @@ function genFocus(n){
       question='Circle all the Pokémon starting with '+letter+'.';
       sub='Look at the names. Touch every Pokémon that starts with '+letter+'. Do not miss any!';
       explain=letter+': '+hits.map(p=>p.name).join(', ')+'. You found them all!';
-    }else{
+    }else if(mode===2){
       // ③ 从左数第 k 只
       const k=ri(2,count-1);
       keys=[petKey(seq[k-1])+'_'+(k-1)];
       question='Circle the '+ord(k)+' one from the left.';
       sub='Count from the left. Which one is '+ord(k)+'?';
       explain='The '+ord(k)+' one from the left is '+seq[k-1].name+'.';
+    }else{
+      // ④ v78 从右数第 k 只（新增 · 专注力）：图上不标左序号，
+      //    孩子必须从右端倒着数，训练方向与专注。
+      const k=ri(2,count-1);
+      const idx=count-k;               // 从右数第 k = 从左数第 count-k+1（0-based 为 count-k）
+      keys=[petKey(seq[idx])+'_'+idx];
+      question='Circle the '+ord(k)+' one from the right.';
+      sub='Count from the RIGHT. Which one is '+ord(k)+'?';
+      explain='The '+ord(k)+' one from the right is '+seq[idx].name+'.';
     }
     const items=seq.map((p,k)=>({key:petKey(p)+'_'+k,label:p.name,img:pokeImg(p.id)}));
     const visual=petRow(seq.map((p,k)=>({id:p.id,key:petKey(p)+'_'+k,name:p.name})),{title:'Look at these Pokémon'});
@@ -475,26 +541,40 @@ function genCompare(n){
 
 /* ---------------- v74 新题型 ③：序数 / 排序（First, Second, Third） ----------------
    一排互不相同的宝可梦，问从左数第 k 只是谁（与 space 区别在于强调序数词与前后衔接）。 */
+/* ---------------- v78 · 序数：从左 / 从右双向（考察专注力） ----------------
+   原来只会「从左数第 k」和「k 后面是谁」，方向单一。新增「从右数第 k」，
+   图上 pos 标号仍是从左的 1st/2nd…，孩子必须自己从右端重新数——
+   正好训练专注力与左右方向的转换。 */
 function genOrdinal(n){
   const out=[];
   for(let i=0;i<n;i++){
     const count=ri(4,6);
     const line=shuffle(MATH_PETS).slice(0,count).map((p,idx)=>({
       id:p.id,key:petKey(p)+'_'+idx,name:p.name,pos:ord(idx+1)}));
-    const k=ri(1,count), who=line[k-1];
-    const askFirst=Math.random()<0.5;
-    let question,sub,explain;
-    if(askFirst){
-      question='Who is '+ord(k)+' in the line?';
-      sub='Count from the left. Find '+ord(k)+'.';
+    const mode=ri(0,2);
+    let question,sub,explain,answerKey;
+    if(mode===0){
+      // 从左数第 k
+      const k=ri(1,count), who=line[k-1];
+      question='Who is '+ord(k)+' from the left?';
+      sub='Count from the LEFT. The first one is at the left end.';
       explain=who.name+' is '+ord(k)+' from the left.';
+      answerKey=who.key;
+    }else if(mode===1){
+      // 从右数第 k（新增 · 专注力）
+      const k=ri(1,count), who=line[count-k];
+      question='Who is '+ord(k)+' from the right?';
+      sub='Count from the RIGHT. The first one is at the right end.';
+      explain='Counting from the right, '+ord(k)+' is '+who.name+'.';
+      answerKey=who.key;
     }else{
-      question='Who comes right after '+ord(k)+'?';
-      const after=line[Math.min(k,count-1)];
-      sub=ord(k)+', then who? Look at the line.';
-      explain=after.name+' comes right after '+ord(k)+'.';
+      // 从左数，谁紧跟在第 k 个后面
+      const k=ri(1,count-1), who=line[k];
+      question='Who comes right after '+ord(k)+' from the left?';
+      sub=ord(k)+', then who? Count from the left.';
+      explain=who.name+' comes right after '+ord(k)+'.';
+      answerKey=who.key;
     }
-    const answerKey=askFirst?who.key:line[Math.min(k,count-1)].key;
     out.push({type:'circle',prompt:question,sub,
       visual:petRow(line,{title:'Standing in a line'}),
       items:line.map(it=>({key:it.key,label:it.name,img:pokeImg(it.id),pos:it.pos})),
@@ -615,7 +695,7 @@ const MATH_V2 = [
 ];
 
 if(typeof module!=='undefined' && module.exports){
-  module.exports={ tenFrame, barModel, petRow, ord,
+  module.exports={ tenFrame, barModel, petRow, ord, make10Solution, subtractSolution,
     genCpaAdd, genCpaSub, genDoubles, genWordPlus, genLogic, genSpace, genFocus, genMatch,
     genPattern, genCompare, genOrdinal,
     comboFamilies, genCombo, MATH_V2 };

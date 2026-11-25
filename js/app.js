@@ -35,7 +35,10 @@ if(typeof QEngine!=='undefined' && QEngine.bootExtraPassages) QEngine.bootExtraP
 
 const state = {
   subject:null, lessonId:null, questions:[], idx:0,
-  correct:0, total:0, selectedPokemon:null, reviewDone:false
+  correct:0, total:0, selectedPokemon:null, reviewDone:false,
+  /* v76 · 每题结算快照：答过一次后记 settled[idx]=true，
+     翻回上一题重答时只恢复视觉反馈，不重复计分/扣能量/改错题本。 */
+  settled:{}, snap:{}
 };
 
 /* ---------- 屏幕切换 ---------- */
@@ -1048,6 +1051,7 @@ function beginSession(subject,lessonId){
   state.idx=0; state.correct=0;
   state.total=state.questions.length;
   state.subject=subject; state.lessonId=lessonId; state.reviewDone=false;
+  state.settled={}; state.snap={};    // v76 · 清空上一节课的作答快照
   state.mistakeReviewSession=false;   // 正常上课：反馈按钮用标准文案，不显示「下一道」
   state.animQueue=[];          // 本套题里发生的进化/退化/死亡动画，在题目切换时播放
   state.delta=0;               // 本套题净能量变化，用于结果页展示
@@ -1112,6 +1116,20 @@ function renderQuestion(){
   state.pendingExplain=false;    // 讲解已结束（或被打断），不再等它切题
   state.explainToken=(state.explainToken||0)+1;
   hideKeyboard();               // 切到下一题先把屏幕键盘收起，非打字题不会残留
+
+  /* v76 · 翻回已答过的题：原样还原当时的题目+反馈快照（含解题图、对错标记），
+     并重新绑定翻页按钮；不再重新渲染/朗读，避免丢失孩子的作答痕迹。 */
+  const snap=state.snap[state.idx];
+  if(snap && state.settled[state.idx]){
+    $('#questionArea').innerHTML=snap.area;
+    const fb=$('#feedback'); fb.innerHTML=snap.feedback; fb.className=snap.fbClass;
+    const pct=Math.round((state.idx)/state.total*100);
+    $('#progressFill').style.width=pct+'%';
+    $('#progressText').textContent=`${state.idx+1} / ${state.total}`;
+    bindNavButtons();
+    return;
+  }
+
   const item=state.questions[state.idx];
   const q=item.q;
   // 出现过的题记入存档，之后组题时直接跳过（做错的题仍会走错题本复习）
@@ -1226,7 +1244,7 @@ function renderQuestion(){
   area.innerHTML=h;
 
   if(q.type==='passage'){
-    $('#passageNext').onclick=()=>nextQuestion();
+    $('#passageNext').onclick=()=>gotoQuestion(1);
     if(q.speak) $('#speakBtn').onclick=()=>playSpeak(q.speak);
     if(q.speak) autoSpeak(q,true);          // 短文卡进题即朗读（原行为）
   } else if(q.type==='speak'){
@@ -1268,17 +1286,17 @@ function bindChoice(q,item){
         b.disabled=true;
         if(b.dataset.v===q.answer) b.classList.add('correct');
       });
+      const wasSettled=!!state.settled[state.idx];
       if(correct){
-        btn.classList.add('correct'); state.correct++; onCorrect(item);
+        btn.classList.add('correct');
+        if(!wasSettled){ state.correct++; onCorrect(item); state.settled[state.idx]={answered:true,correct:true}; }
         sfx('good');
-        // 语法题答对后要念完整句 / 发音辨析题要读解题思路，
-        // 留足时间再切下一题，避免语音或中文讲解被下一题的自动读题打断
-        showFeedback(true,q.explain,true,null,false,
-          q.feedbackDelay || (q.answerSpeak?3000:950));
+        showFeedback(true,q.explain);
       }else{
         btn.classList.add('wrong');
+        if(!wasSettled){ recordWrong(item,val,q); state.settled[state.idx]={answered:true,correct:false}; }
         sfx('bad');
-        showFeedback(false, q.explain, false, ()=>recordWrong(item,val,q));
+        showFeedback(false, q.explain);
       }
     };
   });
@@ -1398,11 +1416,12 @@ function bindSpeak(q,item){
     cleanup(); _stopSpeechInput=null;
     const buddy=(Store.stageInfo(state.selectedPokemon)||{}).form;
     setStatus(`🎉 读对啦！${buddy?buddy.name+' 为你欢呼！':'太棒了！'}`,'ok');
-    state.correct++; onCorrect(item); sfx('good');
+    const wasSettled=!!state.settled[state.idx];
+    if(!wasSettled){ state.correct++; onCorrect(item); state.settled[state.idx]={answered:true,correct:true}; }
+    sfx('good');
     // 即时鼓励：不等到课程结束，读对这一刻就让所选宝可梦叫一声
     setTimeout(()=>pokeCry(state.selectedPokemon), 170);
-    showFeedback(true, q.explain, true, null, false,
-      (item.q && item.q.answerSpeak) ? 3000 : 1500);  // 有完整句播报时多留时间
+    showFeedback(true, q.explain);
   }
   function retry(msg){
     tries++; setStatus(msg,'bad');
@@ -1556,16 +1575,18 @@ function bindType(q,item){
     if(!val) return;
     const pool=(q.accept&&q.accept.length?q.accept:[q.answer]).map(normAnswer);
     const correct = pool.includes(normAnswer(val));
+    const wasSettled=!!state.settled[state.idx];
     if(correct){
-      state.correct++; onCorrect(item);
+      if(!wasSettled){ state.correct++; onCorrect(item); state.settled[state.idx]={answered:true,correct:true}; }
       sfx('good');
       $('#checkBtn').disabled=true; input.disabled=true; hideKeyboard();
-      showFeedback(true,q.explain,true);
+      showFeedback(true,q.explain);
     }else{
+      if(!wasSettled){ recordWrong(item,val,q); state.settled[state.idx]={answered:true,correct:false}; }
       sfx('bad');
       input.disabled=true; hideKeyboard();
       const lead=q.short?'Answer':'Spell it';
-      showFeedback(false,`${lead}: ${q.answer}`,false,()=>recordWrong(item,val,q));
+      showFeedback(false,`${lead}: ${q.answer}`);
     }
   };
 }
@@ -1595,20 +1616,19 @@ function bindBuild(q,item){
       c.onclick=()=>{
         const joined=chosen.map(i=>q.tiles[i]).join(' ');
         const correct = joined===q.answer;
+        const wasSettled=!!state.settled[state.idx];
         if(correct){
-          state.correct++; onCorrect(item); c.disabled=true;
+          if(!wasSettled){ state.correct++; onCorrect(item); state.settled[state.idx]={answered:true,correct:true}; }
+          c.disabled=true;
           sfx('good');
-          // 拼对后把完整句子读给孩子听，读完再进下一题（不打断朗读）
+          // v76 · 拼对后把完整句子读给孩子听；不再自动跳题，由孩子点「下一题」
           const said=q.speak?q.speak.text:joined.replace(/ \./g,'.');
-          showFeedback(true,`✅ ${said}`,false);
-          let moved=false, guard=null;
-          const go=()=>{ if(moved) return; moved=true; if(guard) clearTimeout(guard); nextQuestion(); };
-          guard=setTimeout(go, 4200);                    // 音频缺失/被拦截时的兜底
-          if(q.speak) playSpeak(q.speak, ()=>setTimeout(go, 350));
-          else setTimeout(go, 1600);
+          showFeedback(true,`✅ ${said}`);
+          if(!wasSettled && q.speak) playSpeak(q.speak);
         }else{
+          if(!wasSettled){ recordWrong(item,joined,q); state.settled[state.idx]={answered:true,correct:false}; }
           sfx('bad');
-          showFeedback(false,'Try the right order again~',false,()=>recordWrong(item,joined,q),true);
+          showFeedback(false,'Try the right order again~');
         }
       };
       answer.appendChild(c);
@@ -1651,12 +1671,15 @@ function bindCircle(q,item){
     grid.querySelectorAll('.circle-item').forEach(el=>{
       if(String(q.answer||'').split(',').includes(el.dataset.key)) el.classList.add('is-answer');
     });
+    const wasSettled=!!state.settled[state.idx];
     if(correct){
-      state.correct++; onCorrect(item); sfx('good');
-      showFeedback(true,q.explain,true,null,false,q.feedbackDelay||(q.answerSpeak?2800:1100));
+      if(!wasSettled){ state.correct++; onCorrect(item); state.settled[state.idx]={answered:true,correct:true}; }
+      sfx('good');
+      showFeedback(true,q.explain);
     }else{
+      if(!wasSettled){ recordWrong(item,got,q); state.settled[state.idx]={answered:true,correct:false}; }
       sfx('bad');
-      showFeedback(false,q.explain,false,()=>recordWrong(item,got,q));
+      showFeedback(false,q.explain);
     }
   };
 }
@@ -1726,12 +1749,15 @@ function bindMatch(q,item){
     const total=Object.keys(q.pairs||{}).length;
     const correct=(Object.keys(pairs).length===total && okCount===total);
     const got=Object.keys(pairs).sort().map(k=>k+'='+pairs[k]).join(',');
+    const wasSettled=!!state.settled[state.idx];
     if(correct){
-      state.correct++; onCorrect(item); sfx('good');
-      showFeedback(true,q.explain,true,null,false,q.feedbackDelay||(q.answerSpeak?2200:1200));
+      if(!wasSettled){ state.correct++; onCorrect(item); state.settled[state.idx]={answered:true,correct:true}; }
+      sfx('good');
+      showFeedback(true,q.explain);
     }else{
+      if(!wasSettled){ recordWrong(item,got,q); state.settled[state.idx]={answered:true,correct:false}; }
       sfx('bad');
-      showFeedback(false,'Not quite — try the lines again.',false,()=>recordWrong(item,got,q));
+      showFeedback(false,'Not quite — try the lines again.');
     }
     window.removeEventListener('resize',onResize);
   };
@@ -1822,10 +1848,11 @@ function onCorrect(item){
   if(full && item.q.type!=='build'){
     const my=(state.explainToken=(state.explainToken||0)+1);
     state.pendingExplain=true;
-    /* 超时保险：音频彻底加载失败/浏览器吞掉 onend 时也要往前走，不能卡死在反馈页 */
+    /* v76 · 讲解读完只把 pendingExplain 清掉，不再自动跳题；切题由孩子点「下一题」。
+       保留超时保险让讲解状态能自行结束，避免卡住后续朗读。 */
     const guard=setTimeout(()=>{
       if(my!==state.explainToken || !state.pendingExplain) return;
-      state.pendingExplain=false; nextQuestion();
+      state.pendingExplain=false;
     }, 16000);
     setTimeout(()=>{
       if(my!==state.explainToken) return;
@@ -1833,7 +1860,6 @@ function onCorrect(item){
         clearTimeout(guard);
         if(my!==state.explainToken || !state.pendingExplain) return;
         state.pendingExplain=false;
-        nextQuestion();
       });
     }, 260);
   }
@@ -1851,23 +1877,72 @@ function awardEnergy(delta){
   if(res.evolved||res.devolved||res.died) updateCompanion();
 }
 
-/* ---------- 反馈 & 流程 ---------- */
-function showFeedback(good,explain,autoNext,onWrong,stay,delay){
+/* ---------- 反馈 & 流程（v76 · 答完不自动跳题，改由孩子自己翻页） ----------
+ * showFeedback 只负责展示「对错 + 文字讲解 + 凑十法解题图 + 翻页按钮」，
+ * 不再开任何自动跳题定时器；onWrong/onCorrect 的结算由各 bind 在判定时立即完成。 */
+function showFeedback(good,explain){
   const fb=$('#feedback');
   fb.className='feedback '+(good?'good':'bad');
-  fb.innerHTML = (good?'🎉 Awesome!':'💡 Try again') + (explain?`<br><span style="font-size:15px">${explain}</span>`:'');
-  if(good && autoNext){
-    /* 有解题思路语音时由 onCorrect 的 onend 负责切题，这里不能再开定时器 */
-    if(!state.pendingExplain) setTimeout(nextQuestion, delay||950);
-  }else if(!good){
-    const btn=document.createElement('button');
-    btn.className='btn-secondary'; btn.style.marginTop='10px';
-    // 错题复习：答错后按钮明确写「下一道」，点了直接进队列下一题，不用退出重进
-    btn.textContent= state.mistakeReviewSession ? '下一道 ➡️' : (stay?'Keep going':'Continue ➡️');
-    btn.onclick=()=>{ if(onWrong) onWrong(); nextQuestion(); };
-    fb.appendChild(document.createElement('br'));
-    fb.appendChild(btn);
+  let html = (good?'🎉 Awesome!':'💡 Try again') + (explain?`<br><span style="font-size:15px">${explain}</span>`:'');
+  /* v76/v77 · 加减法解题图：答完后在题目下方显示图文拆解
+     （加法=凑十：拆小数→凑十→合并；减法=破十：拆减数→退回十→再减） */
+  const cur=state.questions && state.questions[state.idx];
+  if(cur && cur.q && cur.q.solutionHtml && good){
+    html += cur.q.solutionHtml;
   }
+  fb.innerHTML=html;
+
+  /* v76 · 翻页导航：孩子自己决定继续下一题还是回头复习上一题 */
+  const nav=document.createElement('div');
+  nav.className='q-nav';
+  const prev=document.createElement('button');
+  prev.id='navPrev'; prev.className='btn-secondary q-nav-prev';
+  prev.type='button'; prev.textContent='⬅ 上一题';
+  if(state.idx<=0) prev.disabled=true;
+  prev.onclick=()=>gotoQuestion(-1);
+  const next=document.createElement('button');
+  next.id='navNext'; next.className='btn-primary q-nav-next';
+  next.type='button';
+  next.textContent = (state.idx>=state.total-1) ? '🏁 Finish' : '下一题 ➡';
+  next.onclick=()=>gotoQuestion(1);
+  nav.appendChild(prev); nav.appendChild(next);
+  fb.appendChild(nav);
+
+  /* v76 · 保存答完后的视觉快照，供翻回复习时原样还原（含解题图/对错标记/翻页按钮） */
+  state.snap[state.idx]={
+    area:$('#questionArea').innerHTML,
+    feedback:fb.innerHTML,
+    fbClass:fb.className
+  };
+}
+
+/* v76 · 还原快照后重新绑定翻页按钮（innerHTML 重建会丢 onclick） */
+function bindNavButtons(){
+  const prev=$('#navPrev'), next=$('#navNext');
+  if(prev){ prev.disabled=(state.idx<=0); prev.onclick=()=>gotoQuestion(-1); }
+  if(next){
+    next.textContent=(state.idx>=state.total-1)?'🏁 Finish':'下一题 ➡';
+    next.onclick=()=>gotoQuestion(1);
+  }
+}
+
+/* 翻到相邻题：先停掉讲解语音/作废未触发的回调，再换题或结算。 */
+function gotoQuestion(delta){
+  cancelSpeech();
+  state.pendingExplain=false;
+  state.explainToken=(state.explainToken||0)+1;
+  const target=state.idx+delta;
+  if(target<0) return;
+  if(target>=state.total){ finishLesson(); return; }
+  state.idx=target;   // v76 · 真正移动题目指针（修复此前漏赋值导致无法翻页）
+  if(state.animQueue && state.animQueue.length){
+    const ev=state.animQueue.shift();
+    const go=()=>renderQuestion();
+    if(ev.type==='evolve') showEvolveFx(state.selectedPokemon, ev.to, go);
+    else showDefeatFx(state.selectedPokemon, ev.type, go);
+    return;
+  }
+  renderQuestion();
 }
 
 function recordWrong(item,userAnswer,q){
@@ -1880,17 +1955,8 @@ function recordWrong(item,userAnswer,q){
 }
 
 function nextQuestion(){
-  state.idx++;
-  if(state.idx>=state.total){ finishLesson(); return; }
-  // 答题过程中攒下的进化/退化/死亡动画：切题前先播完
-  if(state.animQueue && state.animQueue.length){
-    const ev=state.animQueue.shift();
-    const go=()=>renderQuestion();
-    if(ev.type==='evolve') showEvolveFx(state.selectedPokemon, ev.to, go);
-    else showDefeatFx(state.selectedPokemon, ev.type, go);
-    return;
-  }
-  renderQuestion();
+  // v76 · 兼容旧调用：统一走手动翻页逻辑（不清宠物状态，只切题）
+  gotoQuestion(1);
 }
 
 /* ---------- 结束课程 ----------
@@ -2108,6 +2174,7 @@ function startPractice(startM){
   state.selectedPokemon = state.selectedPokemon || POKEMON[0].id;
   state.questions=ordered.map(x=>({q:x.q,ref:x,isReview:true}));
   state.idx=0; state.correct=0; state.total=state.questions.length;
+  state.settled={}; state.snap={};    // v76 · 清空作答快照
   state.mistakeReviewSession=true;    // 反馈区据此显示「下一道」按钮
   state.animQueue=[]; state.delta=0;  // 错题复习不涉及进化动画/能量结算展示
   cancelSpeech();

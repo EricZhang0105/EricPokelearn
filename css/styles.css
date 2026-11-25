@@ -212,6 +212,39 @@ body.ipad-standalone .topbar-title{ flex:1 1 auto; min-width:0;
 .cpa-eq{font-size:28px;font-weight:900;color:#D2691E;margin-top:2px;}
 .match-eq{font-size:22px;font-weight:800;color:#B5651D;white-space:nowrap;}
 
+/* ===== v76 · 凑十法解题图（Make-10 solution，答对后显示） ===== */
+.sol-card{background:linear-gradient(160deg,#FFFDF6,#FFF6E2);border:3px solid #F0C674;
+  border-radius:18px;padding:14px 16px 12px;margin:12px auto 2px;width:min(420px,94vw);
+  box-shadow:var(--shadow);text-align:center;color:#5B3E1B;}
+.sol-title{font-size:19px;font-weight:900;color:#C9741A;margin-bottom:6px;}
+.sol-why{font-size:14px;font-weight:600;color:#7A5A2E;line-height:1.35;margin-bottom:10px;}
+/* number bond：上方整体数，两条线连到下方拆分的两部分 */
+.sol-bond{position:relative;display:flex;flex-direction:column;align-items:center;margin:0 0 12px;}
+.sol-bond-top{width:48px;height:48px;line-height:44px;border-radius:50%;
+  background:linear-gradient(135deg,#FFD9A3,#FFB870);border:3px solid #E8932F;
+  font-size:24px;font-weight:900;color:#7A4A12;box-shadow:var(--shadow);z-index:2;}
+.sol-bond-arms{position:relative;width:150px;height:26px;}
+.sol-bond-arms i{position:absolute;top:0;width:75px;height:26px;
+  border-left:3px solid #E0A94E;border-bottom:3px solid #E0A94E;border-radius:0 0 0 0;}
+.sol-bond-arms i:first-child{left:0;transform:skewX(-26deg);transform-origin:top left;}
+.sol-bond-arms i:last-child{right:0;transform:skewX(26deg);transform-origin:top right;
+  border-left:none;border-right:3px solid #E0A94E;}
+.sol-bond-parts{display:flex;gap:54px;justify-content:center;}
+.sol-bond-parts span{width:48px;height:48px;line-height:44px;border-radius:50%;
+  font-size:24px;font-weight:900;border:3px solid;box-shadow:var(--shadow);}
+.sol-need{background:#D8F0C0;border-color:#7FB24A;color:#3E6B12;}   /* 凑十的数（绿） */
+.sol-left{background:#D6EAFB;border-color:#5FA6DE;color:#1F5C8A;}    /* 剩下的数（蓝） */
+/* 两步算式 */
+.sol-steps{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:2px 0 8px;}
+.sol-step{display:flex;align-items:center;gap:7px;background:#fff;border:2px solid #F0D9AE;
+  border-radius:12px;padding:6px 11px;font-size:20px;font-weight:800;}
+.sol-eq{color:#5B3E1B;}.sol-arrow{color:#B0A08A;}.sol-ten{color:#3E6B12;font-weight:900;}
+.sol-ans{color:#C9741A;font-weight:900;}
+.sol-note{font-size:16px;font-weight:800;color:#1c7a4f;margin-top:2px;}
+/* v77 · 减法破十法配色：与加法凑十区分（标题偏蓝） */
+.sol-card.sol-sub{background:linear-gradient(160deg,#FFFDF6,#EEF6FF);border-color:#93C5E8;}
+.sol-card.sol-sub .sol-title{color:#2E7BB5;}
+
 /* 一排宝可梦（赛跑/排队/找不同） */
 .row-title{text-align:center;font-size:14px;font-weight:700;color:#8A6A3A;margin:2px 0 6px;}
 .pet-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:flex-end;margin:4px 0;}
@@ -268,6 +301,14 @@ body.ipad-standalone .topbar-title{ flex:1 1 auto; min-width:0;
 .feedback{margin-top:14px;text-align:center;font-size:22px;font-weight:800;padding:14px;border-radius:16px;}
 .feedback.good{background:#C9F4DF;color:#1c7a4f;}
 .feedback.bad{background:#FFE0E0;color:#b53434;}
+/* v76 · 答完后的翻页导航：孩子自己决定继续/回头复习 */
+.q-nav{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:14px;}
+.q-nav button{min-width:130px;font-size:17px;font-weight:800;border-radius:14px;padding:11px 18px;
+  cursor:pointer;box-shadow:var(--shadow);border:none;}
+.q-nav .q-nav-prev{background:#fff;border:2px solid #E8CBA0;color:#8A6A3A;}
+.q-nav .q-nav-next{background:#57B0F5;color:#fff;}
+.q-nav button:disabled{opacity:.45;cursor:default;}
+.q-nav button:active{transform:scale(.96);}
 
 /* 结果页 */
 .result-area{text-align:center;background:var(--card);border-radius:24px;padding:26px;box-shadow:var(--shadow);}

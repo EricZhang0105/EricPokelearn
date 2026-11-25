@@ -15,4 +15,4 @@ const CLOUD_APP_URL = 'https://wbapp-ig9wrpabw0v66x4kzqyd6s.app.workbuddy.host/?
 
 /* 版本标记：家长端底部显示，用来确认「这个链接是不是最新版」。
    每次发版由开发者改这里；判断线上是否更新以它为准。 */
-const POKELEARN_BUILD = 'v75 · 2026-11-25';
+const POKELEARN_BUILD = 'v78 · 2026-11-25';

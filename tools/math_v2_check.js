@@ -16,6 +16,8 @@ for(const f of ['js/pokemon.js','js/zh-phonics.js','js/phonics-sounds.js','js/ma
 }
 const MATH_V2=vm.runInContext('MATH_V2',ctx);
 const MATH=vm.runInContext('MATH',ctx);
+const make10Solution=vm.runInContext('make10Solution',ctx);
+const subtractSolution=vm.runInContext('subtractSolution',ctx);
 const gen={
   genCpaAdd:vm.runInContext('genCpaAdd',ctx),
   genCpaSub:vm.runInContext('genCpaSub',ctx),
@@ -62,11 +64,24 @@ scan('CPA加法', sets.genCpaAdd, (q,i,l)=>{
   common(q,i,l);
   ok(l+'#'+i+' answer 在 options', q.options.includes(String(q.answer)));
   ok(l+'#'+i+' visual 有十格框+条形图', /ten-frame/.test(q.visual)&&/bar-model/.test(q.visual));
+  /* v76 · 凑十法解题图：拆小数→凑十→合并，全英文 */
+  ok(l+'#'+i+' 有 solutionHtml', !!q.solutionHtml);
+  ok(l+'#'+i+' solutionHtml 全英文', !hasCJK(q.solutionHtml));
+  ok(l+'#'+i+' solutionHtml 含凑十三要素',
+    /sol-bond/.test(q.solutionHtml)&&/sol-need/.test(q.solutionHtml)
+    &&/sol-left/.test(q.solutionHtml)&&/sol-ten/.test(q.solutionHtml));
 });
 scan('CPA减法', sets.genCpaSub, (q,i,l)=>{
   common(q,i,l);
   ok(l+'#'+i+' answer 在 options', q.options.includes(String(q.answer)));
   ok(l+'#'+i+' answer>0', Number(q.answer)>0, 'ans='+q.answer);
+  /* v77 · 减法破十解题图：拆减数→退回十→再减，全英文 */
+  ok(l+'#'+i+' 有 solutionHtml', !!q.solutionHtml);
+  ok(l+'#'+i+' solutionHtml 全英文', !hasCJK(q.solutionHtml));
+  ok(l+'#'+i+' solutionHtml 含破十三要素',
+    /sol-sub/.test(q.solutionHtml)&&/sol-bond/.test(q.solutionHtml)
+    &&/sol-need/.test(q.solutionHtml)&&/sol-left/.test(q.solutionHtml)
+    &&/sol-ten/.test(q.solutionHtml));
 });
 scan('Doubles', sets.genDoubles, (q,i,l)=>{
   common(q,i,l);
@@ -160,6 +175,25 @@ console.log('\n=== 2b. v74 新子类覆盖 ===');
   ok('连线含数字分解 total', matchBig.some(q=>/sum to its total/.test(q.prompt||'')));
 }
 
+/* v78 · 从右往左的顺序题：确认真的出现，且答案确实指向从右数第 k 只 */
+console.log('\n=== 2c. v78 从右数覆盖与答案正确性 ===');
+{
+  const ordBig=gen.genOrdinal(300), focBig=gen.genFocus(300);
+  const ordRight=ordBig.filter(q=>/from the right/.test(q.prompt||''));
+  const focRight=focBig.filter(q=>/from the right/.test(q.prompt||''));
+  ok('序数含从右数题', ordRight.length>0, 'count='+ordRight.length);
+  ok('专注力含从右数题', focRight.length>0, 'count='+focRight.length);
+  ok('序数含从左数题（双向并存）', ordBig.some(q=>/from the left/.test(q.prompt||'')));
+  ok('专注力含从左数题（双向并存）', focBig.some(q=>/from the left/.test(q.prompt||'')));
+  const ansOK=(q)=>{
+    const k=parseInt((String(q.prompt||'').match(/(\d+)(st|nd|rd|th)/)||[])[1]);
+    const count=(q.items||[]).length;
+    return !!(k&&count) && q.answer===q.items[count-k].key;
+  };
+  ok('序数从右数答案正确', ordRight.every(ansOK), 'checked='+ordRight.length);
+  ok('专注力从右数答案正确', focRight.every(ansOK), 'checked='+focRight.length);
+}
+
 console.log('\n=== 3. 真实取题能力（模拟 noPool 摇多次累积，凑够 10 道不重复）===');
 function normRaw(q){
   const strip=s=>String(s||'').replace(/<[^>]*>/g,'');
@@ -176,8 +210,8 @@ console.log('\n=== 4. 接线静态断言 ===');
 const app=F('js/app.js'), idx=F('index.html'), sw=F('sw.js'), qe=F('js/question-engine.js'), cc=F('js/cloud-config.js');
 ok('index 加载 math-v2.js 且在 data.js 前', idx.indexOf('js/math-v2.js')>0 && idx.indexOf('js/math-v2.js')<idx.indexOf('js/data.js'));
 ok('sw 预缓存 math-v2.js', /'\.\/js\/math-v2\.js'/.test(sw));
-ok('sw 版本 v75', /pokelearn-v75/.test(sw));
-ok('cloud 版本 v75', /v75 · 2026-11-25/.test(cc));
+ok('sw 版本 v78', /pokelearn-v78/.test(sw));
+ok('cloud 版本 v78', /v78 · 2026-11-25/.test(cc));
 ok('引擎有 noPool 短路', /lesson\.noPool/.test(qe));
 ok('app 有 circle 渲染分支', /q\.type==='circle'/.test(app));
 ok('app 有 match 渲染分支', /q\.type==='match'/.test(app));
@@ -186,6 +220,49 @@ ok('app 绑定 match', /bindMatch\(q,item\)/.test(app));
 ok('app 定义 bindCircle', /function bindCircle/.test(app));
 ok('app 定义 bindMatch', /function bindMatch/.test(app));
 ok('data 合并 MATH_V2', /MATH\.push\(\.\.\.MATH_V2\)/.test(F('js/data.js')));
+
+console.log('\n=== 5. v76 · 解题图 + 手动翻页接线 ===');
+ok('CPA 题带 solutionHtml', make10Solution!==undefined && /sol-card/.test(make10Solution(8,7)));
+ok('解题图 8+7 拆成 2+5 得 15', (()=>{
+  const h=make10Solution(8,7);
+  return /sol-need">2</.test(h)&&/sol-left">5</.test(h)&&/sol-ten">10</.test(h)&&/sol-ans">15</.test(h);
+})());
+ok('解题图数学正确（遍历）', (()=>{
+  for(let a=6;a<=9;a++)for(let b=2;b<=8;b++){
+    const big=Math.max(a,b),small=Math.min(a,b),need=10-big,left=small-need;
+    if(need<=0||left<=0) continue;
+    const h=make10Solution(a,b);
+    if(!new RegExp('sol-need">'+need).test(h)||!new RegExp('sol-left">'+left).test(h)
+       ||!new RegExp('sol-ans">'+(a+b)).test(h)) return false;
+  }
+  return true;
+})());
+ok('减法题带 solutionHtml', subtractSolution!==undefined && /sol-sub/.test(subtractSolution(16,9)));
+ok('解题图 16−9 拆成 6+3 得 7', (()=>{
+  const h=subtractSolution(16,9);
+  return h.includes('16 = 10 + 6')&&/sol-need">6</.test(h)&&/sol-left">3</.test(h)
+    &&/sol-ten">10</.test(h)&&/sol-ans">7</.test(h)
+    &&h.includes('16 − 6')&&h.includes('10 − 3');
+})());
+ok('减法解题图数学正确（遍历）', (()=>{
+  for(let a=11;a<=18;a++)for(let take=a-9;take<=9;take++){
+    const back=a-10,left=take-back;
+    if(left<=0||back<=0) continue;
+    const h=subtractSolution(a,take);
+    if(!new RegExp('sol-need">'+back).test(h)||!new RegExp('sol-left">'+left).test(h)
+       ||!new RegExp('sol-ans">'+(a-take)).test(h)) return false;
+  }
+  return true;
+})());
+ok('app 有翻页导航按钮', /navPrev/.test(app)&&/navNext/.test(app));
+ok('app 定义 gotoQuestion', /function gotoQuestion/.test(app));
+ok('gotoQuestion 真正移动 idx 指针', /const target=state\.idx\+delta;[\s\S]{0,160}state\.idx=target/.test(app));
+ok('app 有作答快照还原', /state\.snap\[state\.idx\]/.test(app));
+ok('app 有 settled 防重复结算', /state\.settled\[state\.idx\]/.test(app));
+ok('showFeedback 不再自动跳题', !/if\(good && autoNext\)/.test(app) && !/setTimeout\(nextQuestion/.test(app));
+ok('onCorrect onend 不再跳题', !/state\.pendingExplain=false;\s*nextQuestion\(\)/.test(app));
+ok('CSS 有解题图样式', /\.sol-card\{/.test(F('css/styles.css')));
+ok('CSS 有翻页按钮样式', /\.q-nav\{/.test(F('css/styles.css')));
 const noComments=(F('js/app.js')+F('index.html')).replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]*/g,'');
 ok('无 controllerchange reload（剥离注释后）', !/controllerchange[\s\S]{0,120}location\.reload/.test(noComments));
 
