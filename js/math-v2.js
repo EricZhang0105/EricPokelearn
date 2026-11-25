@@ -225,6 +225,137 @@ function genWordPlus(n){
   return out;
 }
 
+/* ---------------- v79 · 时间的问题（Time word problems） ----------------
+   参考 Eric 举例：现在早上 10 点，6 点起床，已经醒来几小时 → 4。
+   全英文、整点、12 小时制，答案 1~12，5 种场景。visual 用时钟示意。 */
+function timeVisual(parts){
+  // parts: [{label, value}]  value 为钟点数或小时数；kind 决定样式
+  const chips=parts.map(p=>{
+    const cls='time-chip time-'+(p.kind||'clock');
+    return '<span class="'+cls+'">'+(p.kind==='q'?'<b>?</b>':'<b>'+p.value+'</b>')
+      +(p.label?'<small>'+p.label+'</small>':'')+'</span>';
+  }).join('<span class="time-op">→</span>');
+  return '<div class="time-wrap">🕐 '+chips+'</div>';
+}
+function genTime(n){
+  const out=[];
+  const NAMES=['Sam','Lily','Tom','May','Ben','Ann','Ken','Zoe','Mia','Tim'];
+  for(let i=0;i<n;i++){
+    const name=pick(NAMES);
+    const mode=ri(0,4);
+    let sub,ans,explain,visual;
+    if(mode===0){
+      // 醒来几小时：现在 now 点，woke 点起床
+      const woke=ri(5,9), now=ri(woke+1,12);
+      ans=now-woke;
+      sub='It is '+now+' o\'clock now. '+name+' woke up at '+woke+' o\'clock. How many hours has '+name+' been awake?';
+      explain=now+' − '+woke+' = '+ans+' hours awake.';
+      visual=timeVisual([{label:'woke up',value:woke},{label:'now',value:now},{label:'awake',kind:'q'}]);
+    }else if(mode===1){
+      // 经过几小时：从 from 点到 to 点
+      const from=ri(1,9), to=ri(from+1,12);
+      ans=to-from;
+      sub=name+' started at '+from+' o\'clock and finished at '+to+' o\'clock. How many hours did it take?';
+      explain=to+' − '+from+' = '+ans+' hours.';
+      visual=timeVisual([{label:'start',value:from},{label:'end',value:to},{label:'hours',kind:'q'}]);
+    }else if(mode===2){
+      // 再过几小时是几点：现在 now 点，+hours
+      const now=ri(1,8), hours=ri(1,12-now);
+      ans=now+hours;
+      sub='It is '+now+' o\'clock now. What time will it be in '+hours+' hours?';
+      explain=now+' + '+hours+' = '+ans+' o\'clock.';
+      visual=timeVisual([{label:'now',value:now},{label:'add '+hours+'h',kind:'clock',value:hours},{label:'then',kind:'q'}]);
+    }else if(mode===3){
+      // 几小时前是几点：现在 now 点，-hours
+      const now=ri(4,12), hours=ri(1,now-1);
+      ans=now-hours;
+      sub='It is '+now+' o\'clock now. What time was it '+hours+' hours ago?';
+      explain=now+' − '+hours+' = '+ans+' o\'clock.';
+      visual=timeVisual([{label:'now',value:now},{label:'back '+hours+'h',kind:'clock',value:hours},{label:'before',kind:'q'}]);
+    }else{
+      // 开始几点 + 做了几小时 = 结束几点
+      const start=ri(1,8), hours=ri(1,12-start);
+      ans=start+hours;
+      sub=name+' began at '+start+' o\'clock and played for '+hours+' hours. What time did '+name+' stop?';
+      explain=start+' + '+hours+' = '+ans+' o\'clock.';
+      visual=timeVisual([{label:'start',value:start},{label:'play '+hours+'h',kind:'clock',value:hours},{label:'stop',kind:'q'}]);
+    }
+    out.push({type:'choice',prompt:'Time Problem',sub,visual,petKey:petKey(mathPet()),
+      speak:{text:sub,lang:'en-US'},
+      options:numOptions(ans,1,12), answer:String(ans),
+      explain, answerSpeak:mathTipSpeak(explain), tag:'time'});
+  }
+  return out;
+}
+
+/* ---------------- v79 · 钱的问题（Money word problems） ----------------
+   参考 Eric 举例：小明有 $10 花 $3 剩多少；买 $5 东西付 $10 找多少。
+   全英文、整数美元、答案 1~20，5 种日常场景。visual 用钱袋/硬币示意。 */
+function moneyVisual(parts){
+  // parts: [{label, value, kind}]  kind='have'|'pay'|'cost'|'q'
+  const chips=parts.map(p=>{
+    const cls='money-chip money-'+(p.kind||'cost');
+    return '<span class="'+cls+'"><b>'+(p.kind==='q'?'?':'$'+p.value)+'</b>'
+      +(p.label?'<small>'+p.label+'</small>':'')+'</span>';
+  }).join('<span class="money-op">·</span>');
+  return '<div class="money-wrap">'+chips+'</div>';
+}
+function genMoney(n){
+  const out=[];
+  const NAMES=['Sam','Lily','Tom','May','Ben','Ann','Ken','Zoe','Mia','Tim'];
+  const ITEMS=['toy','book','ball','pen','cake','hat','bag','doll'];
+  for(let i=0;i<n;i++){
+    const name=pick(NAMES), friend=pick(NAMES.filter(x=>x!==name)), item=pick(ITEMS);
+    const mode=ri(0,4);
+    let sub,ans,explain,visual;
+    if(mode===0){
+      // 花钱后剩多少：有 $have，花 $spend，剩多少
+      const have=ri(6,18), spend=ri(1,have-1);
+      ans=have-spend;
+      sub=name+' has $'+have+'. '+heShe(name)+' spent $'+spend+' on a '+item+'. How much money is left?';
+      explain='$'+have+' − $'+spend+' = $'+ans+'. '+name+' has $'+ans+' left.';
+      visual=moneyVisual([{label:'had',value:have,kind:'have'},{label:'spent',value:spend,kind:'cost'},{kind:'q'}]);
+    }else if(mode===1){
+      // 找零：买 $cost 的东西，付 $pay（10/20），找回多少
+      const cost=ri(2,9), pay=pick([10,20]);
+      ans=pay-cost;
+      sub=name+' buys a '+item+' for $'+cost+'. '+heShe(name)+' pays with a $'+pay+' note. How much change does '+name+' get back?';
+      explain='$'+pay+' − $'+cost+' = $'+ans+' change. The shopkeeper gives $'+ans+' back.';
+      visual=moneyVisual([{label:'paid',value:pay,kind:'pay'},{label:'cost',value:cost,kind:'cost'},{label:'change',kind:'q'}]);
+    }else if(mode===2){
+      // 买两样一共多少
+      const a=ri(2,9), b=ri(2,9), item2=pick(ITEMS.filter(x=>x!==item));
+      ans=a+b;
+      sub='A '+item+' costs $'+a+' and a '+item2+' costs $'+b+'. How much do they cost altogether?';
+      explain='$'+a+' + $'+b+' = $'+ans+' altogether.';
+      visual=moneyVisual([{label:item,value:a,kind:'cost'},{label:item2,value:b,kind:'cost'},{label:'total',kind:'q'}]);
+    }else if(mode===3){
+      // 还差多少钱：有 $have，东西 $cost，还差多少
+      const have=ri(2,9), cost=ri(have+1,15);
+      ans=cost-have;
+      sub=name+' has $'+have+'. A '+item+' costs $'+cost+'. How much more money does '+name+' need?';
+      explain='$'+cost+' − $'+have+' = $'+ans+'. '+name+' needs $'+ans+' more.';
+      visual=moneyVisual([{label:'cost',value:cost,kind:'cost'},{label:'has',value:have,kind:'have'},{label:'need',kind:'q'}]);
+    }else{
+      // 两笔花费一共花多少
+      const a=ri(2,8), b=ri(2,8);
+      ans=a+b;
+      sub=name+' spent $'+a+' on a '+item+' and $'+b+' on a snack. How much did '+name+' spend in all?';
+      explain='$'+a+' + $'+b+' = $'+ans+' in all.';
+      visual=moneyVisual([{label:'first',value:a,kind:'cost'},{label:'then',value:b,kind:'cost'},{label:'in all',kind:'q'}]);
+    }
+    out.push({type:'choice',prompt:'Money Problem',sub,visual,petKey:petKey(mathPet()),
+      speak:{text:sub,lang:'en-US'},
+      options:numOptions(ans,Math.max(0,ans-5),ans+5), answer:String(ans),
+      explain, answerSpeak:mathTipSpeak(explain), tag:'money'});
+  }
+  return out;
+}
+/* 英文代词，避免题干里反复出现同一个名字 */
+function heShe(name){
+  return ['May','Ann','Zoe','Mia'].indexOf(name)>=0 ? 'She' : 'He';
+}
+
 /* ---------------- 题目生成：逻辑推理（v74 · 4 类） ----------------
    参考学而思一年级「逻辑推理」：传递关系 / 排除法 / 赛跑比较 / 找规律。
    例句中英文均为按 5 岁水平改写，非学而思官方原题。
@@ -626,6 +757,8 @@ function comboFamilies(){
     {id:'pattern',   make:genPattern},
     {id:'compare',   make:genCompare},
     {id:'ordinal',   make:genOrdinal},
+    {id:'money',     make:genMoney},
+    {id:'time',      make:genTime},
   ].filter(f=>typeof f.make==='function');
 }
 function genCombo(n, opts){
@@ -687,9 +820,17 @@ const MATH_V2 = [
     desc:'Order and ordinals: who is first, next and last', noPool:true,
     make(slots){ return genOrdinal(Math.max(14,slots||10)); } },
 
+  /* v79 新增题型：钱与时间（日常应用，参考 Eric 举例） */
+  { id:'m-money', level:2, title:'Money · Spend & Change', emoji:'💰',
+    desc:'Spend, change, total cost and how much more (all English)', noPool:true,
+    make(slots){ return genMoney(Math.max(12,slots||10)); } },
+  { id:'m-time', level:2, title:'Time · Hours & Clocks', emoji:'🕐',
+    desc:'Hours awake, time passed, what time next', noPool:true,
+    make(slots){ return genTime(Math.max(12,slots||10)); } },
+
   /* 综合训练：数学模块全部题型混着练（每套打乱出题顺序，尽量覆盖不同类型） */
   { id:'m-combo', level:3, title:'Mixed Review · All Skills', emoji:'🏆',
-    desc:'One set, every math skill: count · bonds · add · subtract · stories · CPA · doubles · logic · space · focus · match',
+    desc:'One set, every math skill: count · bonds · add · subtract · stories · CPA · doubles · logic · space · focus · match · money · time',
     noPool:true,
     make(slots){ return genCombo(Math.max(10,slots||10)); } },
 ];
@@ -697,6 +838,6 @@ const MATH_V2 = [
 if(typeof module!=='undefined' && module.exports){
   module.exports={ tenFrame, barModel, petRow, ord, make10Solution, subtractSolution,
     genCpaAdd, genCpaSub, genDoubles, genWordPlus, genLogic, genSpace, genFocus, genMatch,
-    genPattern, genCompare, genOrdinal,
+    genPattern, genCompare, genOrdinal, genMoney, genTime, moneyVisual, timeVisual,
     comboFamilies, genCombo, MATH_V2 };
 }

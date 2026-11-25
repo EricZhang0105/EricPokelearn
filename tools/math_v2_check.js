@@ -30,12 +30,14 @@ const gen={
   genPattern:vm.runInContext('genPattern',ctx),
   genCompare:vm.runInContext('genCompare',ctx),
   genOrdinal:vm.runInContext('genOrdinal',ctx),
+  genMoney:vm.runInContext('genMoney',ctx),
+  genTime:vm.runInContext('genTime',ctx),
 };
 const CJK=/[\u3400-\u9fff]/;
 const hasCJK=s=>CJK.test(String(s||''));
 
 console.log('\n=== 1. 课程注册 ===');
-ok('MATH_V2 有 12 门课（8旧+3新+综合训练）', MATH_V2.length===12, 'got '+MATH_V2.length);
+ok('MATH_V2 有 14 门课（8旧+5新+money/time+综合训练）', MATH_V2.length===14, 'got '+MATH_V2.length);
 ok('MATH 已合并（>19 课）', MATH.length>=19, 'got '+MATH.length);
 const ids=MATH_V2.map(l=>l.id);
 ok('课程 id 全部唯一', new Set(ids).size===ids.length);
@@ -90,6 +92,25 @@ scan('Doubles', sets.genDoubles, (q,i,l)=>{
 scan('进阶应用题', sets.genWordPlus, (q,i,l)=>{
   common(q,i,l);
   ok(l+'#'+i+' sub 英文', !hasCJK(q.sub));
+  ok(l+'#'+i+' answer 在 options', q.options.includes(String(q.answer)));
+});
+/* v79 · 钱 / 时间应用题 */
+scan('钱的问题', sets.genMoney, (q,i,l)=>{
+  common(q,i,l);
+  ok(l+'#'+i+' prompt=Money Problem', q.prompt==='Money Problem');
+  ok(l+'#'+i+' sub 英文', !hasCJK(q.sub));
+  ok(l+'#'+i+' visual 英文', q.visual && !hasCJK(q.visual));
+  ok(l+'#'+i+' 题干含美元', /\$/.test(q.sub));
+  ok(l+'#'+i+' answer 为正整数', Number.isInteger(Number(q.answer)) && Number(q.answer)>0, 'ans='+q.answer);
+  ok(l+'#'+i+' answer 在 options', q.options.includes(String(q.answer)));
+});
+scan('时间问题', sets.genTime, (q,i,l)=>{
+  common(q,i,l);
+  ok(l+'#'+i+' prompt=Time Problem', q.prompt==='Time Problem');
+  ok(l+'#'+i+' sub 英文', !hasCJK(q.sub));
+  ok(l+'#'+i+' visual 英文', q.visual && !hasCJK(q.visual));
+  ok(l+'#'+i+' 题干含 o\'clock', /o'clock/.test(q.sub));
+  ok(l+'#'+i+' answer 1~12', Number(q.answer)>=1 && Number(q.answer)<=12, 'ans='+q.answer);
   ok(l+'#'+i+' answer 在 options', q.options.includes(String(q.answer)));
 });
 scan('逻辑推理', sets.genLogic, (q,i,l)=>{
@@ -194,6 +215,33 @@ console.log('\n=== 2c. v78 从右数覆盖与答案正确性 ===');
   ok('专注力从右数答案正确', focRight.every(ansOK), 'checked='+focRight.length);
 }
 
+/* v79 · 钱/时间覆盖：5 种模式都真实出现，Eric 举例能算出正确答案 */
+console.log('\n=== 2d. v79 钱/时间覆盖 ===');
+{
+  const moneyBig=gen.genMoney(250), timeBig=gen.genTime(250);
+  ok('钱题含找零场景', moneyBig.some(q=>/change/.test(q.sub)));
+  ok('钱题含花钱剩余场景', moneyBig.some(q=>/is left/.test(q.sub)));
+  ok('钱题含还差多少场景', moneyBig.some(q=>/more money/.test(q.sub)));
+  ok('钱题含总价场景', moneyBig.some(q=>/altogether/.test(q.sub)||/in all/.test(q.sub)));
+  ok('时间题含醒来几小时场景', timeBig.some(q=>/been awake/.test(q.sub)));
+  ok('时间题含经过几小时场景', timeBig.some(q=>/How many hours did it take/.test(q.sub)));
+  ok('时间题含几小时后场景', timeBig.some(q=>/will it be in/.test(q.sub)));
+  ok('时间题含几小时前场景', timeBig.some(q=>/hours ago/.test(q.sub)));
+  /* 题目文字里的数字与答案要对得上（找零：pay − cost = ans） */
+  const changeQ=moneyBig.find(q=>/pays with a \$(\d+)/.test(q.sub));
+  if(changeQ){
+    const pay=Number((changeQ.sub.match(/pays with a \$(\d+)/)||[])[1]);
+    const cost=Number((changeQ.sub.match(/for \$(\d+)/)||[])[1]);
+    ok('找零题 pay−cost=ans', pay-cost===Number(changeQ.answer), pay+'-'+cost+'='+changeQ.answer);
+  }else ok('找零题 pay−cost=ans', false, 'no change question found');
+  const awakeQ=timeBig.find(q=>/been awake/.test(q.sub));
+  if(awakeQ){
+    const now=Number((awakeQ.sub.match(/It is (\d+) o'clock/)||[])[1]);
+    const woke=Number((awakeQ.sub.match(/woke up at (\d+) o'clock/)||[])[1]);
+    ok('醒来题 now−woke=ans', now-woke===Number(awakeQ.answer), now+'-'+woke+'='+awakeQ.answer);
+  }else ok('醒来题 now−woke=ans', false, 'no awake question found');
+}
+
 console.log('\n=== 3. 真实取题能力（模拟 noPool 摇多次累积，凑够 10 道不重复）===');
 function normRaw(q){
   const strip=s=>String(s||'').replace(/<[^>]*>/g,'');
@@ -210,8 +258,8 @@ console.log('\n=== 4. 接线静态断言 ===');
 const app=F('js/app.js'), idx=F('index.html'), sw=F('sw.js'), qe=F('js/question-engine.js'), cc=F('js/cloud-config.js');
 ok('index 加载 math-v2.js 且在 data.js 前', idx.indexOf('js/math-v2.js')>0 && idx.indexOf('js/math-v2.js')<idx.indexOf('js/data.js'));
 ok('sw 预缓存 math-v2.js', /'\.\/js\/math-v2\.js'/.test(sw));
-ok('sw 版本 v78', /pokelearn-v78/.test(sw));
-ok('cloud 版本 v78', /v78 · 2026-11-25/.test(cc));
+ok('sw 版本 v79', /pokelearn-v79/.test(sw));
+ok('cloud 版本 v79', /v79 · 2026-11-25/.test(cc));
 ok('引擎有 noPool 短路', /lesson\.noPool/.test(qe));
 ok('app 有 circle 渲染分支', /q\.type==='circle'/.test(app));
 ok('app 有 match 渲染分支', /q\.type==='match'/.test(app));
@@ -263,6 +311,13 @@ ok('showFeedback 不再自动跳题', !/if\(good && autoNext\)/.test(app) && !/s
 ok('onCorrect onend 不再跳题', !/state\.pendingExplain=false;\s*nextQuestion\(\)/.test(app));
 ok('CSS 有解题图样式', /\.sol-card\{/.test(F('css/styles.css')));
 ok('CSS 有翻页按钮样式', /\.q-nav\{/.test(F('css/styles.css')));
+console.log('\n=== 6. v79 钱/时间接线 ===');
+const v2src=F('js/math-v2.js'), cssv=F('css/styles.css');
+ok('课程注册 m-money', /id:'m-money'/.test(v2src));
+ok('课程注册 m-time', /id:'m-time'/.test(v2src));
+ok('综合题组含 money/time', /id:'money',\s*make:genMoney/.test(v2src) && /id:'time',\s*make:genTime/.test(v2src));
+ok('m-combo 描述含 money·time', /money · time/.test(v2src));
+ok('CSS 有钱/时间 chip 样式', /\.money-chip[^{}]*\{/.test(cssv) && /\.time-chip[^{}]*\{/.test(cssv));
 const noComments=(F('js/app.js')+F('index.html')).replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]*/g,'');
 ok('无 controllerchange reload（剥离注释后）', !/controllerchange[\s\S]{0,120}location\.reload/.test(noComments));
 

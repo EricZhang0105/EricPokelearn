@@ -212,6 +212,20 @@ body.ipad-standalone .topbar-title{ flex:1 1 auto; min-width:0;
 .cpa-eq{font-size:28px;font-weight:900;color:#D2691E;margin-top:2px;}
 .match-eq{font-size:22px;font-weight:800;color:#B5651D;white-space:nowrap;}
 
+/* ===== v79 · 钱 / 时间应用题视觉（chip 示意） ===== */
+.money-wrap,.time-wrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;
+  margin:8px 0;}
+.money-chip,.time-chip{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+  min-width:58px;padding:6px 10px;border-radius:12px;border:2px solid #E8CBA0;background:#FFF8E7;}
+.money-chip b,.time-chip b{font-size:21px;font-weight:900;color:#7A4A12;line-height:1.1;}
+.money-chip small,.time-chip small{font-size:11px;font-weight:700;color:#9A6A2A;margin-top:2px;}
+.money-have,.time-clock{background:#D6EAFB;border-color:#5FA6DE;}
+.money-have b,.time-clock b{color:#1F5C8A;}
+.money-pay{background:#FFE0B2;border-color:#F0A93A;}
+.money-cost{background:#FDE0DE;border-color:#E88B84;}
+.money-q b,.time-q b{color:#C9741A;font-size:24px;}
+.money-op,.time-op{font-size:18px;font-weight:800;color:#B0A08A;}
+
 /* ===== v76 · 凑十法解题图（Make-10 solution，答对后显示） ===== */
 .sol-card{background:linear-gradient(160deg,#FFFDF6,#FFF6E2);border:3px solid #F0C674;
   border-radius:18px;padding:14px 16px 12px;margin:12px auto 2px;width:min(420px,94vw);
