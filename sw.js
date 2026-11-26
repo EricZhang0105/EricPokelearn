@@ -1,5 +1,9 @@
 /* PokeLearn service worker — offline-capable PWA
- * 缓存策略（v80）：
+ * 缓存策略（v81）：
+ * v81（2026-11-26）：
+ *   新增：凑十法 / 破十法改成「作业本填空」——解题图里的数字挖成方框，
+ *         孩子点方框后从候选数字里选一个填进去；破十法按手绘图改为
+ *         拆被减数（13 = 3 + 10 → 10−5=5 → 3+5=8）。
  * v80（2026-11-25）：
  *   修复：① 错题复习回归测试适配 v76/v77 的 showFeedback(good, explain) 两参数
  *         + 翻页导航（gotoQuestion），不再按旧的 6 参数签名断言；
@@ -116,7 +120,7 @@
  * v40（2026-11-16 语音统一）：所有音频 URL 带 ?a=2 版本参数，旧缓存（Flo 时代发闷的
  *   录音 + 63 只宝可梦的多音色鼓励语）不会再被复用；鼓励语改为统一女声 TTS。
  */
-const CACHE = 'pokelearn-v80';
+const CACHE = 'pokelearn-v81';
 const SHELL = [
   './',
   './index.html',

@@ -73,13 +73,29 @@ function petRow(items,opts){
    按 Eric 手绘思路：8+7 → 因为 8 比 7 大，留大数 8，把小数 7 拆成
    「凑十的数 + 剩下的数」(7 = 2 + 5)，先 8+2=10，再 10+5=15。
    返回纯 HTML，答对后显示在题目下方，孩子看图即可理解拆/合关系。 */
-function make10Solution(a,b){
+
+/* v81 · 拆数结果抽成纯函数：交互填空题与答后解题图共用同一套算法，
+   避免「填空答案对、图解答案错」这种两套逻辑跑偏的问题。 */
+function make10Parts(a,b){
   const big=Math.max(a,b), small=Math.min(a,b);
-  const need=10-big, left=small-need;          // 把小数拆成 need + left
-  const ans=a+b;
+  const need=10-big, left=small-need;
+  return {big,small,need,left,ans:a+b};
+}
+/* 破十法（Eric 手绘 13−5 样式）：拆被减数 13 = 3 + 10，
+   先 10−5=5，再 3+5=8。注意与旧的「平十法」(拆减数) 不同。 */
+function break10Parts(a,take){
+  return {a,take,ones:a-10,rest:10-take,ans:a-take};
+}
+
+function make10Solution(a,b){
+  const p=make10Parts(a,b);
+  const big=p.big, small=p.small, need=p.need, left=p.left, ans=p.ans;
+  const why = big===small
+    ? 'Both numbers are '+big+', so keep one '+big+' and split the other.'
+    : big+' is bigger than '+small+', so keep '+big+' and split '+small+'.';
   return '<div class="sol-card">'
     +'<div class="sol-title">🧠 Let\'s make 10!</div>'
-    +'<div class="sol-why">'+big+' is bigger than '+small+', so keep '+big+' and split '+small+'.</div>'
+    +'<div class="sol-why">'+why+'</div>'
     // number bond：小数拆成 need + left
     +'<div class="sol-bond">'
       +'<div class="sol-bond-top">'+small+'</div>'
@@ -95,6 +111,54 @@ function make10Solution(a,b){
     +'</div>'
     +'<div class="sol-note">'+big+' + '+small+' = '+ans+' ✓</div>'
   +'</div>';
+}
+
+/* ---------------- v81 · 填空式凑十 / 破十（Eric 手绘作业本样式） ----------------
+   解题图里的关键数字挖成方框：孩子点方框 → 从 3 个候选数字里选一个填进去，
+   再点 Check 判分。同一数字在「拆数」和「算式」里复用同一个 data-slot，
+   填一次两处同时出现，孩子能直接看到「1 既是 8 拆出来的，也是 9 要加的」。 */
+function fillCands(v,lo,hi){
+  const out=[];
+  [v-1,v,v+1].forEach(x=>{ if(x>=lo && x<=hi && out.indexOf(x)<0) out.push(x); });
+  return shuffle(out).map(String);
+}
+function fsBlank(slot,label){
+  return '<button type="button" class="fs-btn" data-slot="'+slot+'" aria-label="'+label+'">?</button>';
+}
+function fillHtmlAdd(p){
+  return '<div class="fill-card" id="fillCard">'
+    +'<div class="sol-title">🧠 Let\'s make 10!</div>'
+    +'<div class="fs-eq">'+p.big+' + '+p.small+' = '+fsBlank('ans','answer')+'</div>'
+    +'<div class="fs-bond-wrap"><div class="fs-bond-top">'+p.small+'</div>'
+      +'<div class="sol-bond-arms"><i></i><i></i></div>'
+      +'<div class="fs-bond-parts">'+fsBlank('need','make ten')+fsBlank('left','left over')+'</div></div>'
+    +'<div class="fs-step">'+p.big+' + '+fsBlank('need','make ten')+' = <b>10</b></div>'
+    +'<div class="fs-step">10 + '+fsBlank('left','left over')+' = '+fsBlank('ans','answer')+'</div>'
+  +'</div>';
+}
+function fillHtmlSub(p){
+  return '<div class="fill-card fill-sub" id="fillCard">'
+    +'<div class="sol-title">🧠 Subtract through 10!</div>'
+    +'<div class="fs-eq">'+p.a+' − '+p.take+' = '+fsBlank('ans','answer')+'</div>'
+    +'<div class="fs-bond-wrap"><div class="fs-bond-top">'+p.a+'</div>'
+      +'<div class="sol-bond-arms"><i></i><i></i></div>'
+      +'<div class="fs-bond-parts">'+fsBlank('ones','ones')+'<b class="fs-ten">10</b></div></div>'
+    +'<div class="fs-step">10 − '+p.take+' = '+fsBlank('rest','left from ten')+'</div>'
+    +'<div class="fs-step">'+fsBlank('ones','ones')+' + '+fsBlank('rest','left from ten')
+      +' = '+fsBlank('ans','answer')+'</div>'
+  +'</div>';
+}
+function make10Fill(a,b){
+  const p=make10Parts(a,b);
+  return {kind:'add', html:fillHtmlAdd(p),
+    expect:{ans:String(p.ans),need:String(p.need),left:String(p.left)},
+    options:{ans:fillCands(p.ans,1,20),need:fillCands(p.need,1,9),left:fillCands(p.left,1,9)}};
+}
+function break10Fill(a,take){
+  const p=break10Parts(a,take);
+  return {kind:'sub', html:fillHtmlSub(p),
+    expect:{ans:String(p.ans),ones:String(p.ones),rest:String(p.rest)},
+    options:{ans:fillCands(p.ans,1,18),ones:fillCands(p.ones,1,9),rest:fillCands(p.rest,1,9)}};
 }
 
 /* ---------------- 题目生成：CPA 加法（Make-10 专项） ----------------
@@ -114,33 +178,34 @@ function genCpaAdd(n){
       speak:{text:a+' plus '+b+' equals what?',lang:'en-US'},
       options:numOptions(ans,10,20), answer:String(ans),
       explain:mathTip('+',a,b,ans), answerSpeak:mathTipSpeak(mathTip('+',a,b,ans)),
-      solutionHtml:make10Solution(a,b), tag:'cpa'});
+      solutionHtml:make10Solution(a,b), fill:make10Fill(a,b), tag:'cpa'});
   }
   return out;
 }
 
-/* ---------------- v77 · 减法破十法解题图（Subtract by splitting to 10） ----------------
-   按 Eric 手绘思路：16−9 → 因为 16 = 10 + 6，把 9 拆成 6 + 3，
-   先 16−6=10，再 10−3=7。拆分的是"减数"，让被减数先退回 10 再减剩下的。
+/* ---------------- v77 · 减法破十法解题图（Subtract through 10） ----------------
+   按 Eric 手绘思路：13−5 → 把被减数拆成 3 和 10，
+   先 10−5=5，再 3+5=8。v81 起与交互填空共用 break10Parts。
    返回纯 HTML，答对后显示在题目下方，孩子看图即可理解拆/减关系。 */
 function subtractSolution(a,take){
-  const back=a-10;                 // 被减数里"满十之外的零头"，如 16 → 6
-  const left=take-back;            // 减数拆开后剩下的部分，如 9 = 6 + 3 → 3
-  const ans=a-take;
+  const p=break10Parts(a,take);
+  const back=p.ones;               // 被减数里"满十之外的零头"，如 13 → 3
+  const left=p.rest;               // 10 减掉减数后剩下的部分，如 10−5=5
+  const ans=p.ans;
   return '<div class="sol-card sol-sub">'
     +'<div class="sol-title">🧠 Subtract through 10!</div>'
-    +'<div class="sol-why">'+a+' = 10 + '+back+', so split '+take+' into '+back+' + '+left+'.</div>'
-    // number bond：减数拆成 back + left
+    +'<div class="sol-why">'+a+' = '+back+' + 10, so take '+take+' away from 10 first.</div>'
+    // number bond：被减数拆成「零头 + 10」（Eric 手绘样式）
     +'<div class="sol-bond">'
-      +'<div class="sol-bond-top">'+take+'</div>'
+      +'<div class="sol-bond-top">'+a+'</div>'
       +'<div class="sol-bond-arms"><i></i><i></i></div>'
-      +'<div class="sol-bond-parts"><span class="sol-need">'+back+'</span><span class="sol-left">'+left+'</span></div>'
+      +'<div class="sol-bond-parts"><span class="sol-need">'+back+'</span><span class="sol-left">10</span></div>'
     +'</div>'
-    // 两步算式：被减数 − back = 10 → 10 − left = 答案
+    // 两步算式：10 − take = left → 零头 + left = 答案
     +'<div class="sol-steps">'
-      +'<div class="sol-step"><span class="sol-eq">'+a+' − '+back+'</span><span class="sol-arrow">=</span>'
-        +'<span class="sol-ten">10</span></div>'
-      +'<div class="sol-step"><span class="sol-eq">10 − '+left+'</span><span class="sol-arrow">=</span>'
+      +'<div class="sol-step"><span class="sol-eq">10 − '+take+'</span><span class="sol-arrow">=</span>'
+        +'<span class="sol-ten">'+left+'</span></div>'
+      +'<div class="sol-step"><span class="sol-eq">'+back+' + '+left+'</span><span class="sol-arrow">=</span>'
         +'<span class="sol-ans">'+ans+'</span></div>'
     +'</div>'
     +'<div class="sol-note">'+a+' − '+take+' = '+ans+' ✓</div>'
@@ -165,7 +230,7 @@ function genCpaSub(n){
       speak:{text:a+' minus '+take+' equals what?',lang:'en-US'},
       options:numOptions(ans,1,18), answer:String(ans),
       explain:mathTip('-',a,take,ans), answerSpeak:mathTipSpeak(mathTip('-',a,take,ans)),
-      solutionHtml:subtractSolution(a,take), tag:'cpa'});
+      solutionHtml:subtractSolution(a,take), fill:break10Fill(a,take), tag:'cpa'});
   }
   return out;
 }
@@ -847,6 +912,7 @@ const MATH_V2 = [
 
 if(typeof module!=='undefined' && module.exports){
   module.exports={ tenFrame, barModel, petRow, ord, make10Solution, subtractSolution,
+    make10Parts, break10Parts, make10Fill, break10Fill,
     genCpaAdd, genCpaSub, genDoubles, genWordPlus, genLogic, genSpace, genFocus, genMatch,
     genPattern, genCompare, genOrdinal, genMoney, genTime, moneyVisual, timeVisual,
     comboFamilies, genCombo, MATH_V2 };

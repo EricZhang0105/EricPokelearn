@@ -258,8 +258,8 @@ console.log('\n=== 4. 接线静态断言 ===');
 const app=F('js/app.js'), idx=F('index.html'), sw=F('sw.js'), qe=F('js/question-engine.js'), cc=F('js/cloud-config.js');
 ok('index 加载 math-v2.js 且在 data.js 前', idx.indexOf('js/math-v2.js')>0 && idx.indexOf('js/math-v2.js')<idx.indexOf('js/data.js'));
 ok('sw 预缓存 math-v2.js', /'\.\/js\/math-v2\.js'/.test(sw));
-ok('sw 版本 v80', /pokelearn-v80/.test(sw));
-ok('cloud 版本 v80', /v80 · 2026-11-25/.test(cc));
+ok('sw 版本 v81', /pokelearn-v81/.test(sw));
+ok('cloud 版本 v81', /v81 · 2026-11-26/.test(cc));
 ok('引擎有 noPool 短路', /lesson\.noPool/.test(qe));
 ok('app 有 circle 渲染分支', /q\.type==='circle'/.test(app));
 ok('app 有 match 渲染分支', /q\.type==='match'/.test(app));
@@ -286,19 +286,22 @@ ok('解题图数学正确（遍历）', (()=>{
   return true;
 })());
 ok('减法题带 solutionHtml', subtractSolution!==undefined && /sol-sub/.test(subtractSolution(16,9)));
-ok('解题图 16−9 拆成 6+3 得 7', (()=>{
-  const h=subtractSolution(16,9);
-  return h.includes('16 = 10 + 6')&&/sol-need">6</.test(h)&&/sol-left">3</.test(h)
-    &&/sol-ten">10</.test(h)&&/sol-ans">7</.test(h)
-    &&h.includes('16 − 6')&&h.includes('10 − 3');
+/* v81 · 按用户手绘作业本改为「破十法」：拆被减数 13 = 3 + 10，
+   10−5=5，再 3+5=8（旧版是拆减数的平十法，已不再使用）。 */
+ok('解题图 13−5 拆成 3+10，10−5=5 再 3+5=8', (()=>{
+  const h=subtractSolution(13,5);
+  return h.includes('13 = 3 + 10')&&/sol-need">3</.test(h)&&/sol-left">10</.test(h)
+    &&h.includes('10 − 5')&&/sol-ten">5</.test(h)&&h.includes('3 + 5')
+    &&/sol-ans">8</.test(h);
 })());
 ok('减法解题图数学正确（遍历）', (()=>{
-  for(let a=11;a<=18;a++)for(let take=a-9;take<=9;take++){
-    const back=a-10,left=take-back;
-    if(left<=0||back<=0) continue;
+  for(let a=11;a<=18;a++)for(let take=1;take<=9;take++){
+    if(take>=a) continue;
+    const ones=a-10, rest=10-take, ans=a-take;
     const h=subtractSolution(a,take);
-    if(!new RegExp('sol-need">'+back).test(h)||!new RegExp('sol-left">'+left).test(h)
-       ||!new RegExp('sol-ans">'+(a-take)).test(h)) return false;
+    if(!new RegExp('sol-need">'+ones).test(h)||!/sol-left">10</.test(h)
+       ||!new RegExp('sol-ten">'+rest).test(h)
+       ||!new RegExp('sol-ans">'+ans).test(h)) return false;
   }
   return true;
 })());
