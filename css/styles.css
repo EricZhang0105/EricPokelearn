@@ -259,27 +259,30 @@ body.ipad-standalone .topbar-title{ flex:1 1 auto; min-width:0;
 .sol-card.sol-sub{background:linear-gradient(160deg,#FFFDF6,#EEF6FF);border-color:#93C5E8;}
 .sol-card.sol-sub .sol-title{color:#2E7BB5;}
 
-/* ===== v81 · 凑十 / 破十填空卡：点方框 → 选数字填进去（Eric 手绘作业本样式） ===== */
+/* ===== v82 · 手绘作业本式填空：SVG 连线 + 常驻 0–10 数字条 ===== */
 .fill-card{background:linear-gradient(160deg,#FFFDF6,#FFF3DD);border:3px solid #F0C674;
-  border-radius:18px;padding:12px 14px 14px;margin:10px auto 8px;width:min(440px,94vw);
+  border-radius:18px;padding:12px 12px 14px;margin:10px auto 8px;width:min(440px,96vw);
   box-shadow:var(--shadow);text-align:center;color:#5B3E1B;}
 .fill-card.fill-sub{background:linear-gradient(160deg,#FFFDF6,#ECF5FF);border-color:#93C5E8;}
 .fill-card.fill-sub .sol-title{color:#2E7BB5;}
-.fs-eq{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;
-  font-size:30px;font-weight:900;line-height:1.25;margin:4px 0 8px;}
-.fs-bond-wrap{display:flex;flex-direction:column;align-items:center;margin:2px 0 10px;}
-.fs-bond-top{min-width:52px;height:52px;line-height:46px;padding:0 8px;border-radius:12px;
-  background:linear-gradient(135deg,#FFD9A3,#FFB870);border:3px solid #E8932F;
-  font-size:26px;font-weight:900;color:#7A4A12;box-shadow:var(--shadow);z-index:2;}
-.fs-bond-parts{display:flex;gap:34px;justify-content:center;}
-.fs-ten{display:inline-block;min-width:52px;height:52px;line-height:46px;border-radius:10px;
-  background:#D6EAFB;border:3px solid #5FA6DE;color:#1F5C8A;font-size:24px;font-weight:900;}
-.fs-step{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;
-  background:#fff;border:2px solid #F0D9AE;border-radius:12px;padding:5px 9px;
-  margin:5px auto 0;width:fit-content;font-size:22px;font-weight:800;}
-.fill-sub .fs-step{border-color:#CFE3F5;}
+/* 舞台高 216px：顶部算式 + 下方连线方框都用百分比定位，和手绘图一一对应 */
+.fs-stage{position:relative;width:100%;height:216px;margin:2px 0 4px;}
+.fs-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+.fs-lines path{fill:none;stroke:#C79A46;stroke-width:2.2;stroke-linecap:round;
+  vector-effect:non-scaling-stroke;}
+.fill-sub .fs-lines path{stroke:#6FA8D6;}
+/* 五等分网格：凑十从第三格分叉，破十从第一格分叉；答案框在第五格 */
+.fs-eq{position:relative;z-index:2;display:grid;grid-template-columns:repeat(5,1fr);
+  align-items:center;width:100%;font-size:30px;font-weight:900;line-height:1.2;padding-top:8px;}
+.fs-eq>span{text-align:center;}
+.fs-op{color:#B0A08A;font-size:24px;}
+.fs-answer-slot{display:block;height:52px;}
+.fs-sign{position:absolute;z-index:2;transform:translate(-50%,-50%);
+  font-size:24px;font-weight:900;color:#A9762E;}
+.fill-sub .fs-sign{color:#3C7FB0;}
 /* 可点方框：触摸目标 ≥52px，iPad 上不容易点偏 */
-.fs-btn{min-width:52px;min-height:52px;padding:0 6px;border:3px dashed #E8932F;border-radius:10px;
+.fs-btn{position:absolute;z-index:2;transform:translateX(-50%);
+  min-width:52px;min-height:52px;padding:0 4px;border:3px dashed #E8932F;border-radius:8px;
   background:#FFFDF6;color:#C9741A;font-size:26px;font-weight:900;line-height:1;
   box-shadow:0 2px 0 rgba(0,0,0,.06);touch-action:manipulation;cursor:pointer;}
 .fill-sub .fs-btn{border-color:#5FA6DE;color:#2E7BB5;background:#F7FBFF;}
@@ -288,21 +291,34 @@ body.ipad-standalone .topbar-title{ flex:1 1 auto; min-width:0;
 .fill-sub .fs-btn.filled{background:#E3F1FF;}
 .fs-btn.correct{border-color:#7FB24A;background:#D8F0C0;color:#3E6B12;}
 .fs-btn.wrong{border-color:#E06B6B;background:#FDE0DE;color:#B93B3B;}
-.fill-picker{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;
-  min-height:48px;margin:6px auto 8px;width:min(460px,96vw);}
-.fill-tip{font-size:14px;font-weight:700;color:#8A6A3A;}
-.fill-num{min-width:52px;min-height:48px;padding:0 8px;border-radius:12px;border:2px solid #F0C674;
-  background:#fff;color:#7A4A12;font-size:22px;font-weight:900;box-shadow:var(--shadow);
+.fs-ans{min-width:66px;font-size:25px;}
+.fs-fixed{position:absolute;z-index:2;transform:translateX(-50%);min-width:52px;height:52px;
+  line-height:46px;border-radius:8px;background:#D6EAFB;border:3px solid #5FA6DE;
+  color:#1F5C8A;font-size:24px;font-weight:900;}
+.fill-sub .fs-fixed{background:#FFE9C9;border-color:#E8A94E;color:#7A4A12;}
+.fs-hintline{font-size:13px;font-weight:700;color:#8A6A3A;margin:0 0 6px;}
+/* 0–10 常驻数字条：0–9 一行，10 与清空键一行，一眼看全 */
+.fill-picker{display:flex;flex-direction:column;align-items:center;gap:5px;
+  margin:4px auto 8px;width:100%;}
+.fs-digit-row{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;
+  width:100%;max-width:400px;}
+.fs-digit-tail{grid-template-columns:repeat(2,46px);justify-content:center;}
+.fill-num{min-width:0;width:100%;min-height:46px;padding:0 2px;border-radius:10px;border:2px solid #F0C674;
+  background:#fff;color:#7A4A12;font-size:20px;font-weight:900;box-shadow:var(--shadow);
   touch-action:manipulation;cursor:pointer;}
 .fill-num:active{transform:translateY(2px);}
-.fill-clear{border-color:#D9C8B4;color:#9C7B5A;font-size:19px;}
+.fill-num:disabled{opacity:.5;}
+.fill-clear{border-color:#D9C8B4;color:#9C7B5A;font-size:18px;}
 @media(max-width:560px){
+  .fs-stage{height:206px;}
   .fs-eq{font-size:26px;}
-  .fs-step{font-size:19px;}
   .fs-btn{min-width:46px;min-height:46px;font-size:22px;}
-  .fs-bond-top,.fs-ten{min-width:46px;height:46px;line-height:40px;font-size:22px;}
-  .fs-bond-parts{gap:22px;}
-  .fill-num{min-width:46px;min-height:46px;}
+  .fs-ans{min-width:58px;font-size:21px;}
+  .fs-fixed{min-width:46px;height:46px;line-height:40px;font-size:21px;}
+  .fs-digit-row{gap:3px;}
+  .fs-digit-tail{grid-template-columns:repeat(2,42px);}
+  .fill-num{min-height:44px;font-size:18px;}
+  .fill-picker{gap:4px;}
 }
 
 /* 一排宝可梦（赛跑/排队/找不同） */

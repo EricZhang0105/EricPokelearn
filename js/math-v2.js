@@ -113,52 +113,88 @@ function make10Solution(a,b){
   +'</div>';
 }
 
-/* ---------------- v81 · 填空式凑十 / 破十（Eric 手绘作业本样式） ----------------
-   解题图里的关键数字挖成方框：孩子点方框 → 从 3 个候选数字里选一个填进去，
-   再点 Check 判分。同一数字在「拆数」和「算式」里复用同一个 data-slot，
-   填一次两处同时出现，孩子能直接看到「1 既是 8 拆出来的，也是 9 要加的」。 */
-function fillCands(v,lo,hi){
-  const out=[];
-  [v-1,v,v+1].forEach(x=>{ if(x>=lo && x<=hi && out.indexOf(x)<0) out.push(x); });
-  return shuffle(out).map(String);
+/* ---------------- v82 · 填空式凑十 / 破十（严格照 Eric 手绘作业本） ----------------
+   顶部算式用五等分网格对齐：凑十从第二个数分叉，破十从第一个数分叉；
+   连线用 SVG 画在底层，方框盖在线上，孩子点方框后从下方固定的 0–10 数字条选数。
+   答案框可连点两次输入两位数（先 1 再 7 → 17），其余框只收一个数字。 */
+const FS_DIGITS=(function(){
+  const a=[];
+  for(let i=0;i<=10;i++) a.push(String(i));
+  return a;
+})();
+function fsBar(){
+  /* 0–9 一行铺满，10 和清空键单独一行，保证所有数字一眼看全、不东倒西歪 */
+  let h='<div class="fill-picker" id="fillPicker"><div class="fs-digit-row">';
+  for(let i=0;i<=9;i++) h+='<button type="button" class="fill-num" data-v="'+i+'">'+i+'</button>';
+  h+='</div><div class="fs-digit-row fs-digit-tail">'
+    +'<button type="button" class="fill-num" data-v="10">10</button>'
+    +'<button type="button" class="fill-num fill-clear" data-v="">✕</button></div></div>';
+  return h;
 }
-function fsBlank(slot,label){
-  return '<button type="button" class="fs-btn" data-slot="'+slot+'" aria-label="'+label+'">?</button>';
+function fsBlank(slot,label,cls,style,max){
+  return '<button type="button" class="fs-btn '+(cls||'')+'" data-slot="'+slot+'"'
+    +(max?' data-max="'+max+'"':'')+' style="'+style+'" aria-label="'+label+'">?</button>';
 }
 function fillHtmlAdd(p){
   return '<div class="fill-card" id="fillCard">'
     +'<div class="sol-title">🧠 Let\'s make 10!</div>'
-    +'<div class="fs-eq">'+p.big+' + '+p.small+' = '+fsBlank('ans','answer')+'</div>'
-    +'<div class="fs-bond-wrap"><div class="fs-bond-top">'+p.small+'</div>'
-      +'<div class="sol-bond-arms"><i></i><i></i></div>'
-      +'<div class="fs-bond-parts">'+fsBlank('need','make ten')+fsBlank('left','left over')+'</div></div>'
-    +'<div class="fs-step">'+p.big+' + '+fsBlank('need','make ten')+' = <b>10</b></div>'
-    +'<div class="fs-step">10 + '+fsBlank('left','left over')+' = '+fsBlank('ans','answer')+'</div>'
+    +'<div class="fs-stage">'
+      +'<svg class="fs-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">'
+        +'<path d="M50 15 L31 45 M50 15 L72 45"/>'
+        +'<path d="M10 15 L10 82"/>'
+        +'<path d="M10 58 L31 58"/>'
+      +'</svg>'
+      +'<div class="fs-eq"><span class="fs-num">'+p.big+'</span><span class="fs-op">+</span>'
+        +'<span class="fs-num">'+p.small+'</span><span class="fs-op">=</span>'
+        +'<span class="fs-answer-slot"></span></div>'
+      +fsBlank('ans','answer','fs-ans','left:90%;top:8px',2)
+      +'<span class="fs-sign" style="left:20%;top:121px">+</span>'
+      +fsBlank('need','make ten','fs-part','left:31%;top:96px')
+      +fsBlank('left','left over','fs-part','left:72%;top:96px')
+      +'<b class="fs-fixed" style="left:10%;top:156px">10</b>'
+    +'</div>'
+    +'<div class="fs-hintline">big + need = 10  ·  10 + left = answer</div>'
+    +fsBar()
   +'</div>';
 }
 function fillHtmlSub(p){
   return '<div class="fill-card fill-sub" id="fillCard">'
     +'<div class="sol-title">🧠 Subtract through 10!</div>'
-    +'<div class="fs-eq">'+p.a+' − '+p.take+' = '+fsBlank('ans','answer')+'</div>'
-    +'<div class="fs-bond-wrap"><div class="fs-bond-top">'+p.a+'</div>'
-      +'<div class="sol-bond-arms"><i></i><i></i></div>'
-      +'<div class="fs-bond-parts">'+fsBlank('ones','ones')+'<b class="fs-ten">10</b></div></div>'
-    +'<div class="fs-step">10 − '+p.take+' = '+fsBlank('rest','left from ten')+'</div>'
-    +'<div class="fs-step">'+fsBlank('ones','ones')+' + '+fsBlank('rest','left from ten')
-      +' = '+fsBlank('ans','answer')+'</div>'
+    +'<div class="fs-stage">'
+      +'<svg class="fs-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">'
+        +'<path d="M10 15 L25 45 M10 15 L52 45"/>'
+        +'<path d="M52 45 L88 45 M88 45 L88 62"/>'
+        +'<path d="M25 55 L25 82 M25 82 L52 82"/>'
+      +'</svg>'
+      +'<div class="fs-eq"><span class="fs-num">'+p.a+'</span><span class="fs-op">−</span>'
+        +'<span class="fs-num">'+p.take+'</span><span class="fs-op">=</span>'
+        +'<span class="fs-answer-slot"></span></div>'
+      +fsBlank('ans','answer','fs-ans','left:90%;top:8px',2)
+      +'<span class="fs-sign" style="left:69%;top:94px">−</span>'
+      +'<span class="fs-sign" style="left:36%;top:173px">+</span>'
+      +fsBlank('ones','ones','fs-part','left:25%;top:96px')
+      +'<b class="fs-fixed" style="left:52%;top:96px">10</b>'
+      +fsBlank('rest','left from ten','fs-part fs-rest','left:88%;top:132px')
+    +'</div>'
+    +'<div class="fs-hintline">10 − take = rest  ·  ones + rest = answer</div>'
+    +fsBar()
   +'</div>';
 }
 function make10Fill(a,b){
   const p=make10Parts(a,b);
+  const opts={};
+  ['ans','need','left'].forEach(k=>{ opts[k]=FS_DIGITS.slice(); });
   return {kind:'add', html:fillHtmlAdd(p),
     expect:{ans:String(p.ans),need:String(p.need),left:String(p.left)},
-    options:{ans:fillCands(p.ans,1,20),need:fillCands(p.need,1,9),left:fillCands(p.left,1,9)}};
+    maxLen:{ans:2,need:1,left:1}, options:opts};
 }
 function break10Fill(a,take){
   const p=break10Parts(a,take);
+  const opts={};
+  ['ans','ones','rest'].forEach(k=>{ opts[k]=FS_DIGITS.slice(); });
   return {kind:'sub', html:fillHtmlSub(p),
     expect:{ans:String(p.ans),ones:String(p.ones),rest:String(p.rest)},
-    options:{ans:fillCands(p.ans,1,18),ones:fillCands(p.ones,1,9),rest:fillCands(p.rest,1,9)}};
+    maxLen:{ans:2,ones:1,rest:1}, options:opts};
 }
 
 /* ---------------- 题目生成：CPA 加法（Make-10 专项） ----------------

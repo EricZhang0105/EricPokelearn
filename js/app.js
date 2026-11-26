@@ -1176,9 +1176,8 @@ function renderQuestion(){
   /* v81 · 凑十/破十专项：解题图里的数字挖成方框，点框 → 选数字 → 填进去。
      题型仍是 choice（沿用判分/错题/语音链路），只是把选项区换成填空交互。 */
   if(q.fill && q.fill.html){
-    h+=q.fill.html
-      +`<div class="fill-picker" id="fillPicker"><span class="fill-tip">👆 Tap a box, then pick a number</span></div>`
-      +`<button class="check-btn" id="fillCheck" disabled>Check ✓</button>`;
+    /* v82 · 0–10 数字条已包含在 fill.html 里，始终可见 */
+    h+=q.fill.html+`<button class="check-btn" id="fillCheck" disabled>Check ✓</button>`;
   } else if(q.type==='choice'){
     h+=`<div class="option-grid ${q.tone?'tone-grid':''}" id="optGrid">`;
     q.options.forEach((o,i)=>{
@@ -1312,61 +1311,55 @@ function bindChoice(q,item){
   });
 }
 
-/* ---------- v81 · 凑十/破十填空交互 ----------
- * 解题图里每个方框是一个 .fs-btn[data-slot]；同一个 slot 在拆数图和算式里
- * 可能出现两次（例如「8 拆出的 1」和「9 + 1」），填一次两处同步显示。
- * 点方框后在 .fill-picker 里给出该格的候选数字（正确值 ±1），
- * 全部填满才能 Check；判错时直接把正确答案写回方框，孩子当场就能对照。
+/* ---------- v82 · 凑十/破十：0–10 数字条填空 ----------
+ * 方框 .fs-btn[data-slot] 按手绘连线排布；下方常驻一条 0–10 数字条。
+ * 点方框选中 → 点数字填入；答案框 data-max=2，可连点两次输入两位数
+ * （1 → 7 = 17），点「✕」清空。填满才允许 Check，填错时写回正确答案。
  */
 function bindFill(q,item){
-  const card=$('#fillCard'), picker=$('#fillPicker'), btn=$('#fillCheck');
-  if(!card || !picker || !btn) return;
+  const card=$('#fillCard'), bar=$('#fillPicker'), btn=$('#fillCheck');
+  if(!card || !bar || !btn) return;
   const cells=Array.from(card.querySelectorAll('.fs-btn'));
-  const spec=q.fill||{};
-  const expect=spec.expect||{};
-  const opts=spec.options||{};
+  const spec=q.fill||{}, expect=spec.expect||{};
+  const values={}, maxOf={};
+  cells.forEach(c=>{
+    const k=c.dataset.slot;
+    maxOf[k]=Number(c.dataset.max||1);
+    if(!(k in values)) values[k]='';
+  });
   let active=null, answered=false;
 
-  const setCell=(slot,val)=>{
-    cells.filter(c=>c.dataset.slot===slot).forEach(c=>{
-      c.textContent=(val===null||val===undefined)?'?':String(val);
-      c.classList.toggle('filled', val!==null && val!==undefined && val!=='');
-      c.classList.remove('wrong','correct');
-    });
+  const paint=k=>cells.filter(c=>c.dataset.slot===k).forEach(c=>{
+    c.textContent=values[k]||'?';
+    c.classList.toggle('filled',!!values[k]);
+    c.classList.remove('wrong','correct');
+  });
+  const nextBlank=()=>Object.keys(expect).find(k=>!values[k])||null;
+  const select=k=>{
+    active=k;
+    cells.forEach(c=>c.classList.toggle('active',c.dataset.slot===k));
   };
-  const clearActive=()=>cells.forEach(c=>c.classList.remove('active'));
-  const allFilled=()=>Object.keys(expect).every(k=>
-    cells.some(c=>c.dataset.slot===k && c.classList.contains('filled')));
-
-  const renderPicker=()=>{
-    if(!active){
-      picker.innerHTML='<span class="fill-tip">👆 Tap a box, then pick a number</span>';
-      return;
-    }
-    let html='<span class="fill-tip">Pick a number:</span>';
-    (opts[active]||[]).forEach(v=>{
-      html+='<button type="button" class="fill-num" data-v="'+v+'">'+v+'</button>';
-    });
-    html+='<button type="button" class="fill-num fill-clear" data-v="">✕</button>';
-    picker.innerHTML=html;
-    Array.from(picker.querySelectorAll('.fill-num')).forEach(b=>{
-      b.onclick=()=>{
-        if(answered) return;
-        const v=b.dataset.v;
-        setCell(active, v===''?null:v);
-        btn.disabled=!allFilled();
-        active=null; clearActive(); renderPicker();
-      };
-    });
-  };
+  const allFilled=()=>Object.keys(expect).every(k=>!!values[k]);
 
   cells.forEach(c=>{
-    c.onclick=()=>{
-      if(answered) return;
-      active=c.dataset.slot;
-      clearActive();
-      cells.filter(x=>x.dataset.slot===active).forEach(x=>x.classList.add('active'));
-      renderPicker();
+    c.onclick=()=>{ if(answered) return; select(c.dataset.slot); };
+  });
+  Array.from(bar.querySelectorAll('.fill-num')).forEach(b=>{
+    b.onclick=()=>{
+      if(answered || !active) return;
+      const v=b.dataset.v;
+      if(v===''){
+        values[active]='';
+      }else if(maxOf[active]>1 && values[active] && values[active].length<maxOf[active] && v.length===1){
+        values[active]+=v;          // 连点两次拼两位数
+      }else{
+        values[active]=v;           // 单个数字 / 数字 10 直接填入
+      }
+      paint(active);
+      btn.disabled=!allFilled();
+      if(!values[active] || values[active].length>=maxOf[active]){
+        const n=nextBlank(); if(n) select(n);
+      }
     };
   });
   btn.disabled=true;
@@ -1374,12 +1367,11 @@ function bindFill(q,item){
     if(answered || btn.disabled) return;
     answered=true; btn.disabled=true;
     cells.forEach(c=>{ c.disabled=true; c.style.pointerEvents='none'; });
-    picker.innerHTML='';
-    const got={};
-    Object.keys(expect).forEach(k=>{
-      const cell=cells.find(c=>c.dataset.slot===k);
-      got[k]=cell?cell.textContent:'';
+    Array.from(bar.querySelectorAll('.fill-num')).forEach(b=>{
+      b.disabled=true; b.style.pointerEvents='none';
     });
+    const got={};
+    Object.keys(expect).forEach(k=>{ got[k]=values[k]||''; });
     const correct=Object.keys(expect).every(k=>got[k]===String(expect[k]));
     cells.forEach(c=>{
       const k=c.dataset.slot, want=String(expect[k]||'');
@@ -1404,7 +1396,7 @@ function bindFill(q,item){
       showFeedback(false,q.explain);
     }
   };
-  renderPicker();
+  select(nextBlank());
 }
 
 /* ---------- 认读课的两种模式：默认听音选一选，「我来读」是备用入口 ----------
